@@ -1,0 +1,19 @@
+export const site = {
+  name: "Ibtasaam Amjad",
+  shortName: "Ibtasaam",
+  role: "Developer · Storyteller · Creative Innovator",
+  description:
+    "Portfolio of Ibtasaam Amjad — developer, storyteller, and creative innovator. Selected work, playable games, and an AI guide that answers questions about him.",
+  url: "https://ibtasaam.com",
+  email: "ibtasaam.mughal@gmail.com",
+  location: "Rawalpindi, Pakistan",
+  github: "https://github.com/Mughal-Hash-24",
+} as const;
+
+export const chapters = [
+  { id: "about", label: "About" },
+  { id: "projects", label: "Projects" },
+  { id: "arcade", label: "Arcade" },
+  { id: "ask", label: "Ask Me" },
+  { id: "contact", label: "Contact" },
+] as const;
