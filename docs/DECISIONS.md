@@ -12,11 +12,12 @@ Locked creative direction. Update this file when a decision changes.
 
 - Fixed **Minecraft-inspired title screen**, not a normal scrolling hero.
 - Menu buttons are the **only way into the site**; scroll is locked until a choice is made.
-- Title reads **IBTASAAM** in a pixel font with a drop shadow, plus an angled splash line.
-- Background: panorama layers — every Minecraft version the visitor selects, plus custom panoramas of Ibtasaam's own worlds.
-- Menu items: About, Projects, Arcade, Ask Me, Contact, Resume.
+- Title: the generated **IBTASAAM stone-block wordmark** (`public/brand/ibtasaam-wordmark.webp`), with an angled splash line.
+- Background: a rotating six-face cubemap panorama. A picker cycles through the available sets.
+- Menu items: About, Projects, Arcade, Ask Me, Contact. Resume joins once the PDF exists.
 - Music toggle lives in the menu. Audio starts only after a user gesture.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
+- The official panorama pack is development-only. Production needs self-captured or licensed sets.
 
 ## Chapters
 
@@ -46,15 +47,15 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 
 ## Constraints
 
-- **No Mojang assets.** No textures, sounds, fonts, logos, or official panoramas. Use original voxel art, free pixel fonts, and self-captured footage.
+- **No Mojang assets.** No textures, sounds, fonts, logos, or official panoramas. Use original voxel art, free pixel fonts, self-captured footage, and the generated wordmark.
+- The official panorama pack is reference-only; optimized derivatives live in the gitignored `public/panoramas/_dev/` folder.
 - **Music** is an official Spotify embed or a licensed/CC0 track. No ripped files.
 - **Autoplay** is blocked by browsers; music requires an explicit gesture.
 - The site must remain usable with JavaScript disabled, reduced motion, and on low-end mobile devices.
 
 ## Open questions
 
-- Which Minecraft versions' panoramas to include, and how to present the selector.
-- Whether the title screen panorama is recorded video, crossfaded stills, or a CSS/canvas recreation.
+- Final set of licensed panoramas to ship, and whether to include a custom-world set.
 - Final palette and type pairings for the non-Minecraft chapters.
 - AI provider and model.
 - Whether the arcade is rendered in 3D or as a layered 2D scene.

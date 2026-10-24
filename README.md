@@ -89,6 +89,8 @@ Copy [`.env.example`](./.env.example) to `.env.local` for local secrets. Never c
 - **Game builds** live in `public/games/<slug>/` with their own license and source link.
 - **Code** is MIT licensed. Written content, artwork, and audio are © Ibtasaam Amjad, all rights reserved.
 
+See [docs/ASSETS.md](./docs/ASSETS.md) for the full asset manifest, font licenses, and the reconstructed button specification.
+
 ## Roadmap
 
 1. **Foundation** — design tokens, theme engine, base layout, deployment
