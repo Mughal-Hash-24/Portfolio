@@ -4,7 +4,7 @@ Personal portfolio of **Ibtasaam Amjad** — developer, storyteller, creative in
 
 The site opens on a Minecraft-inspired title screen, then moves through chapters with distinct visual identities: an editorial about section, a project index, a literal arcade with playable browser ports of C++ and Python games, a terminal-style AI guide, and a quiet contact page.
 
-> **Status:** title screen implemented. The chapters are placeholders; the arcade and AI guide are next.
+> **Status:** title screen implemented with a cubemap panorama, generated wordmark and edition, menu hierarchy, and Minecraft audio player. The chapters are placeholders; the arcade and AI guide are next.
 
 ## Stack
 
@@ -14,6 +14,7 @@ The site opens on a Minecraft-inspired title screen, then moves through chapters
 | Styling   | Tailwind CSS v4                               |
 | 3D        | Three.js, React Three Fiber, drei             |
 | Motion    | GSAP + ScrollTrigger, Motion, Lenis           |
+| Audio     | HTMLAudioElement, Minecraft derivatives (dev) |
 | Content   | MDX (planned)                                 |
 | Games     | C++/SFML → Emscripten, Python/pygame → pygbag |
 | Hosting   | Vercel — [ibtasaam.com](https://ibtasaam.com) |
@@ -32,7 +33,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The title screen loads panorama faces from `public/panoramas/_dev/`, which is gitignored because it contains Mojang assets. Without those files the background falls back to a gradient. See [docs/ASSETS.md](./docs/ASSETS.md) for the layout and production requirements.
+The title screen loads panorama faces from `public/panoramas/_dev/` and audio from `public/audio/_dev/`. Both folders are gitignored because they contain Mojang assets. Without them the background falls back to a gradient and the audio dock is hidden. See [docs/ASSETS.md](./docs/ASSETS.md) for the asset layout and production requirements.
 
 ## Scripts
 
@@ -52,11 +53,14 @@ The title screen loads panorama faces from `public/panoramas/_dev/`, which is gi
 ```text
 .
 ├── public/
+│   ├── audio/          # Dev-only music derivatives (gitignored)
+│   ├── brand/          # Wordmark and edition logos
 │   ├── games/          # WASM game builds, one folder per game
-│   └── panoramas/      # Title-screen panorama frames
+│   ├── panoramas/      # Title-screen panorama frames
+│   └── ui/minecraft/   # Approved button sprites
 ├── src/
 │   ├── app/            # App Router: layouts, pages, route handlers
-│   ├── components/     # Hero and chapter UI
+│   ├── components/     # Hero, audio, and chapter UI
 │   ├── content/        # Typed site content and metadata
 │   └── lib/            # Shared utilities
 ├── docs/               # Decisions and working notes
@@ -87,17 +91,17 @@ Copy [`.env.example`](./.env.example) to `.env.local` for local secrets. Never c
 
 ## Asset and licensing policy
 
-- **No Mojang assets.** No Minecraft textures, sounds, fonts, logos, or official panoramas. The aesthetic is recreated with original art, free pixel fonts, and self-captured footage.
-- **Music** is played through an official Spotify embed or a licensed/CC0 track. No ripped soundtrack files.
+- **Mojang assets:** reference-only, with one approved exception — the two button sprites in `public/ui/minecraft/`, used at the owner's request and excluded from the MIT license. Development panorama and audio derivatives are gitignored and never committed.
+- **Audio:** local development uses the installed game's soundtrack in `public/audio/_dev/` (gitignored). Production must use licensed/CC0 tracks or an official Spotify embed.
 - **Game builds** live in `public/games/<slug>/` with their own license and source link.
 - **Code** is MIT licensed. Written content, artwork, and audio are © Ibtasaam Amjad, all rights reserved.
 
-See [docs/ASSETS.md](./docs/ASSETS.md) for the full asset manifest, font licenses, and the reconstructed button specification.
+See [docs/ASSETS.md](./docs/ASSETS.md) for the full asset manifest, font licenses, the button sprite exception, and the audio policy.
 
 ## Roadmap
 
 1. **Foundation** — design tokens, theme engine, base layout, deployment
-2. **Title screen** — panorama layers, pixel title, menu navigation, audio gate
+2. **Title screen** — cubemap panorama, generated wordmark/edition, menu hierarchy, music player
 3. **Chapters** — About, Projects (MDX), Journey, Contact
 4. **Arcade** — cabinet UI, WASM game loading, first playable port
 5. **Ask Me** — streaming AI agent with rate limits and a static FAQ fallback

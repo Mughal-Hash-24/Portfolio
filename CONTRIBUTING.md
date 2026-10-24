@@ -50,7 +50,7 @@ Keep commits focused. One logical change per commit.
 - [ ] Checked on mobile and desktop
 - [ ] Keyboard navigation works
 - [ ] `prefers-reduced-motion` path is usable
-- [ ] No new Mojang assets or ripped media
+- [ ] No new Mojang assets beyond the approved button sprites; no dev audio or panorama derivatives committed
 - [ ] Screenshots included for visual changes
 
 ## Code style
@@ -79,9 +79,10 @@ Keep commits focused. One logical change per commit.
 
 ## Assets
 
-- Original artwork only. No Minecraft textures, fonts, sounds, or official panoramas.
+- No new Mojang assets. The two button sprites in `public/ui/minecraft/` are the approved exception — used at the owner's request for this personal fan project and excluded from the MIT license. Do not add other textures, fonts, sounds, or official panoramas.
+- Development panorama and audio derivatives live in gitignored folders (`public/panoramas/_dev/`, `public/audio/_dev/`) and must never be committed.
 - Game builds must include a source link and license.
-- Audio must be licensed, CC0, or played through an official embed.
+- Production audio must be licensed, CC0, or played through an official embed.
 
 ## Reporting issues
 

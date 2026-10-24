@@ -12,22 +12,23 @@ Locked creative direction. Update this file when a decision changes.
 
 - Fixed **Minecraft-inspired title screen**, not a normal scrolling hero.
 - Menu buttons are the **only way into the site**; scroll is locked until a choice is made.
-- Title: the generated **IBTASAAM stone-block wordmark** (`public/brand/ibtasaam-wordmark.webp`), with an angled splash line.
+- Title: the generated **IBTASAAM stone-block wordmark**, the **PORTFOLIO EDITION** logo tucked directly underneath, and the angled **Still mining!** splash to its right.
 - Background: a rotating six-face cubemap panorama. A picker cycles through the available sets.
-- Menu items: About, Projects, Arcade, Ask Me, Contact. Resume joins once the PDF exists.
-- Music toggle lives in the menu. Audio starts only after a user gesture.
+- Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
+- Secondary icon row: **Contact** (phone), **Email**, **GitHub**. Skills, stack, languages, and honors live inside About rather than adding more top-level buttons.
+- Audio control lives in the footer, not the main menu. The audio starts only after a user gesture.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
-- The official panorama pack is development-only. Production needs self-captured or licensed sets.
+- The official panorama and audio packs are development-only. Production needs self-captured or licensed assets.
 
 ## Chapters
 
 Each chapter has its own visual identity while sharing the grid, spacing scale, nav, logo, and accessibility rules.
 
-- **About** — warm paper, editorial serif, grain, asymmetric layout.
+- **About** — warm paper, editorial serif, grain, asymmetric layout. Holds the story, skills, stack, languages, and honors.
 - **Projects** — brutalist grid, monochrome, mono labels, pinned scroll.
 - **Arcade** — a literal arcade hall: cabinets, CRT screens, insert-coin interaction, high-score board. Games are WebAssembly builds launched full-screen.
-- **Ask Me** — terminal charcoal and green, monospace, typewriter reveals. AI agent with a persistent dock.
-- **Contact** — light, minimal, generous whitespace, slow fades.
+- **Ask My AI** — terminal charcoal and green, monospace, typewriter reveals. AI agent with a persistent dock.
+- **Contact** — light, minimal, generous whitespace, slow fades. Reached from the phone icon.
 
 ## Arcade
 
@@ -45,17 +46,24 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 - Guardrails: server-side key, per-IP rate limit, token cap, cheap model, off-topic refusal, visible disclaimer.
 - Static FAQ fallback when the API is unavailable or over budget.
 
+## Audio
+
+- Background music uses the full Minecraft game and menu soundtrack, shuffled.
+- Disc music uses a jukebox dialog; a disc plays once and ambient music resumes.
+- UI buttons play the Minecraft click sound.
+- Audio starts on the first user gesture, never on page load.
+- Official audio derivatives stay in the gitignored `public/audio/_dev/` folder. Production uses licensed/CC0 tracks or an official Spotify embed.
+
 ## Constraints
 
-- **No Mojang assets.** No textures, sounds, fonts, logos, or official panoramas. Use original voxel art, free pixel fonts, self-captured footage, and the generated wordmark.
-- The official panorama pack is reference-only; optimized derivatives live in the gitignored `public/panoramas/_dev/` folder.
-- **Music** is an official Spotify embed or a licensed/CC0 track. No ripped files.
+- **No new Mojang assets**, with one approved exception: the two button sprites in `public/ui/minecraft/` are used at the owner's request for this personal fan project and are excluded from the MIT license.
+- The official panorama and audio packs are reference-only; optimized derivatives live in gitignored folders.
 - **Autoplay** is blocked by browsers; music requires an explicit gesture.
 - The site must remain usable with JavaScript disabled, reduced motion, and on low-end mobile devices.
 
 ## Open questions
 
-- Final set of licensed panoramas to ship, and whether to include a custom-world set.
+- Final set of licensed panoramas and audio tracks to ship.
 - Final palette and type pairings for the non-Minecraft chapters.
 - AI provider and model.
 - Whether the arcade is rendered in 3D or as a layered 2D scene.

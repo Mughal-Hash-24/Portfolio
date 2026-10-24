@@ -2,7 +2,9 @@
 
 ## Policy
 
-Mojang assets are **reference material only**. Extracted files live in the gitignored `reference/` folder and must never be committed or served. The site ships original recreations: hand-built CSS/SVG, self-hosted fonts, the generated wordmark, and self-captured footage.
+Reference files live in the gitignored `reference/` folder and are never deployed. The site ships the generated wordmark and edition, self-hosted fonts, and original CSS/SVG work.
+
+There is one approved exception: the two Minecraft button sprites in `public/ui/minecraft/` are used at the owner's request for this personal fan project. They are not covered by the MIT license, and no other Mojang art, font, sound, or panorama is committed.
 
 ## Reference library
 
@@ -24,22 +26,32 @@ Extracted from `~/.minecraft/versions/26.2/26.2.jar` into `reference/minecraft-2
 
 - **19 sets × 6 faces** = 114 panorama images, 1024×1024 each.
 - 13 overlay strips at 16×128.
-- Sets: amethyst geode, bees, cherry grove, classic, happy ghasts, lakeside sunset, mangrove swamp, nether, nostalgia, ocean, Oceanside Extreme Hills, pale garden, pack, spring to life, sunset valley, the end, trial chamber, underground lava pool, village.
 - These are Mojang's official panoramas. They stay local-only.
 
-## Button specification
+### Audio
 
-Measured from the 200×20 nine-slice sprite (border: 3 px):
+Resolved from `~/.minecraft/assets/indexes/32.json` and the hashed object store:
 
-- Outer 1 px black outline.
-- 1 px top and left highlight: `#aaaaaa`.
-- 1–2 px bottom and right shadow: `#565656`.
-- Interior: `#6f6f6f` with a subtle stone noise texture.
-- Hover interior: `#767676`; disabled interior: `#2d2d2d`.
-- Text: centered, white, with a 1 px `#3f3f3f` drop shadow.
-- No corner radius at texture level; the UI keeps hard pixel corners.
+- 70 background tracks (`music/game/`, `music/menu/`).
+- 22 music discs (`records/`).
+- 1 UI click (`random/click.ogg`).
+- 279.7 MB of source Ogg Vorbis.
 
-Recreate with layered `box-shadow` and an original noise layer. Never ship the extracted sprite.
+## Buttons
+
+The UI uses the extracted 200×20 sprites directly as nine-slice border images:
+
+| File                                         | Purpose             |
+| -------------------------------------------- | ------------------- |
+| `public/ui/minecraft/button.png`             | Default menu button |
+| `public/ui/minecraft/button-highlighted.png` | Hover / focus state |
+
+- `border-image-slice: 3 fill`, `border-image-width: 6px`, `border-image-repeat: stretch`.
+- Default: black outline, `#aaaaaa` top/left highlight, `#6f6f6f` face, `#565656` bottom/right shadow.
+- Highlighted: white outline, `#afafaf` top/left, `#757575` face, `#5c5c5c` bottom/right.
+- Text: white, `2px 2px 0 #3f3f3f` shadow.
+
+Do not add other Minecraft textures. The sprites are an explicit, documented exception to the general asset policy.
 
 ## Fonts
 
@@ -49,30 +61,17 @@ Recreate with layered `box-shadow` and an original noise layer. Never ship the e
 | Geist      | Body copy         | Next.js font loader                    | OFL 1.1 |
 | Silkscreen | Display accents   | Google Fonts                           | OFL 1.1 |
 
-Monocraft files live in `src/app/fonts/` with its `OFL.txt`. It is Minecraft-inspired but not affiliated with Mojang.
+Monocraft files live in `src/app/fonts/` with its `OFL.txt`.
 
 ## Panoramas
 
-The title screen uses a six-face cubemap. The Three.js loader expects faces in `right, left, top, bottom, front, back` order; the Minecraft files are `front, right, back, left, top, bottom`.
-
-Source structure:
-
-```text
-reference/All Panoramas/assets/minecraft/textures/gui/title/background/
-├── <set>_panorama_0.png   # front
-├── <set>_panorama_1.png   # right
-├── <set>_panorama_2.png   # back
-├── <set>_panorama_3.png   # left
-├── <set>_panorama_4.png   # top
-├── <set>_panorama_5.png   # bottom
-└── <set>_panorama_overlay.png
-```
+The title screen uses a six-face cubemap. Three.js expects faces in `right, left, top, bottom, front, back` order; the Minecraft files are `front, right, back, left, top, bottom`.
 
 ### Development derivatives
 
 - Path: `public/panoramas/_dev/<slug>/panorama_0..5.webp`
-- Size: 768×768, WebP quality 82, ~68 KB per set.
-- **Gitignored.** These are Mojang assets and must not be committed or deployed.
+- Size: 1024×1024, WebP quality 82, ~88 KB per set, 9.9 MB for all 19.
+- **Gitignored.** These are Mojang assets and are never committed or deployed.
 - Generated from `reference/All Panoramas/` with ImageMagick.
 
 ### Production assets
@@ -84,16 +83,27 @@ reference/All Panoramas/assets/minecraft/textures/gui/title/background/
 
 The manifest lives in `src/content/panoramas.ts`. Development-only entries are filtered out of production builds.
 
+## Audio files
+
+- Development derivatives: `public/audio/_dev/{music,records,ui}/*.mp3`, MP3 VBR (`-q:a 4`).
+- **Gitignored.** Never commit or deploy the official soundtrack.
+- Manifest: `src/content/music.ts` (track metadata and paths) plus a local `public/audio/_dev/manifest.json`.
+- Playback: HTMLAudioElement, 0.3 ambient volume, 0.5 disc volume, 0.35 click volume.
+- The first menu click or audio toggle starts the ambient playlist. Discs play once from the jukebox, then ambient music resumes.
+- Production must provide licensed/CC0 tracks in `customBackgroundTracks` / `customDiscTracks`, or use an official Spotify embed.
+
 ## Logo
 
-The wordmark is the AI-generated stone-block logo supplied by Ibtasaam:
+The wordmark and edition are AI-generated stone-block assets supplied by Ibtasaam:
 
-| File                                      | Details                                    |
-| ----------------------------------------- | ------------------------------------------ |
-| `reference/IBTASAAM Stone Block Logo.png` | Source, 2172×724 RGBA, 871 KB (gitignored) |
-| `public/brand/ibtasaam-wordmark.webp`     | 1800×527, 63 KB, alpha preserved           |
+| File                                            | Details                                    |
+| ----------------------------------------------- | ------------------------------------------ |
+| `reference/IBTASAAM Stone Block Logo.png`       | Source, 2172×724 RGBA, 871 KB (gitignored) |
+| `public/brand/ibtasaam-wordmark.webp`           | 1800×527, 63 KB, alpha preserved           |
+| `reference/Portfolio Edition 3D Block Logo.png` | Source, 2172×724 RGBA, 480 KB (gitignored) |
+| `public/brand/portfolio-edition.webp`           | 1200×281, 26 KB, alpha preserved           |
 
-It is Minecraft-inspired but uses original generated lettering. Do not replace it with a Mojang logo.
+The edition sits directly under the wordmark at 45% of its width, with the splash text immediately to its right. The generated lettering is Minecraft-inspired but not a Mojang logo.
 
 ## Monogram
 
