@@ -7,3 +7,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project conventions
+
+Always follow the conventions in [CONTRIBUTING.md](./CONTRIBUTING.md). That covers the branch model, Conventional Commits, code style, client/server boundaries, the performance budget, accessibility requirements, and the asset and licensing policy.
+
+Before changing creative direction, read [docs/DECISIONS.md](./docs/DECISIONS.md).
+
