@@ -45,7 +45,7 @@ export function MusicDock({ audio }: MusicDockProps) {
           {audio.enabled ? currentLabel : "Muted"}
         </span>
 
-        {backgroundTracks.length > 0 ? (
+        {backgroundTracks.length + discTracks.length > 0 ? (
           <button
             type="button"
             aria-label="Next track"

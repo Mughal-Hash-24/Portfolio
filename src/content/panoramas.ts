@@ -6,9 +6,10 @@ export type PanoramaSet = {
 
 // Three.js expects right, left, top, bottom, front, back.
 const THREE_CUBE_FACE_ORDER = [1, 3, 4, 5, 0, 2] as const;
+const PANORAMA_VERSION = "1";
 
 function faceUrls(base: string) {
-  return THREE_CUBE_FACE_ORDER.map((face) => `${base}/panorama_${face}.webp`);
+  return THREE_CUBE_FACE_ORDER.map((face) => `${base}/panorama_${face}.webp?v=${PANORAMA_VERSION}`);
 }
 
 function panoramaSet(id: string, label: string): PanoramaSet {

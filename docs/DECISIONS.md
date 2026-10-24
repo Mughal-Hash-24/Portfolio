@@ -48,8 +48,7 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 
 ## Audio
 
-- Background music uses the full Minecraft game and menu soundtrack, shuffled.
-- Disc music uses a jukebox dialog; a disc plays once and ambient music resumes.
+- The auto-play pool combines the full game/menu soundtrack and the music discs, shuffled. The jukebox selects a specific disc.
 - UI buttons play the Minecraft click sound.
 - Audio starts on the first user gesture, never on page load.
 - The soundtrack is hosted in the public Vercel Blob store `ibtasaam-audio`; development files remain in the gitignored `public/audio/_dev/` folder.

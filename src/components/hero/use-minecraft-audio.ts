@@ -5,6 +5,7 @@ import {
   backgroundTracks,
   clickSound,
   defaultBackgroundTrack,
+  discTracks,
   type MusicTrack,
 } from "@/content/music";
 
@@ -12,13 +13,15 @@ const BACKGROUND_VOLUME = 0.3;
 const DISC_VOLUME = 0.5;
 const CLICK_VOLUME = 0.35;
 
-function pickBackground(excludeId?: string) {
-  if (backgroundTracks.length === 0) return null;
-  if (backgroundTracks.length === 1) return backgroundTracks[0];
+const autoPlayTracks = [...backgroundTracks, ...discTracks];
 
-  let track = backgroundTracks[Math.floor(Math.random() * backgroundTracks.length)];
+function pickTrack(excludeId?: string) {
+  if (autoPlayTracks.length === 0) return null;
+  if (autoPlayTracks.length === 1) return autoPlayTracks[0];
+
+  let track = autoPlayTracks[Math.floor(Math.random() * autoPlayTracks.length)];
   while (track.id === excludeId) {
-    track = backgroundTracks[Math.floor(Math.random() * backgroundTracks.length)];
+    track = autoPlayTracks[Math.floor(Math.random() * autoPlayTracks.length)];
   }
   return track;
 }
@@ -44,15 +47,14 @@ export function useMinecraftAudio() {
   const startBackground = useCallback(() => {
     if (!enabled || isPlaying) return;
 
-    const track =
-      currentTrack?.kind === "background" ? currentTrack : pickBackground(currentTrack?.id);
+    const track = currentTrack?.kind === "background" ? currentTrack : pickTrack(currentTrack?.id);
     if (track) playTrack(track);
   }, [currentTrack, enabled, isPlaying, playTrack]);
 
   const next = useCallback(() => {
     if (!enabled) setEnabled(true);
 
-    const track = pickBackground(currentTrack?.id);
+    const track = pickTrack(currentTrack?.id);
     if (track) playTrack(track);
   }, [currentTrack, enabled, playTrack]);
 
@@ -64,7 +66,7 @@ export function useMinecraftAudio() {
     }
 
     setEnabled(true);
-    const track = currentTrack ?? defaultBackgroundTrack ?? pickBackground();
+    const track = currentTrack ?? defaultBackgroundTrack ?? pickTrack();
     if (track) playTrack(track);
   }, [currentTrack, enabled, playTrack]);
 
@@ -90,7 +92,7 @@ export function useMinecraftAudio() {
   const handleEnded = useCallback(() => {
     if (!enabled) return;
 
-    const track = pickBackground(currentTrack?.id);
+    const track = pickTrack(currentTrack?.id);
     if (track) playTrack(track);
   }, [currentTrack, enabled, playTrack]);
 

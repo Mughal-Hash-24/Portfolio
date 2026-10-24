@@ -16,6 +16,11 @@ type PanoramaBackgroundProps = {
 export function PanoramaBackground({ set, paused, reducedMotion }: PanoramaBackgroundProps) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const poster = set?.faces[4];
+
+  useEffect(() => {
+    void import("./panorama-canvas");
+  }, []);
 
   useEffect(() => {
     if (!set) return;
@@ -47,7 +52,10 @@ export function PanoramaBackground({ set, paused, reducedMotion }: PanoramaBackg
 
   return (
     <div aria-hidden className="absolute inset-0 overflow-hidden">
-      <div className="panorama-fallback absolute inset-0" />
+      <div
+        className={`panorama-fallback absolute inset-0 ${poster ? "panorama-poster" : ""}`}
+        style={poster ? { backgroundImage: `url("${poster}")` } : undefined}
+      />
       {set && ready && !failed ? (
         <PanoramaErrorBoundary fallback={null}>
           <PanoramaCanvas faces={set.faces} paused={paused} reducedMotion={reducedMotion} />

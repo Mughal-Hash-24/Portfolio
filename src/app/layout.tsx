@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Silkscreen } from "next/font/google";
 import localFont from "next/font/local";
+import { availablePanoramas } from "@/content/panoramas";
 import { site } from "@/content/site";
 import "./globals.css";
 
@@ -25,6 +26,8 @@ const monocraft = localFont({
   variable: "--font-monocraft",
   display: "swap",
 });
+
+const initialPanorama = availablePanoramas[0];
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -64,6 +67,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${silkscreen.variable} ${monocraft.variable} h-full antialiased`}
     >
+      <head>
+        {initialPanorama?.faces.map((face) => (
+          <link key={face} rel="preload" as="image" href={face} fetchPriority="low" />
+        ))}
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

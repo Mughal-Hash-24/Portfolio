@@ -66,6 +66,13 @@ html.title-locked body {
   background: radial-gradient(circle at 50% 32%, #3b3b41 0%, #1b1b20 48%, #09090b 100%);
 }
 
+.panorama-poster {
+  background-position: center;
+  background-size: cover;
+  filter: blur(10px) brightness(0.72);
+  transform: scale(1.06);
+}
+
 .panorama-canvas {
   animation: panorama-in 900ms ease-out both;
 }

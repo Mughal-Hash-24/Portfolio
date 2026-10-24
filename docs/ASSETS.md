@@ -94,7 +94,7 @@ The title screen uses a six-face cubemap. Three.js expects faces in `right, left
 - `src/content/music.ts` maps the dev paths to Blob URLs at build time; production uses the Blob URLs.
 - Blob storage is external to the deployment, so the Hobby 100 MB source cap does not apply to the soundtrack.
 - Playback: HTMLAudioElement, 0.3 ambient volume, 0.5 disc volume, 0.35 click volume.
-- The first menu click or audio toggle starts the ambient playlist. Discs play once from the jukebox, then ambient music resumes.
+- The auto-play pool contains every background track **and** every disc, shuffled. The jukebox selects a disc directly. After a track ends, the next random track from the full pool plays.
 
 ## Logo
 
