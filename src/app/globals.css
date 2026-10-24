@@ -40,6 +40,192 @@ body {
   outline-offset: 4px;
 }
 
+html.title-locked,
+html.title-locked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.title-screen {
+  background-color: #0a0a0c;
+  isolation: isolate;
+}
+
+.title-screen__content {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+}
+
+.title-logo-frame {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.panorama-fallback {
+  background: radial-gradient(circle at 50% 32%, #3b3b41 0%, #1b1b20 48%, #09090b 100%);
+}
+
+.panorama-canvas {
+  animation: panorama-in 900ms ease-out both;
+}
+
+.title-scrim {
+  background:
+    radial-gradient(ellipse at center, transparent 18%, rgb(0 0 0 / 0.55) 100%),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.3), transparent 32%, rgb(0 0 0 / 0.4));
+}
+
+.title-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+
+.title-transition[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mc-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background-color: #6f6f6f;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cg fill='%23000000' fill-opacity='.06'%3E%3Crect x='1' y='2' width='2' height='1'/%3E%3Crect x='7' y='1' width='1' height='2'/%3E%3Crect x='11' y='4' width='3' height='1'/%3E%3Crect x='4' y='7' width='1' height='1'/%3E%3Crect x='13' y='9' width='1' height='2'/%3E%3Crect x='2' y='11' width='3' height='1'/%3E%3Crect x='8' y='13' width='2' height='1'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Crect x='3' y='4' width='1' height='1'/%3E%3Crect x='9' y='6' width='2' height='1'/%3E%3Crect x='5' y='13' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
+  color: #fff;
+  font-family: var(--font-monocraft);
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    0 0 0 2px #000,
+    inset 2px 2px 0 #aaa,
+    inset -2px -3px 0 #565656;
+  transition: background-color 120ms ease;
+}
+
+.mc-button:hover {
+  background-color: #767676;
+}
+
+.mc-button:active {
+  transform: translateY(1px);
+  background-color: #6a6a6a;
+  box-shadow:
+    0 0 0 2px #000,
+    inset 2px 2px 0 #565656,
+    inset -2px -2px 0 #aaa;
+}
+
+.mc-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+.mc-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 0;
+  background-color: #6f6f6f;
+  color: #fff;
+  font-family: var(--font-monocraft);
+  font-size: 14px;
+  line-height: 1;
+  text-shadow: 1px 1px 0 #3f3f3f;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px #000,
+    inset 2px 2px 0 #aaa,
+    inset -2px -3px 0 #565656;
+}
+
+.mc-icon-button:hover {
+  background-color: #767676;
+}
+
+.mc-icon-button:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 0 0 2px #000,
+    inset 2px 2px 0 #565656,
+    inset -2px -2px 0 #aaa;
+}
+
+.mc-icon-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.splash {
+  transform: rotate(-8deg);
+  transform-origin: bottom left;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  animation: splash-pulse 650ms ease-in-out infinite alternate;
+}
+
+@keyframes splash-pulse {
+  from {
+    transform: rotate(-8deg) scale(1);
+  }
+
+  to {
+    transform: rotate(-8deg) scale(1.05);
+  }
+}
+
+@keyframes panorama-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .mc-button {
+    min-height: 48px;
+    font-size: 20px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 640px) {
+  .title-screen__inner {
+    gap: 20px;
+    padding-top: 24px;
+    padding-bottom: 60px;
+  }
+
+  .title-logo-frame {
+    max-width: 680px;
+  }
+
+  .mc-button {
+    min-height: 40px;
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

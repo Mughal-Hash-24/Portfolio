@@ -1,41 +1,42 @@
-import { chapters, site } from "@/content/site";
+import { TitleScreen } from "@/components/hero/title-screen";
+import { chapters } from "@/content/site";
+
+const chapterCopy: Record<string, string> = {
+  about: "The story behind the code, the games, and the detours.",
+  projects: "Selected work, case studies, and the things that broke along the way.",
+  arcade: "Playable ports of the games that started all of this.",
+  ask: "An AI guide to my work, experience, and the questions recruiters actually ask.",
+  contact: "The fastest ways to reach me.",
+};
 
 export default function Home() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-12 px-6 py-24 text-center">
-      <div className="flex flex-col items-center gap-6">
-        <p className="font-mono text-[0.65rem] tracking-[0.45em] text-muted uppercase">
-          Portfolio in progress
-        </p>
-        <h1 className="font-display text-5xl leading-none tracking-tight uppercase sm:text-7xl">
-          {site.shortName}
-        </h1>
-        <p className="font-mono text-xs tracking-[0.3em] text-accent uppercase">{site.role}</p>
-        <p className="max-w-md text-sm leading-6 text-balance text-muted sm:text-base">
-          A Minecraft-inspired title screen, a playable arcade, and an AI guide. The world is being
-          built.
-        </p>
-      </div>
+    <main>
+      <TitleScreen />
 
-      <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[0.65rem] tracking-[0.3em] text-muted uppercase">
-        {chapters.map((chapter) => (
-          <li key={chapter.id}>{chapter.label}</li>
-        ))}
-      </ul>
-
-      <div className="flex items-center gap-6 font-mono text-xs tracking-[0.2em] uppercase">
-        <a
-          className="transition-colors hover:text-accent"
-          href={site.github}
-          target="_blank"
-          rel="noreferrer"
+      {chapters.map((chapter, index) => (
+        <section
+          key={chapter.id}
+          id={chapter.id}
+          className="flex min-h-dvh flex-col items-center justify-center gap-5 border-t border-line bg-bg px-6 py-24 text-center"
         >
-          GitHub
-        </a>
-        <a className="transition-colors hover:text-accent" href={`mailto:${site.email}`}>
-          Email
-        </a>
-      </div>
+          <p className="font-mono text-[10px] tracking-[0.4em] text-muted uppercase">
+            Chapter {String(index + 1).padStart(2, "0")}
+          </p>
+          <h2 tabIndex={-1} className="font-display text-4xl tracking-tight uppercase sm:text-6xl">
+            {chapter.label}
+          </h2>
+          <p className="max-w-sm text-sm leading-6 text-muted">
+            {chapterCopy[chapter.id] ?? "This chapter is being built."}
+          </p>
+          <a
+            href="#top"
+            className="font-mono text-[10px] tracking-[0.3em] text-accent uppercase transition-colors hover:text-fg"
+          >
+            Back to title screen
+          </a>
+        </section>
+      ))}
     </main>
   );
 }

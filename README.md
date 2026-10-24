@@ -4,7 +4,7 @@ Personal portfolio of **Ibtasaam Amjad** — developer, storyteller, creative in
 
 The site opens on a Minecraft-inspired title screen, then moves through chapters with distinct visual identities: an editorial about section, a project index, a literal arcade with playable browser ports of C++ and Python games, a terminal-style AI guide, and a quiet contact page.
 
-> **Status:** early scaffold. The design system, title screen, and chapters are next.
+> **Status:** title screen implemented. The chapters are placeholders; the arcade and AI guide are next.
 
 ## Stack
 
@@ -32,6 +32,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+The title screen loads panorama faces from `public/panoramas/_dev/`, which is gitignored because it contains Mojang assets. Without those files the background falls back to a gradient. See [docs/ASSETS.md](./docs/ASSETS.md) for the layout and production requirements.
+
 ## Scripts
 
 | Command                | Purpose                      |
@@ -54,6 +56,7 @@ Open [http://localhost:3000](http://localhost:3000).
 │   └── panoramas/      # Title-screen panorama frames
 ├── src/
 │   ├── app/            # App Router: layouts, pages, route handlers
+│   ├── components/     # Hero and chapter UI
 │   ├── content/        # Typed site content and metadata
 │   └── lib/            # Shared utilities
 ├── docs/               # Decisions and working notes
