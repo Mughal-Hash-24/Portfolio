@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Silkscreen } from "next/font/google";
+import localFont from "next/font/local";
 import { site } from "@/content/site";
 import "./globals.css";
 
@@ -17,6 +18,12 @@ const silkscreen = Silkscreen({
   variable: "--font-silkscreen",
   subsets: ["latin"],
   weight: ["400", "700"],
+});
+
+const monocraft = localFont({
+  src: "./fonts/Monocraft.ttf",
+  variable: "--font-monocraft",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -55,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${silkscreen.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${silkscreen.variable} ${monocraft.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
