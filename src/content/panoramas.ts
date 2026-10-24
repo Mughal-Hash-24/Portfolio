@@ -2,7 +2,6 @@ export type PanoramaSet = {
   id: string;
   label: string;
   faces: string[];
-  devOnly?: boolean;
 };
 
 // Three.js expects right, left, top, bottom, front, back.
@@ -12,43 +11,39 @@ function faceUrls(base: string) {
   return THREE_CUBE_FACE_ORDER.map((face) => `${base}/panorama_${face}.webp`);
 }
 
-function devSet(id: string, label: string): PanoramaSet {
+function panoramaSet(id: string, label: string): PanoramaSet {
   return {
     id,
     label,
-    faces: faceUrls(`/panoramas/_dev/${id}`),
-    devOnly: true,
+    faces: faceUrls(`/panoramas/${id}`),
   };
 }
 
 export const panoramaSets: PanoramaSet[] = [
-  devSet("classic", "Classic"),
-  devSet("cherry-grove", "Cherry Grove"),
-  devSet("bees", "Bees"),
-  devSet("amethyst-geode", "Amethyst Geode"),
-  devSet("happy-ghasts", "Happy Ghasts"),
-  devSet("lakeside-sunset", "Lakeside Sunset"),
-  devSet("mangrove-swamp", "Mangrove Swamp"),
-  devSet("nether", "Nether"),
-  devSet("nostalgia", "Nostalgia"),
-  devSet("ocean", "Ocean"),
-  devSet("oceanside-extreme-hills", "Oceanside Extreme Hills"),
-  devSet("pale-garden", "Pale Garden"),
-  devSet("spring-to-life", "Spring to Life"),
-  devSet("sunset-valley", "Sunset Valley"),
-  devSet("the-end", "The End"),
-  devSet("trial-chamber", "Trial Chamber"),
-  devSet("underground-lava-pool", "Underground Lava Pool"),
-  devSet("village", "Village"),
-  devSet("pack", "Pack"),
+  panoramaSet("classic", "Classic"),
+  panoramaSet("cherry-grove", "Cherry Grove"),
+  panoramaSet("bees", "Bees"),
+  panoramaSet("amethyst-geode", "Amethyst Geode"),
+  panoramaSet("happy-ghasts", "Happy Ghasts"),
+  panoramaSet("lakeside-sunset", "Lakeside Sunset"),
+  panoramaSet("mangrove-swamp", "Mangrove Swamp"),
+  panoramaSet("nether", "Nether"),
+  panoramaSet("nostalgia", "Nostalgia"),
+  panoramaSet("ocean", "Ocean"),
+  panoramaSet("oceanside-extreme-hills", "Oceanside Extreme Hills"),
+  panoramaSet("pale-garden", "Pale Garden"),
+  panoramaSet("spring-to-life", "Spring to Life"),
+  panoramaSet("sunset-valley", "Sunset Valley"),
+  panoramaSet("the-end", "The End"),
+  panoramaSet("trial-chamber", "Trial Chamber"),
+  panoramaSet("underground-lava-pool", "Underground Lava Pool"),
+  panoramaSet("village", "Village"),
+  panoramaSet("pack", "Pack"),
 ];
 
 // Add licensed or self-captured sets here with images under /panoramas/<id>/.
 export const customPanoramaSets: PanoramaSet[] = [];
 
-export const availablePanoramas =
-  process.env.NODE_ENV === "production"
-    ? customPanoramaSets
-    : [...customPanoramaSets, ...panoramaSets];
+export const availablePanoramas = [...customPanoramaSets, ...panoramaSets];
 
 export const defaultPanoramaId = availablePanoramas[0]?.id ?? null;

@@ -13,12 +13,12 @@ Locked creative direction. Update this file when a decision changes.
 - Fixed **Minecraft-inspired title screen**, not a normal scrolling hero.
 - Menu buttons are the **only way into the site**; scroll is locked until a choice is made.
 - Title: the generated **IBTASAAM stone-block wordmark**, the **PORTFOLIO EDITION** logo tucked directly underneath, and the angled **Still mining!** splash to its right.
-- Background: a rotating six-face cubemap panorama. A picker cycles through the available sets.
+- Background: a rotating six-face cubemap panorama using the 19 deployed sets. A picker cycles through them.
 - Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
 - Secondary icon row: **Contact** (phone), **Email**, **GitHub**. Skills, stack, languages, and honors live inside About rather than adding more top-level buttons.
 - Audio control lives in the footer, not the main menu. The audio starts only after a user gesture.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
-- The official panorama and audio packs are development-only. Production needs self-captured or licensed assets.
+- The official panorama and audio sets are deployed at the owner's request for this personal fan project. The audio is hosted in the public Vercel Blob store `ibtasaam-audio`.
 
 ## Chapters
 
@@ -52,18 +52,16 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 - Disc music uses a jukebox dialog; a disc plays once and ambient music resumes.
 - UI buttons play the Minecraft click sound.
 - Audio starts on the first user gesture, never on page load.
-- Official audio derivatives stay in the gitignored `public/audio/_dev/` folder. Production uses licensed/CC0 tracks or an official Spotify embed.
+- The soundtrack is hosted in the public Vercel Blob store `ibtasaam-audio`; development files remain in the gitignored `public/audio/_dev/` folder.
 
 ## Constraints
 
-- **No new Mojang assets**, with one approved exception: the two button sprites in `public/ui/minecraft/` are used at the owner's request for this personal fan project and are excluded from the MIT license.
-- The official panorama and audio packs are reference-only; optimized derivatives live in gitignored folders.
+- Mojang assets are deployed at the owner's request: the two button sprites, the 19 panorama sets, and the Blob soundtrack. They are excluded from the MIT license.
 - **Autoplay** is blocked by browsers; music requires an explicit gesture.
 - The site must remain usable with JavaScript disabled, reduced motion, and on low-end mobile devices.
 
 ## Open questions
 
-- Final set of licensed panoramas and audio tracks to ship.
 - Final palette and type pairings for the non-Minecraft chapters.
 - AI provider and model.
 - Whether the arcade is rendered in 3D or as a layered 2D scene.

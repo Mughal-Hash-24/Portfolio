@@ -2,9 +2,13 @@
 
 ## Policy
 
-Reference files live in the gitignored `reference/` folder and are never deployed. The site ships the generated wordmark and edition, self-hosted fonts, and original CSS/SVG work.
+Reference files live in the gitignored `reference/` folder. At the owner's request, this personal fan project also deploys:
 
-There is one approved exception: the two Minecraft button sprites in `public/ui/minecraft/` are used at the owner's request for this personal fan project. They are not covered by the MIT license, and no other Mojang art, font, sound, or panorama is committed.
+- the two Minecraft button sprites in `public/ui/minecraft/`
+- the 19 official panorama sets in `public/panoramas/<slug>/`
+- the Minecraft soundtrack in the public Vercel Blob store `ibtasaam-audio`
+
+These are not covered by the MIT license, and no other Mojang art, font, or sound should be added.
 
 ## Reference library
 
@@ -26,7 +30,7 @@ Extracted from `~/.minecraft/versions/26.2/26.2.jar` into `reference/minecraft-2
 
 - **19 sets × 6 faces** = 114 panorama images, 1024×1024 each.
 - 13 overlay strips at 16×128.
-- These are Mojang's official panoramas. They stay local-only.
+- The 19 sets are deployed at the owner's request for this personal fan project.
 
 ### Audio
 
@@ -69,28 +73,28 @@ The title screen uses a six-face cubemap. Three.js expects faces in `right, left
 
 ### Development derivatives
 
-- Path: `public/panoramas/_dev/<slug>/panorama_0..5.webp`
-- Size: 1024×1024, WebP quality 82, ~88 KB per set, 9.9 MB for all 19.
-- **Gitignored.** These are Mojang assets and are never committed or deployed.
+- Local working copies: `public/panoramas/_dev/<slug>/` (gitignored).
+- Deployed copies: `public/panoramas/<slug>/panorama_0..5.webp` (committed).
+- Size: 1024×1024, WebP quality 82, ~88 KB per set, ~10 MB for all 19.
 - Generated from `reference/All Panoramas/` with ImageMagick.
 
 ### Production assets
 
 - Path: `public/panoramas/<slug>/panorama_0..5.webp`
-- Must be self-captured or licensed. Do not copy the official pack.
-- Optional `panorama_overlay.webp` (16×128 strip) for the horizon gradient.
-- Keep each set under 1.5 MB after compression.
-
-The manifest lives in `src/content/panoramas.ts`. Development-only entries are filtered out of production builds.
+- The 19 official sets are deployed at the owner's request.
+- The manifest in `src/content/panoramas.ts` includes every set; there is no production filter.
+- Keep the deployed source under the Vercel plan's file-size limit.
 
 ## Audio files
 
-- Development derivatives: `public/audio/_dev/{music,records,ui}/*.mp3`, MP3 VBR (`-q:a 4`).
-- **Gitignored.** Never commit or deploy the official soundtrack.
-- Manifest: `src/content/music.ts` (track metadata and paths) plus a local `public/audio/_dev/manifest.json`.
+- Development derivatives: `public/audio/_dev/{music,records,ui}/*.mp3`, MP3 VBR (`-q:a 4`), gitignored.
+- Production: public Vercel Blob store **ibtasaam-audio** (`store_Dmso7kB5nN1fjSwD`, region `iad1`), 1 GB Hobby allocation.
+- Public URL base: `https://dmso7kb5nn1fjswd.public.blob.vercel-storage.com/audio/`
+- The store contains 70 background tracks, 22 discs, and the UI click (~337 MB).
+- `src/content/music.ts` maps the dev paths to Blob URLs at build time; production uses the Blob URLs.
+- Blob storage is external to the deployment, so the Hobby 100 MB source cap does not apply to the soundtrack.
 - Playback: HTMLAudioElement, 0.3 ambient volume, 0.5 disc volume, 0.35 click volume.
 - The first menu click or audio toggle starts the ambient playlist. Discs play once from the jukebox, then ambient music resumes.
-- Production must provide licensed/CC0 tracks in `customBackgroundTracks` / `customDiscTracks`, or use an official Spotify embed.
 
 ## Logo
 

@@ -4,7 +4,7 @@ Personal portfolio of **Ibtasaam Amjad** — developer, storyteller, creative in
 
 The site opens on a Minecraft-inspired title screen, then moves through chapters with distinct visual identities: an editorial about section, a project index, a literal arcade with playable browser ports of C++ and Python games, a terminal-style AI guide, and a quiet contact page.
 
-> **Status:** title screen implemented with a cubemap panorama, generated wordmark and edition, menu hierarchy, and Minecraft audio player. The chapters are placeholders; the arcade and AI guide are next.
+> **Status:** title screen implemented with the full panorama set, generated wordmark/edition, menu hierarchy, and Minecraft audio player. The chapters are placeholders; the arcade and AI guide are next.
 
 ## Stack
 
@@ -33,7 +33,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The title screen loads panorama faces from `public/panoramas/_dev/` and audio from `public/audio/_dev/`. Both folders are gitignored because they contain Mojang assets. Without them the background falls back to a gradient and the audio dock is hidden. See [docs/ASSETS.md](./docs/ASSETS.md) for the asset layout and production requirements.
+The title screen loads the committed panorama sets from `public/panoramas/<slug>/`. Local audio derivatives live in `public/audio/_dev/` (gitignored); production streams the soundtrack from the public Vercel Blob store `ibtasaam-audio`. See [docs/ASSETS.md](./docs/ASSETS.md) for the asset layout.
 
 ## Scripts
 
@@ -91,8 +91,8 @@ Copy [`.env.example`](./.env.example) to `.env.local` for local secrets. Never c
 
 ## Asset and licensing policy
 
-- **Mojang assets:** reference-only, with one approved exception — the two button sprites in `public/ui/minecraft/`, used at the owner's request and excluded from the MIT license. Development panorama and audio derivatives are gitignored and never committed.
-- **Audio:** local development uses the installed game's soundtrack in `public/audio/_dev/` (gitignored). Production must use licensed/CC0 tracks or an official Spotify embed.
+- **Mojang assets:** deployed at the owner's request for this personal fan project — the two button sprites, the 19 panorama sets, and the soundtrack in Vercel Blob. These are excluded from the MIT license. Do not add other Mojang assets.
+- **Audio:** development files live in `public/audio/_dev/` (gitignored); production streams from the public Blob store.
 - **Game builds** live in `public/games/<slug>/` with their own license and source link.
 - **Code** is MIT licensed. Written content, artwork, and audio are © Ibtasaam Amjad, all rights reserved.
 

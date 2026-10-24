@@ -50,7 +50,7 @@ Keep commits focused. One logical change per commit.
 - [ ] Checked on mobile and desktop
 - [ ] Keyboard navigation works
 - [ ] `prefers-reduced-motion` path is usable
-- [ ] No new Mojang assets beyond the approved button sprites; no dev audio or panorama derivatives committed
+- [ ] No Mojang assets beyond the owner-approved button sprites, panorama sets, and Blob soundtrack; no dev audio committed
 - [ ] Screenshots included for visual changes
 
 ## Code style
@@ -79,10 +79,10 @@ Keep commits focused. One logical change per commit.
 
 ## Assets
 
-- No new Mojang assets. The two button sprites in `public/ui/minecraft/` are the approved exception — used at the owner's request for this personal fan project and excluded from the MIT license. Do not add other textures, fonts, sounds, or official panoramas.
-- Development panorama and audio derivatives live in gitignored folders (`public/panoramas/_dev/`, `public/audio/_dev/`) and must never be committed.
+- Mojang assets are limited to the owner-approved set: the two button sprites, the 19 panorama sets in `public/panoramas/<slug>/`, and the soundtrack in the public Vercel Blob store. Do not add other textures, fonts, sounds, or panoramas.
+- Development audio derivatives live in the gitignored `public/audio/_dev/` folder and must never be committed.
 - Game builds must include a source link and license.
-- Production audio must be licensed, CC0, or played through an official embed.
+- Production audio is hosted in the public Vercel Blob store; do not add other audio assets.
 
 ## Reporting issues
 

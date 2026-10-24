@@ -458,20 +458,25 @@ const devDiscTracks: MusicTrack[] = [
   { id: "disc-ward", title: "Ward", src: "/audio/_dev/records/ward.mp3", kind: "disc" },
 ];
 
-const customBackgroundTracks: MusicTrack[] = [];
-const customDiscTracks: MusicTrack[] = [];
+const blobBase = "https://dmso7kb5nn1fjswd.public.blob.vercel-storage.com";
+
+const toBlobTrack = (track: MusicTrack): MusicTrack => ({
+  ...track,
+  src: track.src.replace("/audio/_dev", `${blobBase}/audio`),
+});
+
+const blobBackgroundTracks = devBackgroundTracks.map(toBlobTrack);
+const blobDiscTracks = devDiscTracks.map(toBlobTrack);
 
 export const backgroundTracks =
-  process.env.NODE_ENV === "production"
-    ? customBackgroundTracks
-    : [...customBackgroundTracks, ...devBackgroundTracks];
+  process.env.NODE_ENV === "production" ? blobBackgroundTracks : devBackgroundTracks;
 
-export const discTracks =
-  process.env.NODE_ENV === "production"
-    ? customDiscTracks
-    : [...customDiscTracks, ...devDiscTracks];
+export const discTracks = process.env.NODE_ENV === "production" ? blobDiscTracks : devDiscTracks;
 
 export const defaultBackgroundTrack =
   backgroundTracks.find((track) => track.id === "bg-game-sweden") ?? backgroundTracks[0] ?? null;
 
-export const clickSound = process.env.NODE_ENV === "production" ? null : "/audio/_dev/ui/click.mp3";
+export const clickSound =
+  process.env.NODE_ENV === "production"
+    ? `${blobBase}/audio/ui/click.mp3`
+    : "/audio/_dev/ui/click.mp3";
