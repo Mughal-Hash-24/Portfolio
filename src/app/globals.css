@@ -58,7 +58,7 @@ html.title-locked body {
 
 .title-logo-frame {
   width: 100%;
-  max-width: 900px;
+  max-width: 660px;
   margin-inline: auto;
 }
 
@@ -96,12 +96,15 @@ html.title-locked body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 46px;
+  min-height: 40px;
   padding: 0 16px;
-  border: 0;
+  border: 6px solid transparent;
+  border-image-source: url("/ui/minecraft/button.png");
+  border-image-slice: 3 fill;
+  border-image-width: 6px;
+  border-image-repeat: stretch;
   border-radius: 0;
   background-color: #6f6f6f;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cg fill='%23000000' fill-opacity='.06'%3E%3Crect x='1' y='2' width='2' height='1'/%3E%3Crect x='7' y='1' width='1' height='2'/%3E%3Crect x='11' y='4' width='3' height='1'/%3E%3Crect x='4' y='7' width='1' height='1'/%3E%3Crect x='13' y='9' width='1' height='2'/%3E%3Crect x='2' y='11' width='3' height='1'/%3E%3Crect x='8' y='13' width='2' height='1'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Crect x='3' y='4' width='1' height='1'/%3E%3Crect x='9' y='6' width='2' height='1'/%3E%3Crect x='5' y='13' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
   color: #fff;
   font-family: var(--font-monocraft);
   font-size: 18px;
@@ -112,24 +115,17 @@ html.title-locked body {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow:
-    0 0 0 2px #000,
-    inset 2px 2px 0 #aaa,
-    inset -2px -3px 0 #565656;
   transition: background-color 120ms ease;
 }
 
 .mc-button:hover {
-  background-color: #767676;
+  background-color: #757575;
+  border-image-source: url("/ui/minecraft/button-highlighted.png");
 }
 
 .mc-button:active {
   transform: translateY(1px);
   background-color: #6a6a6a;
-  box-shadow:
-    0 0 0 2px #000,
-    inset 2px 2px 0 #565656,
-    inset -2px -2px 0 #aaa;
 }
 
 .mc-button:focus-visible {
@@ -143,7 +139,12 @@ html.title-locked body {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 0;
+  padding: 0;
+  border: 6px solid transparent;
+  border-image-source: url("/ui/minecraft/button.png");
+  border-image-slice: 3 fill;
+  border-image-width: 6px;
+  border-image-repeat: stretch;
   border-radius: 0;
   background-color: #6f6f6f;
   color: #fff;
@@ -152,22 +153,16 @@ html.title-locked body {
   line-height: 1;
   text-shadow: 1px 1px 0 #3f3f3f;
   cursor: pointer;
-  box-shadow:
-    0 0 0 2px #000,
-    inset 2px 2px 0 #aaa,
-    inset -2px -3px 0 #565656;
 }
 
 .mc-icon-button:hover {
-  background-color: #767676;
+  background-color: #757575;
+  border-image-source: url("/ui/minecraft/button-highlighted.png");
 }
 
 .mc-icon-button:active {
   transform: translateY(1px);
-  box-shadow:
-    0 0 0 2px #000,
-    inset 2px 2px 0 #565656,
-    inset -2px -2px 0 #aaa;
+  background-color: #6a6a6a;
 }
 
 .mc-icon-button:focus-visible {
@@ -176,10 +171,15 @@ html.title-locked body {
 }
 
 .splash {
-  transform: rotate(-8deg);
-  transform-origin: bottom left;
   text-shadow: 2px 2px 0 #3f3f3f;
-  animation: splash-pulse 650ms ease-in-out infinite alternate;
+}
+
+@media (min-width: 1280px) {
+  .splash {
+    transform: rotate(-8deg);
+    transform-origin: bottom left;
+    animation: splash-pulse 650ms ease-in-out infinite alternate;
+  }
 }
 
 @keyframes splash-pulse {
@@ -204,26 +204,138 @@ html.title-locked body {
 
 @media (min-width: 640px) {
   .mc-button {
-    min-height: 48px;
+    min-height: 40px;
     font-size: 20px;
   }
 }
 
-@media (max-height: 720px) and (min-width: 640px) {
+@media (max-height: 840px) and (min-width: 640px) {
   .title-screen__inner {
-    gap: 20px;
-    padding-top: 24px;
-    padding-bottom: 60px;
+    gap: 10px;
+    padding-top: 20px;
+    padding-bottom: 56px;
   }
 
   .title-logo-frame {
-    max-width: 680px;
+    max-width: 580px;
   }
 
   .mc-button {
-    min-height: 40px;
+    min-height: 36px;
     font-size: 16px;
   }
+}
+
+.mc-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 6px solid transparent;
+  border-image-source: url("/ui/minecraft/button.png");
+  border-image-slice: 3 fill;
+  border-image-width: 6px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background-color: #6f6f6f;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mc-menu-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mc-menu-icon:hover {
+  background-color: #757575;
+  border-image-source: url("/ui/minecraft/button-highlighted.png");
+}
+
+.mc-menu-icon:active {
+  transform: translateY(1px);
+  background-color: #6a6a6a;
+}
+
+.mc-menu-icon:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+.mc-small-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 6px solid transparent;
+  border-image-source: url("/ui/minecraft/button.png");
+  border-image-slice: 3 fill;
+  border-image-width: 6px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background-color: #6f6f6f;
+  color: #fff;
+  font-family: var(--font-monocraft);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: 1px 1px 0 #3f3f3f;
+  cursor: pointer;
+}
+
+.mc-small-button:hover {
+  background-color: #757575;
+  border-image-source: url("/ui/minecraft/button-highlighted.png");
+}
+
+.mc-small-button:active {
+  transform: translateY(1px);
+  background-color: #6a6a6a;
+}
+
+.mc-small-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.mc-disc-button {
+  min-height: 38px;
+  padding: 0 8px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-shadow: 1px 1px 0 #3f3f3f;
+}
+
+.mc-dialog {
+  width: min(92vw, 560px);
+  max-height: min(82vh, 640px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #000;
+  background: #1a1a1e;
+  color: var(--fg);
+  box-shadow:
+    0 0 0 2px #555,
+    0 30px 80px rgb(0 0 0 / 0.65);
+  pointer-events: auto;
+}
+
+.mc-dialog::backdrop {
+  background: rgb(0 0 0 / 0.72);
+}
+
+.mc-dialog__panel {
+  display: flex;
+  max-height: 80vh;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

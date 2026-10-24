@@ -11,9 +11,11 @@ export const site = {
 } as const;
 
 export const chapters = [
-  { id: "about", label: "About" },
   { id: "projects", label: "Projects" },
   { id: "arcade", label: "Arcade" },
-  { id: "ask", label: "Ask Me" },
+  { id: "ask", label: "Ask My AI" },
   { id: "contact", label: "Contact" },
+  { id: "about", label: "About" },
 ] as const;
+
+export const mainMenuChapters = chapters.filter((chapter) => chapter.id !== "contact");

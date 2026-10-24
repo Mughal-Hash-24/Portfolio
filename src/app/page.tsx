@@ -2,11 +2,11 @@ import { TitleScreen } from "@/components/hero/title-screen";
 import { chapters } from "@/content/site";
 
 const chapterCopy: Record<string, string> = {
-  about: "The story behind the code, the games, and the detours.",
   projects: "Selected work, case studies, and the things that broke along the way.",
   arcade: "Playable ports of the games that started all of this.",
   ask: "An AI guide to my work, experience, and the questions recruiters actually ask.",
   contact: "The fastest ways to reach me.",
+  about: "The story, the stack, the honors, and the detours.",
 };
 
 export default function Home() {

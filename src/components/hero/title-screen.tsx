@@ -3,9 +3,12 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { availablePanoramas, defaultPanoramaId } from "@/content/panoramas";
-import { chapters, site } from "@/content/site";
+import { mainMenuChapters, site } from "@/content/site";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { CodeIcon, MailIcon, PhoneIcon } from "./menu-icons";
+import { MusicDock } from "./music-dock";
 import { PanoramaBackground } from "./panorama-background";
+import { useMinecraftAudio } from "./use-minecraft-audio";
 
 export function TitleScreen() {
   const [panoramaId, setPanoramaId] = useState<string | null>(defaultPanoramaId);
@@ -14,6 +17,8 @@ export function TitleScreen() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const timers = useRef<number[]>([]);
   const reducedMotion = useReducedMotion();
+  const audio = useMinecraftAudio();
+  const { playClick, startBackground } = audio;
 
   const selectedPanorama =
     availablePanoramas.find((set) => set.id === panoramaId) ?? availablePanoramas[0] ?? null;
@@ -80,6 +85,8 @@ export function TitleScreen() {
       event.preventDefault();
       if (exiting) return;
 
+      playClick();
+      startBackground();
       setExiting(true);
 
       const finish = () => {
@@ -102,7 +109,7 @@ export function TitleScreen() {
         timers.current.push(window.setTimeout(finish, 260));
       }
     },
-    [exiting, reducedMotion],
+    [exiting, reducedMotion, playClick, startBackground],
   );
 
   const cyclePanorama = useCallback((direction: -1 | 1) => {
@@ -145,7 +152,7 @@ export function TitleScreen() {
         <div className="title-scrim absolute inset-0" />
 
         <div className="title-screen__content relative z-10 flex h-full w-full overflow-x-hidden overflow-y-auto overscroll-contain">
-          <div className="title-screen__inner m-auto flex w-full max-w-[900px] flex-col items-center gap-6 px-6 pt-10 pb-16 sm:gap-10 sm:pt-14 sm:pb-20">
+          <div className="title-screen__inner m-auto flex w-full max-w-[900px] flex-col items-center gap-3 px-6 pt-10 pb-16 sm:pt-14 sm:pb-20">
             <div className="title-logo-frame relative w-full">
               <Image
                 src="/brand/ibtasaam-wordmark.webp"
@@ -153,21 +160,29 @@ export function TitleScreen() {
                 width={1800}
                 height={527}
                 priority
-                sizes="(max-width: 768px) 86vw, 900px"
+                sizes="(max-width: 768px) 86vw, 660px"
                 className="h-auto w-full"
               />
-              <div className="mt-1 text-right">
-                <span className="splash inline-block font-minecraft text-xs whitespace-nowrap text-[#ffff55] sm:text-sm lg:text-base">
-                  5th semester, still mining!
+              <div className="-mt-4 flex justify-center">
+                <Image
+                  src="/brand/portfolio-edition.webp"
+                  alt="Portfolio Edition"
+                  width={1200}
+                  height={281}
+                  priority
+                  sizes="(max-width: 640px) 42vw, 300px"
+                  className="w-[45%]"
+                />
+              </div>
+              <div className="mt-1 flex justify-center xl:block">
+                <span className="splash inline-block font-minecraft text-xs whitespace-nowrap text-[#ffff55] xl:absolute xl:bottom-1 xl:left-[69%] xl:text-lg">
+                  Still mining!
                 </span>
               </div>
             </div>
 
-            <nav
-              aria-label="Main menu"
-              className="flex w-full max-w-[420px] flex-col gap-2 sm:gap-3"
-            >
-              {chapters.map((chapter) => (
+            <nav aria-label="Main menu" className="flex w-full max-w-[560px] flex-col gap-2.5">
+              {mainMenuChapters.map((chapter) => (
                 <a
                   key={chapter.id}
                   href={`#${chapter.id}`}
@@ -179,13 +194,48 @@ export function TitleScreen() {
               ))}
             </nav>
 
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href="#contact"
+                aria-label="Contact"
+                title="Contact"
+                className="mc-menu-icon"
+                onClick={(event) => handleSelect(event, "contact")}
+              >
+                <PhoneIcon />
+              </a>
+              <a
+                href={`mailto:${site.email}`}
+                aria-label="Email"
+                title="Email"
+                className="mc-menu-icon"
+                onClick={() => audio.playClick()}
+              >
+                <MailIcon />
+              </a>
+              <a
+                href={site.github}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="GitHub"
+                title="GitHub"
+                className="mc-menu-icon"
+                onClick={() => audio.playClick()}
+              >
+                <CodeIcon />
+              </a>
+            </div>
+
             {availablePanoramas.length > 1 && selectedPanorama ? (
               <div className="flex items-center gap-3 font-minecraft text-[10px] tracking-[0.16em] text-white/80 uppercase sm:gap-4">
                 <button
                   type="button"
                   aria-label="Previous panorama"
                   className="mc-icon-button"
-                  onClick={() => cyclePanorama(-1)}
+                  onClick={() => {
+                    audio.playClick();
+                    cyclePanorama(-1);
+                  }}
                 >
                   {"<"}
                 </button>
@@ -196,7 +246,10 @@ export function TitleScreen() {
                   type="button"
                   aria-label="Next panorama"
                   className="mc-icon-button"
-                  onClick={() => cyclePanorama(1)}
+                  onClick={() => {
+                    audio.playClick();
+                    cyclePanorama(1);
+                  }}
                 >
                   {">"}
                 </button>
@@ -205,9 +258,9 @@ export function TitleScreen() {
           </div>
         </div>
 
-        <footer className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center gap-4 px-4 py-3 font-mono text-[9px] tracking-[0.16em] text-white/55 uppercase sm:justify-between sm:px-6 sm:text-[10px]">
-          <span className="hidden sm:inline">Portfolio Edition 1.0</span>
-          <span className="text-center sm:text-right">
+        <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 font-mono text-[9px] tracking-[0.16em] text-white/55 uppercase sm:px-6 sm:text-[10px]">
+          <MusicDock audio={audio} />
+          <span className="ml-auto text-center sm:text-right">
             Unofficial fan project · Not affiliated with Mojang
           </span>
         </footer>
