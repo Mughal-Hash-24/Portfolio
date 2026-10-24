@@ -17,7 +17,7 @@ Locked creative direction. Update this file when a decision changes.
 - Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
 - Secondary icon row: **Contact** (phone), **Email**, **GitHub**, **LinkedIn**, with white pixel-art brand marks for the two social links.
 - A **Download CV** button sits below the main menu and serves the PDF in `public/cv/`.
-- Audio control lives in the footer, not the main menu. The audio starts only after a user gesture.
+- Audio control lives in the footer, not the main menu. Playback is attempted on load and falls back to the first pointer or key gesture when the browser blocks autoplay.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
 - The official panorama and audio sets are deployed at the owner's request for this personal fan project. The audio is hosted in the public Vercel Blob store `ibtasaam-audio`.
 
@@ -52,7 +52,7 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 - The auto-play pool combines the full game/menu soundtrack and the music discs, shuffled. The jukebox selects a specific disc.
 - The title screen opens on **Subwoofer Lullaby**; the music dock shows the current track with a play/mute control, skip, and jukebox.
 - UI buttons play the Minecraft click sound.
-- Audio starts on the first user gesture, never on page load.
+- Playback starts on load when the browser permits it; otherwise the first pointer or key gesture starts the soundtrack automatically.
 - The soundtrack is hosted in the public Vercel Blob store `ibtasaam-audio`; development files remain in the gitignored `public/audio/_dev/` folder.
 
 ## Constraints

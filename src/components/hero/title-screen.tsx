@@ -19,9 +19,36 @@ export function TitleScreen() {
   const reducedMotion = useReducedMotion();
   const audio = useMinecraftAudio();
   const { playClick, startBackground } = audio;
+  const startBackgroundRef = useRef(startBackground);
 
   const selectedPanorama =
     availablePanoramas.find((set) => set.id === panoramaId) ?? availablePanoramas[0] ?? null;
+
+  useEffect(() => {
+    startBackgroundRef.current = startBackground;
+  }, [startBackground]);
+
+  useEffect(() => {
+    startBackgroundRef.current();
+
+    const stopListening = () => {
+      window.removeEventListener("pointerdown", startOnFirstGesture, { capture: true });
+      window.removeEventListener("keydown", startOnFirstGesture, { capture: true });
+    };
+
+    function startOnFirstGesture(event: Event) {
+      stopListening();
+
+      if (event.target instanceof Element && event.target.closest("[data-music-toggle]")) return;
+
+      startBackgroundRef.current();
+    }
+
+    window.addEventListener("pointerdown", startOnFirstGesture, { capture: true });
+    window.addEventListener("keydown", startOnFirstGesture, { capture: true });
+
+    return stopListening;
+  }, []);
 
   useEffect(() => {
     const id = window.location.hash.slice(1);

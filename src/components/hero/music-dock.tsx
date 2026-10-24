@@ -17,7 +17,13 @@ export function MusicDock({ audio }: MusicDockProps) {
   const isAudible = audio.enabled && audio.isPlaying;
   const currentLabel = audio.currentTrack?.title ?? "Music";
   const currentDiscId = audio.currentTrack?.kind === "disc" ? audio.currentTrack.id : null;
-  const stateLabel = isAudible ? "Now playing" : audio.enabled ? "Up next" : "Audio off";
+  const stateLabel = isAudible
+    ? "Now playing"
+    : audio.enabled
+      ? audio.autoplayBlocked
+        ? "Click anywhere"
+        : "Up next"
+      : "Audio off";
 
   const togglePlayback = () => {
     audio.playClick();
@@ -51,6 +57,7 @@ export function MusicDock({ audio }: MusicDockProps) {
         <button
           type="button"
           className="mc-icon-button"
+          data-music-toggle="true"
           aria-label={isAudible ? "Mute music" : "Play music"}
           title={isAudible ? "Mute music" : "Play music"}
           onClick={togglePlayback}
@@ -65,7 +72,7 @@ export function MusicDock({ audio }: MusicDockProps) {
         </button>
 
         <div className="min-w-0">
-          <p className="hidden font-mono text-[8px] leading-none tracking-[0.24em] text-white/45 uppercase sm:block">
+          <p className="font-mono text-[8px] leading-none tracking-[0.24em] text-white/45 uppercase">
             {stateLabel}
           </p>
           <div className="mt-1 flex items-center gap-2">

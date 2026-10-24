@@ -32,6 +32,7 @@ export function useMinecraftAudio() {
   const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(defaultBackgroundTrack);
   const [isPlaying, setIsPlaying] = useState(false);
   const [enabled, setEnabled] = useState(true);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   const playTrack = useCallback((track: MusicTrack) => {
     const audio = musicRef.current;
@@ -41,7 +42,16 @@ export function useMinecraftAudio() {
     audio.volume = track.kind === "disc" ? DISC_VOLUME : BACKGROUND_VOLUME;
     audio.currentTime = 0;
     setCurrentTrack(track);
-    void audio.play().catch(() => setIsPlaying(false));
+    void audio
+      .play()
+      .then(() => setAutoplayBlocked(false))
+      .catch((error: unknown) => {
+        setIsPlaying(false);
+
+        if (error instanceof DOMException && error.name === "NotAllowedError") {
+          setAutoplayBlocked(true);
+        }
+      });
   }, []);
 
   const startBackground = useCallback(() => {
@@ -142,6 +152,7 @@ export function useMinecraftAudio() {
     currentTrack,
     isPlaying,
     enabled,
+    autoplayBlocked,
     toggle,
     next,
     startBackground,
