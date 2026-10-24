@@ -46,3 +46,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Minecraft reference assets (not redistributable)
+reference/
+
+# development-only panorama derivatives (Mojang assets, never commit)
+public/panoramas/_dev/
