@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react
 import { availablePanoramas, defaultPanoramaId } from "@/content/panoramas";
 import { mainMenuChapters, site } from "@/content/site";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
-import { CodeIcon, DownloadIcon, MailIcon, PhoneIcon } from "./menu-icons";
+import { DownloadIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from "./menu-icons";
 import { MusicDock } from "./music-dock";
 import { PanoramaBackground } from "./panorama-background";
 import { useMinecraftAudio } from "./use-minecraft-audio";
@@ -154,16 +154,21 @@ export function TitleScreen() {
         <div className="title-screen__content relative z-10 flex h-full w-full overflow-x-hidden overflow-y-auto overscroll-contain">
           <div className="title-screen__inner m-auto flex w-full max-w-[900px] flex-col items-center gap-3 px-6 pt-10 pb-16 sm:pt-14 sm:pb-20">
             <div className="title-logo-frame relative w-full">
-              <Image
-                src="/brand/ibtasaam-wordmark.webp"
-                alt="Ibtasaam"
-                width={1800}
-                height={527}
-                priority
-                sizes="(max-width: 768px) 86vw, 660px"
-                className="h-auto w-full"
-              />
-              <div className="-mt-4 flex justify-center">
+              <div className="relative">
+                <Image
+                  src="/brand/ibtasaam-wordmark.webp"
+                  alt="Ibtasaam"
+                  width={1800}
+                  height={527}
+                  priority
+                  sizes="(max-width: 768px) 86vw, 660px"
+                  className="h-auto w-full"
+                />
+                <span className="splash absolute right-0 bottom-[2%] font-minecraft text-sm whitespace-nowrap text-[#ffff55] sm:text-xl xl:text-2xl">
+                  Still mining!
+                </span>
+              </div>
+              <div className="-mt-[3.125%] flex justify-center">
                 <Image
                   src="/brand/portfolio-edition.webp"
                   alt="Portfolio Edition"
@@ -173,11 +178,6 @@ export function TitleScreen() {
                   sizes="(max-width: 640px) 42vw, 300px"
                   className="w-[45%]"
                 />
-              </div>
-              <div className="mt-1 flex justify-center xl:block">
-                <span className="splash inline-block font-minecraft text-xs whitespace-nowrap text-[#ffff55] xl:absolute xl:bottom-1 xl:left-[69%] xl:text-lg">
-                  Still mining!
-                </span>
               </div>
             </div>
 
@@ -232,7 +232,18 @@ export function TitleScreen() {
                 className="mc-menu-icon"
                 onClick={() => audio.playClick()}
               >
-                <CodeIcon />
+                <GithubIcon />
+              </a>
+              <a
+                href={site.linkedin}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+                className="mc-menu-icon"
+                onClick={() => audio.playClick()}
+              >
+                <LinkedinIcon />
               </a>
             </div>
 

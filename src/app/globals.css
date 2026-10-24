@@ -179,23 +179,23 @@ html.title-locked body {
 
 .splash {
   text-shadow: 2px 2px 0 #3f3f3f;
+  transform: rotate(-16deg);
+  transform-origin: bottom left;
 }
 
 @media (min-width: 1280px) {
   .splash {
-    transform: rotate(-8deg);
-    transform-origin: bottom left;
     animation: splash-pulse 650ms ease-in-out infinite alternate;
   }
 }
 
 @keyframes splash-pulse {
   from {
-    transform: rotate(-8deg) scale(1);
+    transform: rotate(-16deg) scale(1);
   }
 
   to {
-    transform: rotate(-8deg) scale(1.05);
+    transform: rotate(-16deg) scale(1.05);
   }
 }
 
@@ -315,6 +315,64 @@ html.title-locked body {
   font-size: 11px;
   line-height: 1.2;
   text-shadow: 1px 1px 0 #3f3f3f;
+}
+
+.mc-disc-button[data-active="true"] {
+  background-color: #46612f;
+  color: #f1ffe1;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.mc-disc-button[data-active="true"]:hover {
+  background-color: #4f6d35;
+}
+
+.jukebox-bars {
+  display: inline-flex;
+  height: 10px;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--accent);
+}
+
+.jukebox-bars span {
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  transform: scaleY(0.3);
+  transform-origin: bottom;
+  animation: jukebox-bar 900ms ease-in-out infinite alternate;
+}
+
+.jukebox-bars span:nth-child(2) {
+  animation-duration: 700ms;
+  animation-delay: 120ms;
+}
+
+.jukebox-bars span:nth-child(3) {
+  animation-duration: 1100ms;
+  animation-delay: 240ms;
+}
+
+.jukebox-bars[data-active="false"] {
+  color: rgb(255 255 255 / 0.4);
+}
+
+.jukebox-bars[data-active="false"] span {
+  animation: none;
+  opacity: 0.4;
+  transform: scaleY(0.3);
+}
+
+@keyframes jukebox-bar {
+  from {
+    transform: scaleY(0.3);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
 }
 
 .mc-dialog {

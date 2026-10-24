@@ -474,7 +474,9 @@ export const backgroundTracks =
 export const discTracks = process.env.NODE_ENV === "production" ? blobDiscTracks : devDiscTracks;
 
 export const defaultBackgroundTrack =
-  backgroundTracks.find((track) => track.id === "bg-game-sweden") ?? backgroundTracks[0] ?? null;
+  backgroundTracks.find((track) => track.id === "bg-game-subwoofer-lullaby") ??
+  backgroundTracks[0] ??
+  null;
 
 export const clickSound =
   process.env.NODE_ENV === "production"

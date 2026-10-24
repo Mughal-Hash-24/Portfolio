@@ -15,7 +15,7 @@ Locked creative direction. Update this file when a decision changes.
 - Title: the generated **IBTASAAM stone-block wordmark**, the **PORTFOLIO EDITION** logo tucked directly underneath, and the angled **Still mining!** splash to its right.
 - Background: a rotating six-face cubemap panorama using the 19 deployed sets. A picker cycles through them.
 - Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
-- Secondary icon row: **Contact** (phone), **Email**, **GitHub**. Skills, stack, languages, and honors live inside About rather than adding more top-level buttons.
+- Secondary icon row: **Contact** (phone), **Email**, **GitHub**, **LinkedIn**, with white pixel-art brand marks for the two social links.
 - A **Download CV** button sits below the main menu and serves the PDF in `public/cv/`.
 - Audio control lives in the footer, not the main menu. The audio starts only after a user gesture.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
@@ -50,6 +50,7 @@ Each chapter has its own visual identity while sharing the grid, spacing scale, 
 ## Audio
 
 - The auto-play pool combines the full game/menu soundtrack and the music discs, shuffled. The jukebox selects a specific disc.
+- The title screen opens on **Subwoofer Lullaby**; the music dock shows the current track with a play/mute control, skip, and jukebox.
 - UI buttons play the Minecraft click sound.
 - Audio starts on the first user gesture, never on page load.
 - The soundtrack is hosted in the public Vercel Blob store `ibtasaam-audio`; development files remain in the gitignored `public/audio/_dev/` folder.
