@@ -8,6 +8,7 @@ export const site = {
   email: "ibtasaam.mughal@gmail.com",
   location: "Rawalpindi, Pakistan",
   github: "https://github.com/Mughal-Hash-24",
+  cv: "/cv/muhammad-ibtasaam-amjad-cv.pdf",
 } as const;
 
 export const chapters = [

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react
 import { availablePanoramas, defaultPanoramaId } from "@/content/panoramas";
 import { mainMenuChapters, site } from "@/content/site";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
-import { CodeIcon, MailIcon, PhoneIcon } from "./menu-icons";
+import { CodeIcon, DownloadIcon, MailIcon, PhoneIcon } from "./menu-icons";
 import { MusicDock } from "./music-dock";
 import { PanoramaBackground } from "./panorama-background";
 import { useMinecraftAudio } from "./use-minecraft-audio";
@@ -193,6 +193,16 @@ export function TitleScreen() {
                 </a>
               ))}
             </nav>
+
+            <a
+              href={site.cv}
+              download
+              className="mc-button max-w-[560px] gap-2 [&_svg]:size-4"
+              onClick={() => audio.playClick()}
+            >
+              <DownloadIcon />
+              <span>Download CV</span>
+            </a>
 
             <div className="flex items-center justify-center gap-3">
               <a

@@ -24,6 +24,21 @@ export function MailIcon() {
   );
 }
 
+export function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M12 3v11m0 0 4-4m-4 4-4-4M4 20h16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
+}
+
 export function CodeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

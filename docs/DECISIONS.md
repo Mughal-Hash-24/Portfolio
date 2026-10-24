@@ -16,6 +16,7 @@ Locked creative direction. Update this file when a decision changes.
 - Background: a rotating six-face cubemap panorama using the 19 deployed sets. A picker cycles through them.
 - Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
 - Secondary icon row: **Contact** (phone), **Email**, **GitHub**. Skills, stack, languages, and honors live inside About rather than adding more top-level buttons.
+- A **Download CV** button sits below the main menu and serves the PDF in `public/cv/`.
 - Audio control lives in the footer, not the main menu. The audio starts only after a user gesture.
 - Keyboard users can tab to the menu and press Enter; links work without JavaScript.
 - The official panorama and audio sets are deployed at the owner's request for this personal fan project. The audio is hosted in the public Vercel Blob store `ibtasaam-audio`.
