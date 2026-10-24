@@ -52,3 +52,6 @@ reference/
 
 # development-only panorama derivatives (Mojang assets, never commit)
 public/panoramas/_dev/
+
+# development-only audio derivatives (Mojang assets, never commit)
+public/audio/_dev/
