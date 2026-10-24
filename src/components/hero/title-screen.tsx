@@ -164,11 +164,11 @@ export function TitleScreen() {
                   sizes="(max-width: 768px) 86vw, 660px"
                   className="h-auto w-full"
                 />
-                <span className="splash absolute right-0 bottom-[2%] font-minecraft text-sm whitespace-nowrap text-[#ffff55] sm:text-xl xl:text-2xl">
+                <span className="splash absolute right-[-1.5%] bottom-[2%] font-minecraft text-sm whitespace-nowrap text-[#ffff55] sm:text-xl xl:text-2xl">
                   Still mining!
                 </span>
               </div>
-              <div className="-mt-[3.125%] flex justify-center">
+              <div className="-mt-[3.6%] flex justify-center">
                 <Image
                   src="/brand/portfolio-edition.webp"
                   alt="Portfolio Edition"
