@@ -98,6 +98,269 @@ html.title-locked body {
   pointer-events: auto;
 }
 
+.chapter-shell {
+  --accent: var(--chapter-accent);
+  --chapter-title-transform: none;
+  --chapter-title-tracking: -0.03em;
+  background-color: var(--chapter-bg);
+  color: var(--chapter-fg);
+  font-family: var(--chapter-body-font);
+  animation: chapter-in 320ms ease-out both;
+}
+
+.chapter-shell ::selection {
+  background: var(--chapter-accent);
+  color: var(--chapter-bg);
+}
+
+.chapter-back,
+.chapter-eyebrow,
+.chapter-meta,
+.chapter-note,
+.chapter-audio-state {
+  font-family: var(--font-geist-mono);
+}
+
+.chapter-back {
+  color: var(--chapter-muted);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 120ms ease;
+}
+
+.chapter-back:hover {
+  color: var(--chapter-fg);
+}
+
+.chapter-eyebrow {
+  margin-bottom: 1rem;
+  color: var(--chapter-muted);
+  font-size: 0.625rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+.chapter-title {
+  margin-top: 0.5rem;
+  font-family: var(--chapter-font);
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: var(--chapter-title-tracking);
+  text-transform: var(--chapter-title-transform);
+}
+
+.chapter-title:focus {
+  outline: none;
+}
+
+.chapter-description {
+  margin-top: 1.5rem;
+  max-width: 34rem;
+  color: var(--chapter-muted);
+  font-family: var(--chapter-body-font);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.chapter-note {
+  max-width: 36rem;
+  border-top: 1px solid var(--chapter-line);
+  padding-top: 1.5rem;
+  color: var(--chapter-muted);
+  font-size: 0.65rem;
+  line-height: 1.8;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chapter-terminal {
+  max-width: 40rem;
+  border: 1px solid var(--chapter-line);
+  padding: 1.25rem;
+  background: rgb(88 255 138 / 0.03);
+  box-shadow: inset 0 0 40px rgb(88 255 138 / 0.03);
+  font-family: var(--font-geist-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.chapter-prompt {
+  color: var(--chapter-accent);
+}
+
+.chapter-terminal-output {
+  margin-top: 0.75rem;
+  color: var(--chapter-muted);
+}
+
+.chapter-contact-link {
+  overflow-wrap: anywhere;
+  font-family: var(--chapter-body-font);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 120ms ease;
+}
+
+.chapter-contact-link:hover {
+  color: var(--chapter-accent);
+}
+
+.chapter-social-link {
+  color: var(--chapter-muted);
+  font-family: var(--font-geist-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: color 120ms ease;
+}
+
+.chapter-social-link:hover {
+  color: var(--chapter-fg);
+}
+
+.chapter-footer {
+  border-color: var(--chapter-line);
+}
+
+.chapter-meta {
+  color: var(--chapter-muted);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chapter-audio {
+  color: var(--chapter-fg);
+}
+
+.chapter-audio-state {
+  color: var(--chapter-muted);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.chapter-audio-track {
+  margin-top: 0.25rem;
+  max-width: 13rem;
+  overflow: hidden;
+  color: var(--chapter-fg);
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-control {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--chapter-line);
+  border-radius: 0;
+  color: var(--chapter-fg);
+  transition:
+    border-color 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease;
+}
+
+.chapter-control:hover {
+  border-color: var(--chapter-accent);
+  color: var(--chapter-accent);
+}
+
+.chapter-control:active {
+  transform: translateY(1px);
+}
+
+[data-chapter="projects"] {
+  --chapter-bg: #f4f1e8;
+  --chapter-fg: #111111;
+  --chapter-muted: #5c5c5c;
+  --chapter-line: #161616;
+  --chapter-accent: #111111;
+  --chapter-font: var(--font-geist-mono);
+  --chapter-body-font: var(--font-geist-sans);
+  --chapter-title-transform: uppercase;
+  --chapter-title-tracking: -0.04em;
+  color-scheme: light;
+  background-image:
+    linear-gradient(to right, rgb(17 17 17 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(17 17 17 / 0.07) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+[data-chapter="arcade"] {
+  --chapter-bg: #06070c;
+  --chapter-fg: #f8f2ff;
+  --chapter-muted: #a9a3bb;
+  --chapter-line: #2b2a44;
+  --chapter-accent: #ff4fa3;
+  --chapter-font: var(--font-silkscreen);
+  --chapter-body-font: var(--font-geist-sans);
+  --chapter-title-transform: uppercase;
+  --chapter-title-tracking: 0.02em;
+  color-scheme: dark;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgb(255 79 163 / 0.18), transparent 55%),
+    radial-gradient(circle at 85% 85%, rgb(56 220 255 / 0.1), transparent 45%);
+}
+
+[data-chapter="ask"] {
+  --chapter-bg: #06100a;
+  --chapter-fg: #c8ffd4;
+  --chapter-muted: #78a885;
+  --chapter-line: #1c3a25;
+  --chapter-accent: #58ff8a;
+  --chapter-font: var(--font-geist-mono);
+  --chapter-body-font: var(--font-geist-mono);
+  --chapter-title-transform: uppercase;
+  --chapter-title-tracking: -0.02em;
+  color-scheme: dark;
+  background-image: linear-gradient(rgb(88 255 138 / 0.035) 1px, transparent 1px);
+  background-size: 100% 24px;
+}
+
+[data-chapter="about"] {
+  --chapter-bg: #f4ecdf;
+  --chapter-fg: #2b241c;
+  --chapter-muted: #6d5e4c;
+  --chapter-line: #c8b79c;
+  --chapter-accent: #8a4b1f;
+  --chapter-font: ui-serif, Georgia, "Times New Roman", serif;
+  --chapter-body-font: ui-serif, Georgia, "Times New Roman", serif;
+  color-scheme: light;
+  background-image: radial-gradient(circle at 85% 15%, rgb(138 75 31 / 0.07), transparent 40%);
+}
+
+[data-chapter="contact"] {
+  --chapter-bg: #faf9f6;
+  --chapter-fg: #1b1b1b;
+  --chapter-muted: #6b6b6b;
+  --chapter-line: #dedbd4;
+  --chapter-accent: #1b1b1b;
+  --chapter-font: var(--font-geist-sans);
+  --chapter-body-font: var(--font-geist-sans);
+  color-scheme: light;
+}
+
+@keyframes chapter-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .mc-button {
   display: flex;
   align-items: center;
