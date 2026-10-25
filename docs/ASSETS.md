@@ -111,4 +111,14 @@ The edition sits directly under the wordmark at 45% of its width, with the splas
 
 ## Monogram
 
-A grass-block monogram for the favicon is still planned. It must be original artwork.
+The browser icon is an original 16×16 grass-block tile with a stone `IA` monogram. It is not derived from Mojang textures.
+
+| File                     | Details                                                          |
+| ------------------------ | ---------------------------------------------------------------- |
+| `src/app/icon.svg`       | Master artwork, 16×16 pixel grid, `shape-rendering="crispEdges"` |
+| `src/app/favicon.ico`    | 16×16, 32×32, and 48×48 fallback frames                          |
+| `src/app/apple-icon.png` | 180×180 opaque tile with a 10 px margin for iOS                  |
+
+Palette: site background `#09090b`, grass `#8fd56a` / `#6fae46` / `#4e7d32`, dirt `#96673f` / `#7b5335` / `#5f4028`, stone `#e9e1d3`.
+
+The monogram is original artwork covered by the site content copyright; it is not MIT licensed.

@@ -7,6 +7,7 @@ Locked creative direction. Update this file when a decision changes.
 - The site belongs to **Ibtasaam Amjad** — developer, storyteller, creative innovator.
 - Origin story: entered computer science because of gaming. That is the narrative spine.
 - Audience: recruiters, collaborators, and curious visitors. The site must communicate who he is within 60 seconds.
+- Browser identity: an original 16×16 grass-block tile with a stone **IA** monogram, readable at favicon size on both light and dark tab bars.
 
 ## Hero
 
