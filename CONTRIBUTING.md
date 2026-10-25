@@ -28,6 +28,16 @@ npm run build
 
 Branch from `dev` and open pull requests back into `dev`. `main` only receives tested release merges.
 
+## Repository protection
+
+The CI workflow in `.github/workflows/ci.yml` runs the pull request checks. Configure GitHub branch protection (Settings → Branches or Rulesets) so those checks are enforced:
+
+- `main` — require a pull request, require the **Quality** check, require branches to be up to date, block force pushes and deletions, and do not allow bypassing. Only release merges from `dev` land here.
+- `dev` — require the **Quality** check, and block force pushes and deletions. Require pull requests as well if you want the integration branch to stay review-only; otherwise direct pushes are fine as long as CI passes.
+- Vercel — keep **Production Branch** set to `main` and leave preview deployments enabled for all other branches.
+
+If you rename the workflow or job, update the required check name to match.
+
 ## Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
