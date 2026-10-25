@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
+import { useAudio } from "@/components/audio/audio-provider";
 import { availablePanoramas, defaultPanoramaId } from "@/content/panoramas";
-import { mainMenuChapters, site } from "@/content/site";
+import { chapterContent, mainMenuChapters, site } from "@/content/site";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { DownloadIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from "./menu-icons";
 import { MusicDock } from "./music-dock";
 import { PanoramaBackground } from "./panorama-background";
-import { useMinecraftAudio } from "./use-minecraft-audio";
 
 export function TitleScreen() {
   const [panoramaId, setPanoramaId] = useState<string | null>(defaultPanoramaId);
@@ -17,7 +19,8 @@ export function TitleScreen() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const timers = useRef<number[]>([]);
   const reducedMotion = useReducedMotion();
-  const audio = useMinecraftAudio();
+  const router = useRouter();
+  const audio = useAudio();
   const { playClick, startBackground } = audio;
   const startBackgroundRef = useRef(startBackground);
 
@@ -29,8 +32,6 @@ export function TitleScreen() {
   }, [startBackground]);
 
   useEffect(() => {
-    startBackgroundRef.current();
-
     const stopListening = () => {
       window.removeEventListener("pointerdown", startOnFirstGesture, { capture: true });
       window.removeEventListener("keydown", startOnFirstGesture, { capture: true });
@@ -51,21 +52,15 @@ export function TitleScreen() {
   }, []);
 
   useEffect(() => {
-    const id = window.location.hash.slice(1);
     const root = document.documentElement;
+    const frame = requestAnimationFrame(() => setExiting(false));
+    window.scrollTo(0, 0);
+    root.classList.add("title-locked");
 
-    if (id) {
+    return () => {
+      cancelAnimationFrame(frame);
       root.classList.remove("title-locked");
-      const target = document.getElementById(id);
-      if (target) {
-        requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
-      }
-    } else {
-      window.scrollTo(0, 0);
-      root.classList.add("title-locked");
-    }
-
-    return () => root.classList.remove("title-locked");
+    };
   }, []);
 
   useEffect(() => {
@@ -107,7 +102,7 @@ export function TitleScreen() {
   }, []);
 
   const handleSelect = useCallback(
-    (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    (event: MouseEvent<HTMLAnchorElement>, href: string) => {
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       event.preventDefault();
       if (exiting) return;
@@ -118,15 +113,7 @@ export function TitleScreen() {
 
       const finish = () => {
         document.documentElement.classList.remove("title-locked");
-        window.history.pushState(null, "", `#${id}`);
-
-        const target = document.getElementById(id);
-        target?.scrollIntoView({
-          behavior: reducedMotion ? "auto" : "smooth",
-          block: "start",
-        });
-        target?.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
-
+        router.push(href);
         timers.current.push(window.setTimeout(() => setExiting(false), reducedMotion ? 0 : 450));
       };
 
@@ -136,7 +123,7 @@ export function TitleScreen() {
         timers.current.push(window.setTimeout(finish, 260));
       }
     },
-    [exiting, reducedMotion, playClick, startBackground],
+    [exiting, reducedMotion, playClick, router, startBackground],
   );
 
   const cyclePanorama = useCallback((direction: -1 | 1) => {
@@ -210,14 +197,14 @@ export function TitleScreen() {
 
             <nav aria-label="Main menu" className="flex w-full max-w-[560px] flex-col gap-2.5">
               {mainMenuChapters.map((chapter) => (
-                <a
+                <Link
                   key={chapter.id}
-                  href={`#${chapter.id}`}
-                  onClick={(event) => handleSelect(event, chapter.id)}
+                  href={chapter.href}
+                  onClick={(event) => handleSelect(event, chapter.href)}
                   className="mc-button"
                 >
                   {chapter.label}
-                </a>
+                </Link>
               ))}
             </nav>
 
@@ -232,15 +219,15 @@ export function TitleScreen() {
             </a>
 
             <div className="flex items-center justify-center gap-3">
-              <a
-                href="#contact"
+              <Link
+                href={chapterContent.contact.href}
                 aria-label="Contact"
                 title="Contact"
                 className="mc-menu-icon"
-                onClick={(event) => handleSelect(event, "contact")}
+                onClick={(event) => handleSelect(event, chapterContent.contact.href)}
               >
                 <PhoneIcon />
-              </a>
+              </Link>
               <a
                 href={`mailto:${site.email}`}
                 aria-label="Email"

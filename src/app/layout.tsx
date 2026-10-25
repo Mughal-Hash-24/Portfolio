@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Silkscreen } from "next/font/google";
 import localFont from "next/font/local";
+import { AudioProvider } from "@/components/audio/audio-provider";
 import { site } from "@/content/site";
 import "./globals.css";
 
@@ -64,7 +65,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${silkscreen.variable} ${monocraft.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <AudioProvider>{children}</AudioProvider>
+      </body>
     </html>
   );
 }

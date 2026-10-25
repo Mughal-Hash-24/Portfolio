@@ -12,7 +12,7 @@ Locked creative direction. Update this file when a decision changes.
 ## Hero
 
 - Fixed **Minecraft-inspired title screen**, not a normal scrolling hero.
-- Menu buttons are the **only way into the site**; scroll is locked until a choice is made.
+- The title screen is the **primary entry**; menu buttons navigate to chapter routes. Scroll is locked on the title screen until a choice is made, and chapter URLs are directly linkable for sharing and accessibility.
 - Title: the generated **IBTASAAM stone-block wordmark**, the **PORTFOLIO EDITION** logo tucked directly underneath, and the angled **Still mining!** splash to its right.
 - Background: a rotating six-face cubemap panorama using the 19 deployed sets. A picker cycles through them.
 - Main menu: **Projects, Arcade, Ask My AI, About** — About is always last.
@@ -24,7 +24,7 @@ Locked creative direction. Update this file when a decision changes.
 
 ## Chapters
 
-Each chapter has its own visual identity while sharing the grid, spacing scale, nav, logo, and accessibility rules.
+Each chapter is its own route with its own theme scope while sharing the grid, spacing scale, nav, logo, and accessibility rules. The title screen stays at `/`; chapters live at `/projects`, `/arcade`, `/ask`, `/about`, and `/contact`.
 
 - **About** — warm paper, editorial serif, grain, asymmetric layout. Holds the story, skills, stack, languages, and honors.
 - **Projects** — brutalist grid, monochrome, mono labels, pinned scroll.
