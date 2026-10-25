@@ -32,7 +32,7 @@ Branch from `dev` and open pull requests back into `dev`. `main` only receives t
 
 The CI workflow in `.github/workflows/ci.yml` runs the pull request checks. Configure GitHub branch protection (Settings → Branches or Rulesets) so those checks are enforced:
 
-- `main` — require a pull request, require the **Quality** check, require branches to be up to date, block force pushes and deletions, and do not allow bypassing. Only release merges from `dev` land here.
+- `main` — require a pull request, require the **Quality** check, block force pushes and deletions, and do not allow bypassing. Only release merges from `dev` land here. Keep "require branches to be up to date" off: `Quality` runs against the pull request merge commit, so a release is still tested against current `main` without forcing a `main` → `dev` sync.
 - `dev` — require the **Quality** check, and block force pushes and deletions. Require pull requests as well if you want the integration branch to stay review-only; otherwise direct pushes are fine as long as CI passes.
 - Vercel — keep **Production Branch** set to `main` and leave preview deployments enabled for all other branches.
 
