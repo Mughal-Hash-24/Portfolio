@@ -40,7 +40,7 @@ function Cubemap({ faces, paused, reducedMotion }: PanoramaCanvasProps) {
 
   useFrame((state, delta) => {
     if (paused || reducedMotion || document.hidden) return;
-    state.camera.rotation.y += delta * 0.005;
+    state.camera.rotation.y += delta * 0.01;
   });
 
   return texture ? <primitive object={texture} attach="background" /> : null;
