@@ -1,0 +1,66 @@
+import type { AskLeadership } from "./types";
+
+export const askLeadership: AskLeadership[] = [
+  {
+    id: "fcs-tech-wing-head",
+    organization: "FAST Computing Society",
+    role: "Tech Wing Head",
+    period: "August 2026 – Present",
+    summary: "Coordinates the society's technical activities and projects.",
+    keywords: ["fast computing society", "fcs", "tech wing head", "technical lead", "society"],
+  },
+  {
+    id: "fcs-buddy-chair",
+    organization: "FAST Computing Society — Buddy Wing",
+    role: "Chairperson",
+    period: "August 2026 – Present",
+    summary: "Runs a peer-mentorship program between senior and junior students.",
+    keywords: ["fast computing society", "buddy wing", "chairperson", "mentorship", "society"],
+  },
+  {
+    id: "foes-vp-internals",
+    organization: "Meri Kahani / FAST Outreach and Engagement Society",
+    role: "Vice President, Internals",
+    period: "August 2026 – Present",
+    summary: "Coordinates internal society activities and team operations.",
+    keywords: [
+      "meri kahani",
+      "fast outreach and engagement society",
+      "foes",
+      "vice president",
+      "internals",
+      "society",
+    ],
+  },
+  {
+    id: "simt-vp-externals",
+    organization: "Society for Innovation in Mathematics and Theoretical Sciences (SIMT)",
+    role: "Vice President, Externals",
+    period: "August 2026 – Present",
+    summary: "Leads external outreach for the mathematics and theoretical sciences society.",
+    keywords: [
+      "simt",
+      "mathematics",
+      "theoretical sciences",
+      "vice president",
+      "externals",
+      "society",
+    ],
+  },
+  {
+    id: "nascon-speed-uml",
+    organization: "NaSCon 2026 — Speed UML",
+    role: "Head of Event",
+    period: "2026",
+    summary: "Led organization of the Speed UML event at NaSCon 2026.",
+    keywords: ["nascon", "speed uml", "head of event", "event organization", "fast"],
+  },
+  {
+    id: "nascon-speed-programming",
+    organization: "NaSCon 2026 — Speed Programming",
+    role: "Vice Head of Event",
+    period: "2026",
+    summary: "Supported organization of the Speed Programming event at NaSCon 2026.",
+    keywords: ["nascon", "speed programming", "vice head", "event organization", "fast"],
+  },
+];
