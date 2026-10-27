@@ -1,12 +1,55 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText } from "ai";
-import { askSystemPrompt, buildAskContext } from "@/content/ask";
+import { jsonSchema, stepCountIs, streamText, tool } from "ai";
+import {
+  askSystemPrompt,
+  buildAskContext,
+  lookupKnowledge,
+  type AskLookupSection,
+} from "@/content/ask";
 import { parseAskMessages } from "@/lib/ask/messages";
 import { checkAskRateLimit } from "@/lib/ask/rate-limit";
 
 export const maxDuration = 30;
 
 const MAX_BODY_BYTES = 20_000;
+const BUSY_MESSAGE =
+  "The AI guide is busy right now. Please try again in a minute, or use the FAQ below.";
+
+const LOOKUP_SECTIONS = [
+  "projects",
+  "experience",
+  "honors",
+  "faq",
+  "skills",
+  "education",
+  "leadership",
+] as const satisfies readonly AskLookupSection[];
+
+const lookupTool = tool({
+  description:
+    "Look up a targeted segment of Ibtasaam's public knowledge base. Use only when the provided compact context lacks the specific detail. Returns at most two matching entries.",
+  inputSchema: jsonSchema<{
+    query: string;
+    section?: AskLookupSection;
+  }>({
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "A short search query naming the project, role, honor, or topic.",
+      },
+      section: {
+        type: "string",
+        enum: [...LOOKUP_SECTIONS],
+        description: "Optional section to search.",
+      },
+    },
+    required: ["query"],
+    additionalProperties: false,
+  }),
+  execute: async ({ query, section }: { query: string; section?: AskLookupSection }) =>
+    lookupKnowledge(query, section),
+});
 
 function errorResponse(message: string, status: number, headers?: Record<string, string>) {
   return Response.json(
@@ -61,13 +104,14 @@ export async function POST(request: Request) {
   }
 
   const question = messages[messages.length - 1]?.content ?? "";
-  const { context } = buildAskContext(question);
+  const { context, lookupRecommended, stats } = buildAskContext(question);
   const provider = createOpenAI({
     apiKey,
     baseURL: process.env.AI_BASE_URL?.trim() || undefined,
   });
 
   try {
+    let streamFailed = false;
     const result = streamText({
       model: provider.chat(modelId),
       instructions: `${askSystemPrompt}\n\n--- BEGIN KNOWLEDGE ---\n${context}\n--- END KNOWLEDGE ---`,
@@ -77,12 +121,26 @@ export async function POST(request: Request) {
       maxRetries: 0,
       timeout: 30_000,
       abortSignal: request.signal,
+      tools: lookupRecommended ? { lookup: lookupTool } : undefined,
+      stopWhen: lookupRecommended ? stepCountIs(2) : undefined,
       providerOptions: {
         openai: {
           reasoningEffort: "low",
         },
       },
+      onFinish: ({ usage, finishReason, stepNumber, toolCalls }) => {
+        console.info("[ask] usage", {
+          inputTokens: usage.inputTokens,
+          outputTokens: usage.outputTokens,
+          finishReason,
+          stepNumber,
+          toolCalls: toolCalls.length,
+          lookupRecommended,
+          matchScore: stats.matchScore,
+        });
+      },
       onError: ({ error }) => {
+        streamFailed = true;
         console.error("[ask] stream error", error instanceof Error ? error.message : error);
       },
     });
@@ -90,22 +148,23 @@ export async function POST(request: Request) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
+        let receivedText = "";
         try {
           for await (const chunk of result.textStream) {
+            receivedText += chunk;
             controller.enqueue(encoder.encode(chunk));
           }
         } catch (error) {
+          streamFailed = true;
           console.error("[ask] upstream error", error instanceof Error ? error.message : error);
-          try {
-            controller.enqueue(
-              encoder.encode(
-                "The AI guide is busy right now. Please try again in a minute, or use the FAQ below.",
-              ),
-            );
-          } catch {
-            // The client disconnected before the fallback could be sent.
-          }
         } finally {
+          if (streamFailed || !receivedText) {
+            try {
+              controller.enqueue(encoder.encode(BUSY_MESSAGE));
+            } catch {
+              // The stream is already closed or the client disconnected.
+            }
+          }
           try {
             controller.close();
           } catch {

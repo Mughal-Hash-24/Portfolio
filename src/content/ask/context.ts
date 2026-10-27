@@ -167,6 +167,8 @@ Scope:
 How to answer:
 - Speak about Ibtasaam in the third person. Use "I" only for the guide.
 - The most relevant details for the current question are at the end of the context, just before the key-facts recap. Read those first.
+- A compact knowledge context is already provided. If a \`lookup\` tool is available and the context lacks the specific detail needed, call it once with a short query and optional section. Do not call it for facts already in the context. After one lookup, answer; do not call it again.
+- Summarize lookup results; do not paste them verbatim.
 - Be concise: 2-5 sentences unless the question asks for detail.
 - If the knowledge base does not contain the answer, say so plainly and point to Ibtasaam's email or LinkedIn. Do not guess.
 - Never invent dates, metrics, employers, availability, compensation, visa status, or opinions.
@@ -256,6 +258,18 @@ function selectTop<T>(
 function hasAny(question: string, words: string[]): boolean {
   const questionTokens = new Set(tokenize(question));
   return words.some((word) => questionTokens.has(canonicalToken(word)));
+}
+
+function bestScore<T>(
+  question: string,
+  items: T[],
+  getKeywords: (item: T) => string[],
+  getExtra: (item: T) => string[],
+): number {
+  return items.reduce(
+    (best, item) => Math.max(best, scoreText(question, getKeywords(item), getExtra(item))),
+    0,
+  );
 }
 
 function formatProfileFacts(): string {
@@ -413,10 +427,12 @@ export type AskContextSelection = {
 export type AskContext = {
   system: string;
   context: string;
+  lookupRecommended: boolean;
   selection: AskContextSelection;
   stats: {
     characters: number;
     estimatedTokens: number;
+    matchScore: number;
   };
 };
 
@@ -426,6 +442,54 @@ export function buildAskContext(question: string): AskContext {
   // 2. The middle is a compact index, so no critical fact exists only there.
   // 3. Question-specific details are selected by keyword and placed last, closest to the question.
   // 4. The assembled context stays around 4k tokens instead of dumping every entry.
+  // 5. A lookup tool is exposed only when keyword confidence is low.
+  const matchScore = Math.max(
+    bestScore(
+      question,
+      askProjects,
+      (project) => project.keywords,
+      (project) => [
+        project.name,
+        project.tagline,
+        project.role,
+        ...project.stack,
+        ...project.highlights,
+      ],
+    ),
+    bestScore(
+      question,
+      askExperience,
+      (experience) => experience.keywords,
+      (experience) => [
+        experience.organization,
+        experience.role,
+        experience.summary,
+        ...experience.stack,
+        ...experience.highlights,
+      ],
+    ),
+    bestScore(
+      question,
+      askHonors,
+      (honor) => honor.keywords,
+      (honor) => [honor.title, honor.event ?? "", honor.placement ?? "", honor.summary],
+    ),
+    bestScore(
+      question,
+      askFaqs,
+      (faq) => faq.keywords,
+      (faq) => [faq.question],
+    ),
+    bestScore(
+      question,
+      askLeadership,
+      (leadership) => leadership.keywords,
+      (leadership) => [leadership.organization, leadership.role, leadership.summary],
+    ),
+  );
+  // Generic words such as "project" can score 8 on their own, so require a
+  // more specific match before treating the pre-retrieval as confident.
+  const lookupRecommended = matchScore < 10;
   const featuredProjects = askProjects.filter((project) => project.featured);
   const selectedProjects = selectTop(
     question,
@@ -541,6 +605,7 @@ export function buildAskContext(question: string): AskContext {
   return {
     system: askSystemPrompt,
     context,
+    lookupRecommended,
     selection: {
       projectIds: selectedProjects.map((project) => project.id),
       experienceIds: selectedExperience.map((experience) => experience.id),
@@ -551,6 +616,125 @@ export function buildAskContext(question: string): AskContext {
     stats: {
       characters: context.length,
       estimatedTokens: Math.ceil(context.length / 4),
+      matchScore,
     },
   };
+}
+
+export type AskLookupSection =
+  "projects" | "experience" | "honors" | "faq" | "skills" | "education" | "leadership";
+
+type LookupMatch = {
+  score: number;
+  text: string;
+};
+
+function projectLookupMatches(query: string): LookupMatch[] {
+  const detailedProjects = askProjects.map((project) => ({
+    score: scoreText(query, project.keywords, [
+      project.name,
+      project.tagline,
+      project.role,
+      ...project.stack,
+      ...project.highlights,
+    ]),
+    text: formatProject(project),
+  }));
+
+  const otherProjects = askOtherProjects.map((project) => ({
+    score: scoreText(query, [], [project.name, project.summary]),
+    text: `${project.name} — ${project.summary}`,
+  }));
+
+  return [...detailedProjects, ...otherProjects];
+}
+
+function experienceLookupMatches(query: string): LookupMatch[] {
+  return askExperience.map((experience) => ({
+    score: scoreText(query, experience.keywords, [
+      experience.organization,
+      experience.role,
+      experience.summary,
+      ...experience.stack,
+      ...experience.highlights,
+    ]),
+    text: formatExperience(experience),
+  }));
+}
+
+function honorLookupMatches(query: string): LookupMatch[] {
+  return askHonors.map((honor) => ({
+    score: scoreText(query, honor.keywords, [
+      honor.title,
+      honor.event ?? "",
+      honor.placement ?? "",
+      honor.summary,
+    ]),
+    text: formatHonor(honor),
+  }));
+}
+
+function faqLookupMatches(query: string): LookupMatch[] {
+  return askFaqs.map((faq) => ({
+    score: scoreText(query, faq.keywords, [faq.question]),
+    text: formatFaq(faq),
+  }));
+}
+
+function leadershipLookupMatches(query: string): LookupMatch[] {
+  return askLeadership.map((leadership) => ({
+    score: scoreText(query, leadership.keywords, [
+      leadership.organization,
+      leadership.role,
+      leadership.summary,
+    ]),
+    text: formatLeadership(leadership),
+  }));
+}
+
+export function lookupKnowledge(query: string, section?: AskLookupSection): string {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return "No lookup query was provided.";
+  }
+
+  if (section === "skills") {
+    return `SKILLS:\n${formatSkills()}`;
+  }
+  if (section === "education") {
+    return `EDUCATION AND CERTIFICATIONS:\n${formatEducationIndex()}`;
+  }
+
+  const matches =
+    section === "projects"
+      ? projectLookupMatches(trimmed)
+      : section === "experience"
+        ? experienceLookupMatches(trimmed)
+        : section === "honors"
+          ? honorLookupMatches(trimmed)
+          : section === "faq"
+            ? faqLookupMatches(trimmed)
+            : section === "leadership"
+              ? leadershipLookupMatches(trimmed)
+              : [
+                  ...projectLookupMatches(trimmed),
+                  ...experienceLookupMatches(trimmed),
+                  ...honorLookupMatches(trimmed),
+                  ...faqLookupMatches(trimmed),
+                  ...leadershipLookupMatches(trimmed),
+                ];
+
+  const topMatches = matches
+    .filter((match) => match.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2);
+
+  if (topMatches.length === 0) {
+    return `No matching ${section ?? "knowledge"} found in the public knowledge base.`;
+  }
+
+  return [
+    `LOOKUP RESULT${section ? ` (${section})` : ""}:`,
+    ...topMatches.map((match) => match.text),
+  ].join("\n\n");
 }

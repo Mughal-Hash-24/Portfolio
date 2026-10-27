@@ -7,8 +7,8 @@ export { askLeadership } from "./leadership";
 export { askOtherProjects, askProjects } from "./projects";
 export { askProfile } from "./profile";
 export { askSkillGroups } from "./skills";
-export { askSystemPrompt, buildAskContext } from "./context";
-export type { AskContext, AskContextSelection } from "./context";
+export { askSystemPrompt, buildAskContext, lookupKnowledge } from "./context";
+export type { AskContext, AskContextSelection, AskLookupSection } from "./context";
 export type {
   AskBoundary,
   AskCertification,
