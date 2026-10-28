@@ -20,6 +20,8 @@ type ChatStatus = "idle" | "streaming";
 type AskChatProps = {
   suggestedQuestions: string[];
   contactEmail: string;
+  variant?: "band" | "stage";
+  onClose?: () => void;
 };
 
 const rowColors: LegoColor[] = ["yellow", "blue", "green", "red"];
@@ -136,7 +138,12 @@ function splitIntoBrickRows(content: string): string[] {
   return rows.length > 0 ? rows : [trimmed];
 }
 
-export function AskChat({ suggestedQuestions, contactEmail }: AskChatProps) {
+export function AskChat({
+  suggestedQuestions,
+  contactEmail,
+  variant = "band",
+  onClose,
+}: AskChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<ChatStatus>("idle");
@@ -273,7 +280,10 @@ export function AskChat({ suggestedQuestions, contactEmail }: AskChatProps) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <section id="ask-brick" className="lego-chat lego-band" aria-labelledby="brick-chat-title">
+      <section
+        className={`lego-chat ${variant === "stage" ? "lego-chat--stage" : "lego-band"}`}
+        aria-labelledby="brick-chat-title"
+      >
         <header className="lego-chat__header">
           <div className="lego-chat__identity">
             <LegoFace size={44} />
@@ -284,77 +294,21 @@ export function AskChat({ suggestedQuestions, contactEmail }: AskChatProps) {
               <p className="lego-kicker">PUBLIC KNOWLEDGE</p>
             </div>
           </div>
+          {onClose ? (
+            <button
+              type="button"
+              className="lego-brick lego-chat__close"
+              style={brickStyle("red")}
+              onClick={onClose}
+            >
+              <LegoStuds count={2} />
+              <span>Close</span>
+            </button>
+          ) : null}
         </header>
 
         <div className="lego-chat__body">
           <div className="lego-chat__main">
-            <form className="lego-dock" onSubmit={handleSubmit} aria-busy={isStreaming}>
-              <div className="lego-dock__studs" aria-hidden>
-                {Array.from({ length: 6 }, (_, index) => (
-                  <span key={index} className="lego-dock__stud" />
-                ))}
-              </div>
-
-              <div className="lego-dock__label">
-                <label htmlFor="ask-input">Ask Brick about Ibtasaam</label>
-              </div>
-
-              <div className="lego-dock__form">
-                <textarea
-                  id="ask-input"
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={handleKeyDown}
-                  maxLength={1000}
-                  rows={2}
-                  placeholder="What do you want to build?"
-                  aria-describedby="ask-input-hint"
-                  className="lego-dock__input"
-                />
-
-                <div className="lego-dock__actions">
-                  <motion.button
-                    type="submit"
-                    className="lego-brick lego-dock__build"
-                    style={brickStyle("yellow")}
-                    disabled={isStreaming || !input.trim()}
-                    whileHover={reduced ? undefined : { y: -2 }}
-                    whileTap={reduced ? undefined : { y: 2 }}
-                    transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                  >
-                    <LegoStuds count={2} />
-                    <span>Build</span>
-                  </motion.button>
-
-                  {isStreaming ? (
-                    <motion.button
-                      type="button"
-                      className="lego-brick lego-dock__stop"
-                      style={brickStyle("red")}
-                      onClick={stop}
-                      whileTap={reduced ? undefined : { y: 2 }}
-                    >
-                      Stop
-                    </motion.button>
-                  ) : null}
-                </div>
-              </div>
-
-              <p id="ask-input-hint" className="lego-dock__hint">
-                Enter to build · Shift + Enter for a new line
-              </p>
-            </form>
-
-            {error ? (
-              <div role="alert" className="lego-error">
-                <p className="lego-error__label">Missing piece</p>
-                <p className="lego-error__text">
-                  {error} <a href="#faq">Read the manual</a> or email{" "}
-                  <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
-                </p>
-              </div>
-            ) : null}
-
             <div
               ref={logRef}
               role="log"
@@ -479,6 +433,73 @@ export function AskChat({ suggestedQuestions, contactEmail }: AskChatProps) {
                 })
               )}
             </div>
+
+            {error ? (
+              <div role="alert" className="lego-error">
+                <p className="lego-error__label">Missing piece</p>
+                <p className="lego-error__text">
+                  {error} <a href="#faq">Read the manual</a> or email{" "}
+                  <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+                </p>
+              </div>
+            ) : null}
+
+            <form className="lego-dock" onSubmit={handleSubmit} aria-busy={isStreaming}>
+              <div className="lego-dock__studs" aria-hidden>
+                {Array.from({ length: 6 }, (_, index) => (
+                  <span key={index} className="lego-dock__stud" />
+                ))}
+              </div>
+
+              <div className="lego-dock__label">
+                <label htmlFor="ask-input">Ask Brick about Ibtasaam</label>
+              </div>
+
+              <div className="lego-dock__form">
+                <textarea
+                  id="ask-input"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={handleKeyDown}
+                  maxLength={1000}
+                  rows={2}
+                  placeholder="What do you want to build?"
+                  aria-describedby="ask-input-hint"
+                  className="lego-dock__input"
+                />
+
+                <div className="lego-dock__actions">
+                  <motion.button
+                    type="submit"
+                    className="lego-brick lego-dock__build"
+                    style={brickStyle("yellow")}
+                    disabled={isStreaming || !input.trim()}
+                    whileHover={reduced ? undefined : { y: -2 }}
+                    whileTap={reduced ? undefined : { y: 2 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                  >
+                    <LegoStuds count={2} />
+                    <span>Build</span>
+                  </motion.button>
+
+                  {isStreaming ? (
+                    <motion.button
+                      type="button"
+                      className="lego-brick lego-dock__stop"
+                      style={brickStyle("red")}
+                      onClick={stop}
+                      whileTap={reduced ? undefined : { y: 2 }}
+                    >
+                      Stop
+                    </motion.button>
+                  ) : null}
+                </div>
+              </div>
+
+              <p id="ask-input-hint" className="lego-dock__hint">
+                Enter to build · Shift + Enter for a new line
+              </p>
+            </form>
 
             <p className="lego-disclaimer">
               Brick is an AI guide. Answers come from Ibtasaam&apos;s public knowledge and may make
