@@ -12,8 +12,7 @@ import { checkAskRateLimit } from "@/lib/ask/rate-limit";
 export const maxDuration = 30;
 
 const MAX_BODY_BYTES = 20_000;
-const BUSY_MESSAGE =
-  "The AI guide is busy right now. Please try again in a minute, or use the FAQ below.";
+const BUSY_MESSAGE = "Brick is busy right now. Please try again in a minute, or use the FAQ below.";
 
 const LOOKUP_SECTIONS = [
   "projects",
@@ -80,8 +79,8 @@ export async function POST(request: Request) {
     const isBurst = rateLimit.reason === "minute" || rateLimit.reason === "global-minute";
     return errorResponse(
       isBurst
-        ? "The AI guide is handling a lot right now. Give it a moment and try again."
-        : "The AI guide has reached its limit for today. Use the FAQ below or email Ibtasaam.",
+        ? "Brick is handling a lot right now. Give it a moment and try again."
+        : "Brick has reached its limit for today. Use the FAQ below or email Ibtasaam.",
       429,
       rateLimit.headers,
     );
@@ -97,7 +96,7 @@ export async function POST(request: Request) {
   const modelId = process.env.AI_MODEL?.trim();
   if (!apiKey || !modelId) {
     return errorResponse(
-      "The AI guide is not configured yet. Use the FAQ below or email Ibtasaam.",
+      "Brick is still being built. Use the FAQ below or email Ibtasaam.",
       503,
       rateLimit.headers,
     );
@@ -185,7 +184,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[ask] request error", error instanceof Error ? error.message : error);
     return errorResponse(
-      "The AI guide is unavailable right now. Use the FAQ below or email Ibtasaam.",
+      "Brick is unavailable right now. Use the FAQ below or email Ibtasaam.",
       502,
       rateLimit.headers,
     );
