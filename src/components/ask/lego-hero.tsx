@@ -42,7 +42,7 @@ export function LegoHero() {
           duration: 0.9,
         })
         .from(
-          ".lego-hero__eyebrow, .lego-hero__title, .lego-hero__lede",
+          ".lego-hero__title",
           {
             y: 22,
             opacity: 0,
@@ -103,7 +103,7 @@ export function LegoHero() {
                   width={720}
                   height={897}
                   priority
-                  sizes="(min-width: 1200px) 340px, (min-width: 900px) 300px, 76vw"
+                  sizes="(min-width: 1200px) 180px, (min-width: 900px) 170px, 140px"
                   className="h-full w-full object-cover object-top"
                 />
                 <div className="lego-avatar-card__glare" aria-hidden />
@@ -119,19 +119,9 @@ export function LegoHero() {
           </div>
 
           <div className="lego-hero__copy">
-            <p className="lego-kicker lego-hero__eyebrow">
-              <span className="lego-live-dot" />
-              SET 003 · LEGO GUIDE
-            </p>
-
             <h2 id="brick-hero-title" className="lego-hero__title">
               I&apos;m <span>Brick.</span>
             </h2>
-
-            <p className="lego-hero__lede">
-              Ibtasaam&apos;s LEGO guide. Ask me about his work, projects, skills, or experience. I
-              pull the right pieces from his public story and snap them into an answer.
-            </p>
 
             <ul className="lego-hero__facts">
               {facts.map((fact) => (
@@ -149,7 +139,7 @@ export function LegoHero() {
 
             <div className="lego-hero__cta-row">
               <a
-                href="#ask-input"
+                href="#ask-brick"
                 className="lego-hero__cta"
                 style={brickStyle("yellow")}
                 onClick={() => {
@@ -162,7 +152,6 @@ export function LegoHero() {
                 <span>Start building</span>
                 <span aria-hidden>↓</span>
               </a>
-              <span className="lego-hero__hint">Or jump to the brick lab below.</span>
             </div>
           </div>
 
@@ -171,7 +160,6 @@ export function LegoHero() {
               <LegoScene />
             </div>
             <div className="lego-hero__scene-label">
-              <span className="lego-kicker">SET 003</span>
               <span>The guide, in pieces</span>
             </div>
           </div>

@@ -11,19 +11,12 @@ type ChapterPageProps = {
   chapter: Chapter;
   children?: ReactNode;
   wide?: boolean;
-  headerAside?: ReactNode;
   footerNote?: ReactNode | null;
 };
 
 const DEFAULT_FOOTER_NOTE = "Unofficial fan project · Not affiliated with Mojang";
 
-export function ChapterPage({
-  chapter,
-  children,
-  wide = false,
-  headerAside,
-  footerNote,
-}: ChapterPageProps) {
+export function ChapterPage({ chapter, children, wide = false, footerNote }: ChapterPageProps) {
   const note = footerNote === undefined ? DEFAULT_FOOTER_NOTE : footerNote;
   const chromeWidth = wide ? "max-w-[1720px]" : "max-w-6xl";
 
@@ -49,26 +42,33 @@ export function ChapterPage({
       </header>
 
       <main
-        className={`mx-auto flex w-full flex-1 flex-col px-6 py-16 sm:py-24 ${
-          wide ? "max-w-[1720px] justify-start" : "max-w-5xl justify-center"
+        className={`mx-auto flex w-full flex-1 flex-col px-6 ${
+          wide
+            ? "max-w-[1720px] justify-start pt-5 pb-16 sm:pt-6"
+            : "max-w-5xl justify-center py-16 sm:py-24"
         }`}
       >
-        <div
-          className={
-            wide ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end" : undefined
-          }
-        >
-          <div>
+        {wide ? (
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)] lg:items-end">
+            <div>
+              <p className="chapter-eyebrow">Chapter {chapter.number}</p>
+              <h1 tabIndex={-1} className="chapter-title">
+                {chapter.label}
+              </h1>
+            </div>
+            <p className="chapter-description">{chapter.description}</p>
+          </div>
+        ) : (
+          <>
             <p className="chapter-eyebrow">Chapter {chapter.number}</p>
             <h1 tabIndex={-1} className="chapter-title">
               {chapter.label}
             </h1>
             <p className="chapter-description">{chapter.description}</p>
-          </div>
-          {headerAside ? <div className="hidden lg:block">{headerAside}</div> : null}
-        </div>
+          </>
+        )}
 
-        <div className="mt-12">{children}</div>
+        <div className={wide ? "mt-5" : "mt-12"}>{children}</div>
       </main>
 
       <footer
