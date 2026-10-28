@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { AskChat } from "@/components/ask/ask-chat";
+import { AskHeader } from "@/components/ask/ask-header";
 import { BrickDivider } from "@/components/ask/brick-divider";
 import { BrickLab } from "@/components/ask/brick-lab";
+import { ChatExperience } from "@/components/ask/chat-experience";
 import { LegoBoot } from "@/components/ask/lego-loader";
 import { LegoFaq } from "@/components/ask/lego-faq";
 import { LegoHero } from "@/components/ask/lego-hero";
+import { LegoScrollCue } from "@/components/ask/lego-scroll-cue";
 import { ChapterPage } from "@/components/chapters/chapter-page";
 import { askFaqs } from "@/content/ask";
 import { chapterContent, site } from "@/content/site";
@@ -25,11 +27,13 @@ export const metadata: Metadata = chapterMetadata(chapter);
 
 export default function AskPage() {
   return (
-    <ChapterPage chapter={chapter} wide footerNote={null}>
+    <ChapterPage chapter={chapter} wide header={<AskHeader />} footerNote={null}>
       <LegoBoot />
-      <LegoHero />
-      <BrickDivider label="The build table" />
-      <AskChat suggestedQuestions={suggestedQuestions} contactEmail={site.email} />
+      <div className="ask-landing">
+        <LegoHero />
+        <LegoScrollCue />
+      </div>
+      <ChatExperience suggestedQuestions={suggestedQuestions} contactEmail={site.email} />
       <BrickDivider label="Intermission" />
       <BrickLab />
       <BrickDivider label="Spare parts" />

@@ -6,6 +6,7 @@ import { MotionConfig, motion, useSpring } from "motion/react";
 import { useLayoutEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import gsap from "gsap";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { scrollToChatBuild } from "@/lib/ask/scroll-to-build";
 import { LEGO_COLORS, LegoStuds, brickStyle, type LegoColor } from "./lego-brick";
 
 const LegoScene = dynamic(() => import("./lego-scene"), {
@@ -103,7 +104,7 @@ export function LegoHero() {
                   width={720}
                   height={897}
                   priority
-                  sizes="(min-width: 1200px) 180px, (min-width: 900px) 170px, 140px"
+                  sizes="(min-width: 1200px) 240px, (min-width: 900px) 200px, 150px"
                   className="h-full w-full object-cover object-top"
                 />
                 <div className="lego-avatar-card__glare" aria-hidden />
@@ -138,20 +139,16 @@ export function LegoHero() {
             </ul>
 
             <div className="lego-hero__cta-row">
-              <a
-                href="#ask-brick"
+              <button
+                type="button"
                 className="lego-hero__cta"
                 style={brickStyle("yellow")}
-                onClick={() => {
-                  window.setTimeout(() => {
-                    document.getElementById("ask-input")?.focus({ preventScroll: true });
-                  }, 300);
-                }}
+                onClick={scrollToChatBuild}
               >
                 <LegoStuds count={3} />
                 <span>Start building</span>
                 <span aria-hidden>↓</span>
-              </a>
+              </button>
             </div>
           </div>
 
