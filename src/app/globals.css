@@ -3362,3 +3362,257 @@ html.title-locked body {
       0 3px 0 #c9c3b5;
   }
 }
+
+/* HCI refinements — compact first fold ------------------------------------- */
+
+.lego-hero {
+  padding: clamp(0.8rem, 1.4vw, 1.1rem);
+}
+
+.lego-hero__grid {
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.lego-hero__avatar {
+  max-width: 180px;
+  margin: 0;
+}
+
+.lego-hero__title {
+  margin-top: 0;
+  font-size: clamp(2.3rem, 4.2vw, 4rem);
+  line-height: 0.9;
+}
+
+.lego-hero__facts {
+  margin-top: 0.9rem;
+  gap: 0.45rem 1.1rem;
+}
+
+.lego-hero__facts li {
+  font-size: 0.54rem;
+}
+
+.lego-hero__facts strong {
+  font-size: 0.95rem;
+}
+
+.lego-hero__cta-row {
+  margin-top: 1rem;
+}
+
+@media (min-width: 1200px) {
+  .lego-hero__grid {
+    grid-template-columns:
+      minmax(0, 180px)
+      minmax(0, 1fr)
+      minmax(0, 220px);
+    gap: 1.75rem;
+  }
+
+  .lego-hero__avatar {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .lego-hero__grid {
+    grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+  }
+
+  .lego-hero__avatar {
+    max-width: 170px;
+  }
+
+  .lego-hero__scene-column {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .lego-hero {
+    padding: 1rem;
+  }
+
+  .lego-hero__grid {
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .lego-hero__avatar {
+    max-width: 140px;
+    margin: 0;
+  }
+
+  .lego-hero__title {
+    font-size: clamp(2rem, 8vw, 2.8rem);
+  }
+
+  .lego-hero__facts {
+    gap: 0.35rem 0.9rem;
+  }
+
+  .lego-hero__facts li {
+    font-size: 0.5rem;
+  }
+
+  .lego-hero__facts strong {
+    font-size: 0.85rem;
+  }
+
+  .lego-hero__cta-row {
+    margin-top: 0.8rem;
+  }
+
+  .lego-hero__cta {
+    padding: 0.65rem 0.75rem 0.5rem;
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .lego-hero__facts {
+    display: none;
+  }
+
+  .lego-hero__grid {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+
+  .lego-hero__avatar {
+    max-width: 120px;
+  }
+
+  .lego-avatar-card {
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .lego-avatar-card__studs {
+    inset-inline: 14%;
+    top: -6px;
+  }
+
+  .lego-avatar-card__stud {
+    width: 16px;
+    height: 7px;
+  }
+
+  .lego-avatar-card__image {
+    border-width: 1px;
+    border-radius: 10px;
+  }
+
+  .lego-avatar-card__plate {
+    margin-top: 8px;
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+  }
+
+  .lego-avatar-card__name {
+    font-size: 1rem;
+  }
+
+  .lego-avatar-card__role {
+    font-size: 0.42rem;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* HCI refinements — chat as the primary action ----------------------------- */
+
+.lego-chat {
+  scroll-margin-top: 1rem;
+}
+
+.lego-chat__body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lego-chat__main {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.lego-tray {
+  grid-column: 1;
+  grid-row: 2;
+  border-top: 1px solid #ddd6c7;
+  border-bottom: 0;
+}
+
+.lego-chat__log {
+  min-height: 17rem;
+  max-height: 30rem;
+  padding-top: 1rem;
+}
+
+.lego-chat__log > * {
+  max-width: 64rem;
+}
+
+.lego-dock {
+  width: min(calc(100% - 2rem), 64rem);
+  margin: 1rem auto 0;
+}
+
+.lego-disclaimer {
+  width: min(calc(100% - 2rem), 64rem);
+  margin: 0 auto;
+  padding-bottom: 1.25rem;
+}
+
+@media (min-width: 1000px) {
+  .lego-chat__body {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+
+  .lego-tray {
+    grid-column: 1;
+    grid-row: 1;
+    border-top: 0;
+    border-right: 1px solid #ddd6c7;
+    border-bottom: 0;
+  }
+
+  .lego-chat__main {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 999px) {
+  .lego-chat__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lego-tray {
+    grid-column: 1;
+    grid-row: 2;
+    border-top: 1px solid #ddd6c7;
+    border-right: 0;
+  }
+
+  .lego-chat__main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 639px) {
+  .lego-dock {
+    width: calc(100% - 1rem);
+    margin-top: 0.75rem;
+  }
+
+  .lego-chat__log {
+    min-height: 15rem;
+  }
+
+  .lego-disclaimer {
+    width: calc(100% - 1.25rem);
+  }
+}

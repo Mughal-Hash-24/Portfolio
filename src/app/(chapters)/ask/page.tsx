@@ -5,7 +5,6 @@ import { BrickLab } from "@/components/ask/brick-lab";
 import { LegoBoot } from "@/components/ask/lego-loader";
 import { LegoFaq } from "@/components/ask/lego-faq";
 import { LegoHero } from "@/components/ask/lego-hero";
-import { LegoSpec } from "@/components/ask/lego-spec";
 import { ChapterPage } from "@/components/chapters/chapter-page";
 import { askFaqs } from "@/content/ask";
 import { chapterContent, site } from "@/content/site";
@@ -26,7 +25,7 @@ export const metadata: Metadata = chapterMetadata(chapter);
 
 export default function AskPage() {
   return (
-    <ChapterPage chapter={chapter} wide headerAside={<LegoSpec />} footerNote={null}>
+    <ChapterPage chapter={chapter} wide footerNote={null}>
       <LegoBoot />
       <LegoHero />
       <BrickDivider label="The build table" />
