@@ -10,14 +10,30 @@ type Chapter = (typeof chapterContent)[keyof typeof chapterContent];
 type ChapterPageProps = {
   chapter: Chapter;
   children?: ReactNode;
+  wide?: boolean;
+  headerAside?: ReactNode;
+  footerNote?: ReactNode | null;
 };
 
-export function ChapterPage({ chapter, children }: ChapterPageProps) {
+const DEFAULT_FOOTER_NOTE = "Unofficial fan project · Not affiliated with Mojang";
+
+export function ChapterPage({
+  chapter,
+  children,
+  wide = false,
+  headerAside,
+  footerNote,
+}: ChapterPageProps) {
+  const note = footerNote === undefined ? DEFAULT_FOOTER_NOTE : footerNote;
+  const chromeWidth = wide ? "max-w-[1720px]" : "max-w-6xl";
+
   return (
     <div data-chapter={chapter.id} className="chapter-shell flex min-h-dvh flex-col">
       <ChapterFocus />
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-6">
+      <header
+        className={`mx-auto flex w-full ${chromeWidth} items-center justify-between gap-4 px-6 py-6`}
+      >
         <Image
           src="/brand/ibtasaam-wordmark.webp"
           alt="Ibtasaam"
@@ -32,18 +48,34 @@ export function ChapterPage({ chapter, children }: ChapterPageProps) {
         </Link>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 py-16 sm:py-24">
-        <p className="chapter-eyebrow">Chapter {chapter.number}</p>
-        <h1 tabIndex={-1} className="chapter-title">
-          {chapter.label}
-        </h1>
-        <p className="chapter-description">{chapter.description}</p>
+      <main
+        className={`mx-auto flex w-full flex-1 flex-col px-6 py-16 sm:py-24 ${
+          wide ? "max-w-[1720px] justify-start" : "max-w-5xl justify-center"
+        }`}
+      >
+        <div
+          className={
+            wide ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end" : undefined
+          }
+        >
+          <div>
+            <p className="chapter-eyebrow">Chapter {chapter.number}</p>
+            <h1 tabIndex={-1} className="chapter-title">
+              {chapter.label}
+            </h1>
+            <p className="chapter-description">{chapter.description}</p>
+          </div>
+          {headerAside ? <div className="hidden lg:block">{headerAside}</div> : null}
+        </div>
+
         <div className="mt-12">{children}</div>
       </main>
 
-      <footer className="chapter-footer mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-t px-6 py-4">
+      <footer
+        className={`chapter-footer mx-auto flex w-full ${chromeWidth} flex-wrap items-center justify-between gap-4 border-t px-6 py-4`}
+      >
         <ChapterAudioControl />
-        <span className="chapter-meta">Unofficial fan project · Not affiliated with Mojang</span>
+        {note ? <span className="chapter-meta">{note}</span> : null}
       </footer>
     </div>
   );
