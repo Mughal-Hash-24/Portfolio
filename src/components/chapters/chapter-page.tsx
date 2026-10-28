@@ -11,12 +11,19 @@ type ChapterPageProps = {
   chapter: Chapter;
   children?: ReactNode;
   wide?: boolean;
+  header?: ReactNode;
   footerNote?: ReactNode | null;
 };
 
 const DEFAULT_FOOTER_NOTE = "Unofficial fan project · Not affiliated with Mojang";
 
-export function ChapterPage({ chapter, children, wide = false, footerNote }: ChapterPageProps) {
+export function ChapterPage({
+  chapter,
+  children,
+  wide = false,
+  header,
+  footerNote,
+}: ChapterPageProps) {
   const note = footerNote === undefined ? DEFAULT_FOOTER_NOTE : footerNote;
   const chromeWidth = wide ? "max-w-[1720px]" : "max-w-6xl";
 
@@ -24,22 +31,24 @@ export function ChapterPage({ chapter, children, wide = false, footerNote }: Cha
     <div data-chapter={chapter.id} className="chapter-shell flex min-h-dvh flex-col">
       <ChapterFocus />
 
-      <header
-        className={`mx-auto flex w-full ${chromeWidth} items-center justify-between gap-4 px-6 py-6`}
-      >
-        <Image
-          src="/brand/ibtasaam-wordmark.webp"
-          alt="Ibtasaam"
-          width={1800}
-          height={527}
-          priority
-          sizes="(min-width: 640px) 144px, 112px"
-          className="h-auto w-28 sm:w-36"
-        />
-        <Link href="/" prefetch={false} className="chapter-back">
-          ← Title screen
-        </Link>
-      </header>
+      {header ?? (
+        <header
+          className={`mx-auto flex w-full ${chromeWidth} items-center justify-between gap-4 px-6 py-6`}
+        >
+          <Image
+            src="/brand/ibtasaam-wordmark.webp"
+            alt="Ibtasaam"
+            width={1800}
+            height={527}
+            priority
+            sizes="(min-width: 640px) 144px, 112px"
+            className="h-auto w-28 sm:w-36"
+          />
+          <Link href="/" prefetch={false} className="chapter-back">
+            ← Title screen
+          </Link>
+        </header>
+      )}
 
       <main
         className={`mx-auto flex w-full flex-1 flex-col px-6 ${
