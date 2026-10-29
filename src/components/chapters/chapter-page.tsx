@@ -13,6 +13,7 @@ type ChapterPageProps = {
   wide?: boolean;
   header?: ReactNode;
   footerNote?: ReactNode | null;
+  audioControl?: boolean;
 };
 
 const DEFAULT_FOOTER_NOTE = "Unofficial fan project · Not affiliated with Mojang";
@@ -23,9 +24,11 @@ export function ChapterPage({
   wide = false,
   header,
   footerNote,
+  audioControl = true,
 }: ChapterPageProps) {
   const note = footerNote === undefined ? DEFAULT_FOOTER_NOTE : footerNote;
   const chromeWidth = wide ? "max-w-[1720px]" : "max-w-6xl";
+  const showFooter = audioControl || Boolean(note);
 
   return (
     <div data-chapter={chapter.id} className="chapter-shell flex min-h-dvh flex-col">
@@ -80,12 +83,14 @@ export function ChapterPage({
         <div className={wide ? "mt-5" : "mt-12"}>{children}</div>
       </main>
 
-      <footer
-        className={`chapter-footer mx-auto flex w-full ${chromeWidth} flex-wrap items-center justify-between gap-4 border-t px-6 py-4`}
-      >
-        <ChapterAudioControl />
-        {note ? <span className="chapter-meta">{note}</span> : null}
-      </footer>
+      {showFooter ? (
+        <footer
+          className={`chapter-footer mx-auto flex w-full ${chromeWidth} flex-wrap items-center justify-between gap-4 border-t px-6 py-4`}
+        >
+          {audioControl ? <ChapterAudioControl /> : null}
+          {note ? <span className="chapter-meta">{note}</span> : null}
+        </footer>
+      ) : null}
     </div>
   );
 }
