@@ -27,10 +27,19 @@ Locked creative direction. Update this file when a decision changes.
 Each chapter is its own route with its own theme scope while sharing the grid, spacing scale, nav, logo, and accessibility rules. The title screen stays at `/`; chapters live at `/projects`, `/arcade`, `/ask`, `/about`, and `/contact`.
 
 - **About** — warm paper, editorial serif, grain, asymmetric layout. Holds the story, skills, stack, languages, and honors.
-- **Projects** — brutalist grid, monochrome, mono labels, pinned scroll.
+- **Projects** — a cinematic universe timeline that becomes an explorable galaxy map.
 - **Arcade** — a literal arcade hall: cabinets, CRT screens, insert-coin interaction, high-score board. Games are WebAssembly builds launched full-screen.
 - **Ask My AI** — terminal charcoal and green, monospace, typewriter reveals. AI agent with a persistent dock.
 - **Contact** — light, minimal, generous whitespace, slow fades. Reached from the phone icon.
+
+## Projects universe
+
+- `/projects` opens on a full-screen cinematic timeline, from the initial singularity to the present day, then becomes an explorable map of galaxies.
+- Nine epochs are shown: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
+- The camera follows a fixed scripted path with deliberate zoom-ins for nucleosynthesis and galaxy formation and zoom-outs for recombination, the dark ages, and accelerated expansion.
+- Galaxies represent project domains. Each domain uses a unique procedural morphology and palette, so no two galaxies are copies. Projects and their stacks live in the domain panel; project planet systems are the next iteration.
+- The score begins only after the Big Bang, because sound has no medium in the early universe. The track is read from `NEXT_PUBLIC_UNIVERSE_SCORE_URL` in production, or the gitignored `public/audio/_dev/universe/` folder in development. No score file is committed.
+- The experience is client-only and lazy-loaded, pauses rendering when the tab is hidden, respects reduced motion, and falls back to a static timeline when WebGL is unavailable.
 
 ## Arcade
 
