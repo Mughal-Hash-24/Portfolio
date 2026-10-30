@@ -266,7 +266,8 @@ export function UniverseExperience() {
     setPlaying(false);
     setMode("explore");
     setPhaseIndex(explorationPhase);
-  }, []);
+    stopScore(1800);
+  }, [stopScore]);
 
   useEffect(() => {
     if (!started) return;
@@ -402,7 +403,7 @@ export function UniverseExperience() {
           <ArrowLeftIcon />
         </Link>
 
-        {started && scoreAvailable ? (
+        {started && scoreAvailable && mode === "intro" ? (
           <button
             type="button"
             className={styles.iconButton}

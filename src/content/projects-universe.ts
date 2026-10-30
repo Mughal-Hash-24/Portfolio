@@ -116,7 +116,7 @@ export const universePhases: UniversePhase[] = phaseDefinitions.map((phase) => {
 });
 
 export const universeDuration = cursor;
-export const scoreStartOffset = 42.5;
+export const scoreStartOffset = 19;
 export const scorePhaseStart = universePhases[1].start;
 export const explorationPhase = universePhases.length - 1;
 

@@ -42,7 +42,7 @@ Each chapter is its own route with its own theme scope while sharing the grid, s
 - Seven galaxies represent the project domains: Pre-University Games, University Projects, Agentic AI & Multi-Agent Systems, NLP & Knowledge Graph Research, Hackathon Projects, Products, and Systems & Embedded. All 37 resume projects are represented; four projects are intentionally cross-listed where they belong to more than one domain.
 - Each domain uses a unique procedural morphology and palette, so no two galaxies are copies. Projects and their stacks live in the domain panel; project planet systems are the next iteration.
 - The background is populated with faint distant galaxies, nebulas, space dust, and occasional distant supernovae so the space outside the domain galaxies is not empty.
-- The score begins only after the Big Bang, because sound has no medium in the early universe. The track is read from `NEXT_PUBLIC_UNIVERSE_SCORE_URL` in production, or the gitignored `public/audio/_dev/universe/` folder in development. No score file is committed.
+- The score begins only after the Big Bang, because sound has no medium in the early universe. It enters 19 seconds into the track as inflation begins and fades out when the cinematic ends. The track is read from `NEXT_PUBLIC_UNIVERSE_SCORE_URL` in production, or the gitignored `public/audio/_dev/universe/` folder in development. No score file is committed.
 - The experience is client-only and lazy-loaded, pauses rendering when the tab is hidden, respects reduced motion, and falls back to a static timeline when WebGL is unavailable.
 
 ## Arcade
