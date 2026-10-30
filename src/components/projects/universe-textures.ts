@@ -80,6 +80,59 @@ export function ringTexture() {
   return ringCache;
 }
 
+let backgroundGalaxyCache: THREE.CanvasTexture | null = null;
+
+export function backgroundGalaxyTexture() {
+  if (backgroundGalaxyCache) return backgroundGalaxyCache;
+
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const context = canvas.getContext("2d");
+
+  if (context) {
+    const random = createRandom(0x9a1a);
+    context.translate(size / 2, size / 2);
+
+    const core = context.createRadialGradient(0, 0, 0, 0, 0, 22);
+    core.addColorStop(0, "rgba(255,255,255,0.95)");
+    core.addColorStop(0.35, "rgba(255,255,255,0.45)");
+    core.addColorStop(1, "rgba(255,255,255,0)");
+    context.fillStyle = core;
+    context.beginPath();
+    context.arc(0, 0, 22, 0, Math.PI * 2);
+    context.fill();
+
+    for (let arm = 0; arm < 3; arm += 1) {
+      for (let step = 0; step < 54; step += 1) {
+        const t = step / 54;
+        const angle = (arm * Math.PI * 2) / 3 + t * 4.6;
+        const radius = 4 + t * 48;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius * 0.46;
+        const alpha = 0.28 * (1 - t * 0.65);
+        context.fillStyle = `rgba(255,255,255,${alpha})`;
+        context.beginPath();
+        context.arc(x, y, 0.9 + (1 - t) * 1.2, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+
+    for (let index = 0; index < 80; index += 1) {
+      const angle = random() * Math.PI * 2;
+      const radius = Math.sqrt(random()) * 54;
+      context.fillStyle = `rgba(255,255,255,${0.08 + random() * 0.14})`;
+      context.fillRect(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.55, 1, 1);
+    }
+
+    context.translate(-size / 2, -size / 2);
+  }
+
+  backgroundGalaxyCache = new THREE.CanvasTexture(canvas);
+  backgroundGalaxyCache.colorSpace = THREE.SRGBColorSpace;
+  return backgroundGalaxyCache;
+}
+
 let cmbCache: THREE.CanvasTexture | null = null;
 
 export function cmbTexture() {

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import {
+  projectById,
   projectDomains,
   universeDescription,
   universePhases,
   universeStats,
+  type UniverseProject,
 } from "@/content/projects-universe";
 
 export function UniverseStatic() {
@@ -53,28 +55,33 @@ export function UniverseStatic() {
             Domains
           </h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {projectDomains.map((domain) => (
-              <article
-                key={domain.id}
-                className="rounded-xl border border-white/10 bg-[#05070e] p-5"
-              >
-                <h3 className="font-serif text-2xl leading-tight">{domain.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#a9a396]">{domain.blurb}</p>
-                <ul className="mt-4 flex flex-col gap-3">
-                  {domain.projects.map((project) => (
-                    <li key={project.id}>
-                      <p className="text-sm text-[#e9e4d8]">{project.name}</p>
-                      <p className="font-mono text-[10px] leading-relaxed text-[#8f8a7e]">
-                        {project.tagline}
-                      </p>
-                      <p className="mt-1 font-mono text-[9px] leading-relaxed text-[#6f6a60]">
-                        {project.stack.join(" · ")}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
+            {projectDomains.map((domain) => {
+              const projects = domain.projectIds
+                .map((id) => projectById.get(id))
+                .filter((project): project is UniverseProject => Boolean(project));
+
+              return (
+                <article
+                  key={domain.id}
+                  className="rounded-xl border border-white/10 bg-[#05070e] p-5"
+                >
+                  <h3 className="font-serif text-2xl leading-tight">{domain.name}</h3>
+                  <ul className="mt-4 flex flex-col gap-3">
+                    {projects.map((project) => (
+                      <li key={project.id}>
+                        <p className="text-sm text-[#e9e4d8]">{project.name}</p>
+                        <p className="font-mono text-[10px] leading-relaxed text-[#8f8a7e]">
+                          {project.tagline}
+                        </p>
+                        <p className="mt-1 font-mono text-[9px] leading-relaxed text-[#6f6a60]">
+                          {project.stack.join(" · ")}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
           </div>
         </section>
 

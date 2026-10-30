@@ -40,7 +40,7 @@ export const cosmosVertexShader = /* glsl */ `
     float ex = smoothstep(0.025, expEnd, uProg);
     vec3 cloud = position * ex;
 
-    float col = sm(0.30, 0.92, uProg);
+    float col = sm(0.52, 0.80, uProg);
     float variation = 0.82 + 0.12 * mod(gid, 3.0);
     float w = (SPIN / (0.4 + r)) * variation * step(0.0, gid);
     vec3 gal = aCenter * uExpand + rot(aLocal, aAxis, uTime * w);
@@ -70,8 +70,10 @@ export const cosmosVertexShader = /* glsl */ `
     float s = size * mix(1.8, 1.0, sm(0.0, 0.4, uProg)) * (1.0 + 0.35 * isHov);
     gl_PointSize = clamp(s * uScale / -mv.z * 1.35, 1.2, 34.0);
 
+    float density = mix(0.28, 0.95, sm(0.32, 0.62, uProg));
+
     vColor = c;
-    vAlpha = b * tw * 0.92;
+    vAlpha = b * tw * 0.92 * density;
   }
 `;
 

@@ -35,9 +35,13 @@ Each chapter is its own route with its own theme scope while sharing the grid, s
 ## Projects universe
 
 - `/projects` opens on a full-screen cinematic timeline, from the initial singularity to the present day, then becomes an explorable map of galaxies.
-- Nine epochs are shown: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
+- The cinematic runs about 42 seconds across nine epochs: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
+- During the cinematic the only visible text is the bold name of the current epoch. The event descriptions remain in the screen-reader status and the static no-WebGL fallback, not in the visual HUD.
 - The camera follows a fixed scripted path with deliberate zoom-ins for nucleosynthesis and galaxy formation and zoom-outs for recombination, the dark ages, and accelerated expansion.
-- Galaxies represent project domains. Each domain uses a unique procedural morphology and palette, so no two galaxies are copies. Projects and their stacks live in the domain panel; project planet systems are the next iteration.
+- Matter starts uniform and only begins collapsing after the first stars ignite. The first-star field is deliberately larger than the final galaxy count, and those stars converge into the galaxies during galaxy formation.
+- Seven galaxies represent the project domains: Pre-University Games, University Projects, Agentic AI & Multi-Agent Systems, NLP & Knowledge Graph Research, Hackathon Projects, Products, and Systems & Embedded. All 37 resume projects are represented; four projects are intentionally cross-listed where they belong to more than one domain.
+- Each domain uses a unique procedural morphology and palette, so no two galaxies are copies. Projects and their stacks live in the domain panel; project planet systems are the next iteration.
+- The background is populated with faint distant galaxies, nebulas, space dust, and occasional distant supernovae so the space outside the domain galaxies is not empty.
 - The score begins only after the Big Bang, because sound has no medium in the early universe. The track is read from `NEXT_PUBLIC_UNIVERSE_SCORE_URL` in production, or the gitignored `public/audio/_dev/universe/` folder in development. No score file is committed.
 - The experience is client-only and lazy-loaded, pauses rendering when the tab is hidden, respects reduced motion, and falls back to a static timeline when WebGL is unavailable.
 

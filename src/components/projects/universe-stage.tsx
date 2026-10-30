@@ -27,11 +27,7 @@ const UniverseExperience = dynamic(
   () => import("./universe-experience").then((module) => module.UniverseExperience),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-dvh w-full items-center justify-center bg-[#02030a] font-mono text-[10px] tracking-[0.3em] text-[#8f8a7e] uppercase">
-        Charting the universe…
-      </div>
-    ),
+    loading: () => <div className="h-dvh w-full bg-[#02030a]" aria-label="Loading the universe" />,
   },
 );
 

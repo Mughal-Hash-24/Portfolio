@@ -282,7 +282,31 @@ function galaxyAxis(domain: UniverseDomain, random: () => number) {
     return new THREE.Vector3(0.98, 0.08, 0.18).normalize();
   }
 
-  const y = 0.15 + random() * 0.45;
+  if (domain.template === "barred") {
+    return new THREE.Vector3(0.18, 0.96, 0.2).normalize();
+  }
+
+  if (domain.template === "grand-design") {
+    return new THREE.Vector3(0.25, 0.9, 0.3).normalize();
+  }
+
+  if (domain.template === "flocculent") {
+    return new THREE.Vector3(0.2, 0.92, 0.32).normalize();
+  }
+
+  if (domain.template === "ring") {
+    return new THREE.Vector3(0.08, 1, 0.12).normalize();
+  }
+
+  if (domain.template === "interacting") {
+    return new THREE.Vector3(
+      0.35 + random() * 0.25,
+      0.68 + random() * 0.2,
+      (random() - 0.5) * 0.6,
+    ).normalize();
+  }
+
+  const y = 0.3 + random() * 0.5;
   return new THREE.Vector3(random() * 2 - 1, y, random() * 2 - 1).normalize();
 }
 
@@ -362,13 +386,11 @@ export function buildUniverse(options: { perGalaxy: number; dust: number }): Uni
     center[offset + 1] = galaxy.center.y;
     center[offset + 2] = galaxy.center.z;
 
-    direction
-      .set(gaussian(), gaussian(), gaussian())
-      .normalize()
-      .multiplyScalar(Math.sqrt(random()) * 4.4);
-    cloud[offset] = galaxy.center.x + direction.x;
-    cloud[offset + 1] = galaxy.center.y + direction.y;
-    cloud[offset + 2] = galaxy.center.z + direction.z;
+    direction.set(gaussian(), gaussian(), gaussian()).normalize();
+    const cloudRadius = 18 * Math.cbrt(random());
+    cloud[offset] = direction.x * cloudRadius;
+    cloud[offset + 1] = direction.y * cloudRadius * 0.82;
+    cloud[offset + 2] = direction.z * cloudRadius;
 
     const brightness = 0.62 + random() * 0.72;
     color[offset] = sample.color.r * brightness;
