@@ -162,12 +162,12 @@ function CameraRig({
     if (mode === "intro") {
       const progress = timeline.current?.progress ?? 0;
       const fov = sampleCamera(progress, desiredPosition.current, desiredTarget.current, framing);
-      camera.position.lerp(desiredPosition.current, 1 - Math.exp(-3.1 * dt));
-      look.current.lerp(desiredTarget.current, 1 - Math.exp(-4.2 * dt));
+      camera.position.lerp(desiredPosition.current, 1 - Math.exp(-5.5 * dt));
+      look.current.lerp(desiredTarget.current, 1 - Math.exp(-7.5 * dt));
       camera.lookAt(look.current);
 
       if (Math.abs(camera.fov - fov) > 0.01) {
-        camera.fov += (fov - camera.fov) * (1 - Math.exp(-5 * dt));
+        camera.fov += (fov - camera.fov) * (1 - Math.exp(-8.5 * dt));
         camera.updateProjectionMatrix();
       }
 
