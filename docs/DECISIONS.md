@@ -35,7 +35,7 @@ Each chapter is its own route with its own theme scope while sharing the grid, s
 ## Projects universe
 
 - `/projects` opens on a full-screen cinematic timeline, from the initial singularity to the present day, then becomes an explorable map of galaxies.
-- The cinematic runs at most about ten seconds across nine epochs: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
+- The cinematic runs at most about fifteen seconds across nine epochs: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
 - During the cinematic the only visible text is the bold name of the current epoch. The event descriptions remain in the screen-reader status and the static no-WebGL fallback, not in the visual HUD.
 - The camera follows a fixed scripted path with deliberate zoom-ins for nucleosynthesis and galaxy formation and zoom-outs for recombination, the dark ages, and accelerated expansion.
 - Matter starts uniform and only begins collapsing after the first stars ignite. The first-star field is deliberately larger than the final galaxy count, and those stars converge into the galaxies during galaxy formation.
