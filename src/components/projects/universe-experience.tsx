@@ -3,6 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useAudio } from "@/components/audio/audio-provider";
 import {
   explorationPhase,
   projectById,
@@ -16,6 +17,7 @@ import {
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { buildUniverse } from "./universe-build";
 import { UniverseScene } from "./universe-scene";
+import { UniverseAudioDock } from "./universe-audio-dock";
 import { useUniverseScore } from "./use-universe-score";
 import type { TimelineState, UniverseMode } from "./universe-types";
 import styles from "./universe.module.css";
@@ -189,12 +191,15 @@ export function UniverseExperience() {
     toggleMuted,
     retry: retryScore,
   } = useUniverseScore();
+  const audio = useAudio();
 
   const phase = universePhases[phaseIndex];
   const selectedDomain = selected === null ? null : projectDomains[selected];
   const explore = mode === "explore";
 
   const begin = useCallback(() => {
+    if (audio.isPlaying) audio.toggle();
+
     const state = timeline.current;
     state.started = true;
     state.elapsed = reducedMotion ? universeDuration : 0;
@@ -210,7 +215,7 @@ export function UniverseExperience() {
     if (!reducedMotion) {
       syncScore(0);
     }
-  }, [reducedMotion, syncScore]);
+  }, [audio, reducedMotion, syncScore]);
 
   const skip = useCallback(() => {
     const state = timeline.current;
@@ -228,6 +233,8 @@ export function UniverseExperience() {
   }, [stopScore]);
 
   const replay = useCallback(() => {
+    if (audio.isPlaying) audio.toggle();
+
     const state = timeline.current;
     state.started = true;
     state.elapsed = 0;
@@ -241,7 +248,13 @@ export function UniverseExperience() {
     setSelected(null);
     setHovered(null);
     syncScore(0);
-  }, [syncScore]);
+  }, [audio, syncScore]);
+
+  const yieldScore = useCallback(() => {
+    if (scoreStatus === "playing") {
+      stopScore(250);
+    }
+  }, [scoreStatus, stopScore]);
 
   const togglePlayback = useCallback(() => {
     if (mode !== "intro") return;
@@ -523,6 +536,8 @@ export function UniverseExperience() {
           </button>
         </div>
       ) : null}
+
+      {started ? <UniverseAudioDock onPrime={yieldScore} /> : null}
     </main>
   );
 }

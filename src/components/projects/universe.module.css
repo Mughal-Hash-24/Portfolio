@@ -494,6 +494,355 @@
   color: var(--accent);
 }
 
+.audioDock {
+  position: absolute;
+  bottom: clamp(16px, 3.2vh, 34px);
+  left: clamp(18px, 5vw, 72px);
+  z-index: 35;
+}
+
+.audioTrigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgb(5 7 14 / 0.72);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.audioTrigger:hover {
+  border-color: rgb(255 179 107 / 0.55);
+  background: rgb(10 13 24 / 0.78);
+}
+
+.audioDisc {
+  position: relative;
+  width: 28px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgb(255 244 224 / 0.45), transparent 46%),
+    repeating-radial-gradient(circle, rgb(214 152 90 / 0.9) 0 1px, rgb(122 78 40 / 0.9) 1px 3px);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 179 107 / 0.35),
+    0 0 16px rgb(255 179 107 / 0.12);
+}
+
+.audioDisc::after {
+  content: "";
+  position: absolute;
+  inset: 31%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe2b0, var(--accent) 58%, #a5622c);
+  box-shadow: inset 0 0 0 1px rgb(2 3 10 / 0.45);
+}
+
+.audioDock[data-audible="true"] .audioDisc {
+  animation: recordSpin 3.4s linear infinite;
+}
+
+.audioDock[data-audible="true"] .audioTrigger::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid rgb(255 179 107 / 0.35);
+  border-radius: 50%;
+  animation: beginPulse 2.8s ease-out infinite;
+}
+
+.audioPanel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  z-index: 36;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgb(5 7 14 / 0.8);
+  box-shadow: 0 18px 60px rgb(0 0 0 / 0.42);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.98);
+  transform-origin: bottom left;
+  transition:
+    opacity 200ms ease,
+    transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 200ms;
+}
+
+.audioDock[data-open="true"] .audioPanel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.audioHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.audioKicker {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(233 228 216 / 0.5);
+}
+
+.audioState {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(233 228 216 / 0.4);
+}
+
+.audioDock[data-audible="true"] .audioState {
+  color: rgb(126 232 255 / 0.8);
+}
+
+.audioTrack {
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audioWave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+}
+
+.audioWave span {
+  width: 2px;
+  height: 3px;
+  border-radius: 1px;
+  background: rgb(126 232 255 / 0.4);
+}
+
+.audioDock[data-audible="true"] .audioWave span {
+  background: rgb(126 232 255 / 0.9);
+  animation: signalDance 1.15s ease-in-out infinite;
+}
+
+.audioDock[data-audible="true"] .audioWave span:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.audioDock[data-audible="true"] .audioWave span:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.audioDock[data-audible="true"] .audioWave span:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.audioDock[data-audible="true"] .audioWave span:nth-child(4) {
+  animation-delay: 340ms;
+}
+
+.audioDock[data-audible="true"] .audioWave span:nth-child(5) {
+  animation-delay: 170ms;
+}
+
+.audioControls {
+  display: flex;
+  gap: 6px;
+}
+
+.audioControl {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 0.03);
+  color: rgb(233 228 216 / 0.72);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.audioControl:hover {
+  border-color: rgb(255 179 107 / 0.55);
+  background: rgb(255 179 107 / 0.06);
+  color: var(--accent);
+}
+
+.audioArchive {
+  width: min(400px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: min(560px, calc(100dvh - 48px));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+}
+
+.audioArchive::backdrop {
+  background: rgb(2 3 10 / 0.66);
+  backdrop-filter: blur(6px);
+}
+
+.audioArchivePanel {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgb(5 7 14 / 0.92);
+  box-shadow: 0 30px 90px rgb(0 0 0 / 0.55);
+}
+
+.audioArchive[open] .audioArchivePanel {
+  animation: riseIn 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.audioArchiveHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.audioArchiveTitle {
+  margin: 2px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.audioArchiveState {
+  margin: 3px 0 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(233 228 216 / 0.44);
+}
+
+.audioArchiveClose {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(233 228 216 / 0.55);
+  font-family: var(--mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.audioArchiveClose:hover {
+  border-color: rgb(255 179 107 / 0.55);
+  color: var(--paper);
+}
+
+.audioArchiveGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 14px;
+}
+
+.audioArchiveDisc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.03);
+  color: rgb(233 228 216 / 0.78);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.audioArchiveDisc:hover {
+  border-color: rgb(255 179 107 / 0.5);
+  background: rgb(255 179 107 / 0.05);
+  color: var(--paper);
+}
+
+.audioArchiveDisc[data-active="true"] {
+  border-color: rgb(255 179 107 / 0.6);
+  background: rgb(255 179 107 / 0.08);
+  color: var(--paper);
+}
+
+.audioArchiveNote {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(233 228 216 / 0.34);
+}
+
+@keyframes recordSpin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes signalDance {
+  0%,
+  100% {
+    height: 3px;
+  }
+  50% {
+    height: 13px;
+  }
+}
+
 @keyframes riseIn {
   from {
     opacity: 0;
@@ -597,6 +946,21 @@
     bottom: 12px;
   }
 
+  .audioDock {
+    top: 64px;
+    right: 14px;
+    bottom: auto;
+    left: auto;
+  }
+
+  .audioPanel {
+    bottom: auto;
+    top: calc(100% + 10px);
+    right: 0;
+    left: auto;
+    transform-origin: top right;
+  }
+
   .iconButton {
     width: 34px;
     height: 34px;
@@ -639,7 +1003,11 @@
   .domainIndex,
   .projectPanel,
   .beginGlow,
-  .beginButton::after {
+  .beginButton::after,
+  .audioDisc,
+  .audioTrigger::after,
+  .audioWave span,
+  .audioArchivePanel {
     animation: none;
   }
 
@@ -648,7 +1016,12 @@
   .controlIcon,
   .domainButton,
   .panelClose,
-  .worldLabel {
+  .worldLabel,
+  .audioTrigger,
+  .audioPanel,
+  .audioControl,
+  .audioArchivePanel,
+  .audioArchiveDisc {
     transition: none;
   }
 }
