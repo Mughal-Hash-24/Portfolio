@@ -66,14 +66,14 @@ export const cosmosVertexShader = /* glsl */ `
     float isSel = 1.0 - step(0.5, abs(gid - uSel));
     float isHov = 1.0 - step(0.5, abs(gid - uHover));
     float dim = uSel > -5.0 ? mix(0.4, 1.0, isSel) : 1.0;
-    b *= dim * (1.0 + 0.9 * isHov + 0.5 * isSel);
+    b *= dim * (1.0 + 0.35 * isHov + 0.18 * isSel);
 
     float tw = 1.0 - uTwinkle * 0.5 * (0.5 + 0.5 * sin(uTime * (1.5 + seed * 5.0) + seed * 60.0));
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
 
-    float s = size * mix(1.8, 1.0, sm(0.0, 0.4, uProg)) * (1.0 + 0.35 * isHov);
+    float s = size * mix(1.8, 1.0, sm(0.0, 0.4, uProg)) * (1.0 + 0.2 * isHov);
     gl_PointSize = clamp(s * uScale / -mv.z * 1.35, 1.2, 34.0);
 
     float density = mix(0.28, 0.95, sm(0.32, 0.62, uProg)) + collapse * 0.2;

@@ -1091,10 +1091,10 @@ function GalaxyCores({
 
       const isSelected = selected === galaxy.id;
       const isHovered = hovered === galaxy.id;
-      const target = reveal * (focus ? (isSelected ? 0.5 : 0.035) : isHovered ? 0.42 : 0.16);
+      const target = reveal * (focus ? (isSelected ? 0.26 : 0.03) : isHovered ? 0.2 : 0.1);
       const material = sprite.material;
 
-      material.opacity += (target - material.opacity) * Math.min(1, delta * 3.4);
+      material.opacity += (target - material.opacity) * Math.min(1, delta * 4);
       sprite.visible = material.opacity > 0.006;
       sprite.position.set(
         galaxy.center.x * expand,
@@ -1102,7 +1102,7 @@ function GalaxyCores({
         galaxy.center.z * expand,
       );
       const pulse = 1 + 0.035 * Math.sin(clock.elapsedTime * 1.1 + index * 1.7);
-      sprite.scale.setScalar(galaxy.radius * 2.5 * pulse);
+      sprite.scale.setScalar(galaxy.radius * 1.75 * pulse);
     });
   });
 
@@ -1427,9 +1427,9 @@ export function UniverseScene({
       <EffectComposer multisampling={0}>
         <Bloom
           mipmapBlur
-          intensity={0.95}
-          luminanceThreshold={0.24}
-          luminanceSmoothing={0.4}
+          intensity={0.8}
+          luminanceThreshold={0.3}
+          luminanceSmoothing={0.35}
           radius={0.8}
         />
         <Vignette eskil={false} offset={0.18} darkness={0.72} />
