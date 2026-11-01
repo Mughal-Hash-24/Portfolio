@@ -762,15 +762,17 @@ function PrimordialSoup({
   const points = useRef<THREE.Points>(null);
 
   const soup = useMemo(() => {
-    const count = quality === "mobile" ? 1600 : 3200;
+    const count = quality === "mobile" ? 3600 : 7200;
     const random = createRandom(0xba6b00);
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const palette = [
-      new THREE.Color(1, 0.88, 0.58),
-      new THREE.Color(0.55, 0.88, 1),
-      new THREE.Color(1, 0.45, 0.78),
-      new THREE.Color(1, 0.98, 0.92),
+      new THREE.Color("#ff2e7e"),
+      new THREE.Color("#00e5ff"),
+      new THREE.Color("#ffab00"),
+      new THREE.Color("#8dff3a"),
+      new THREE.Color("#a44dff"),
+      new THREE.Color("#ffffff"),
     ];
 
     for (let index = 0; index < count; index += 1) {
@@ -779,10 +781,13 @@ function PrimordialSoup({
       if (direction.lengthSq() < 0.0001) direction.set(0, 1, 0);
       direction.normalize();
 
-      const radius = Math.cbrt(random()) * 2.7;
+      const radius = 26 * Math.cbrt(random());
       const color = palette[Math.floor(random() * palette.length)];
 
-      positions.set([direction.x * radius, direction.y * radius, direction.z * radius], index * 3);
+      positions.set(
+        [direction.x * radius, direction.y * radius * 0.78, direction.z * radius],
+        index * 3,
+      );
       colors.set([color.r, color.g, color.b], index * 3);
     }
 
@@ -794,14 +799,14 @@ function PrimordialSoup({
     if (!current) return;
 
     const progress = timeline.current?.progress ?? 0;
-    const opacity = smoothstep(0.16, 0.21, progress) * (1 - smoothstep(0.29, 0.36, progress));
+    const opacity = smoothstep(0.155, 0.2, progress) * (1 - smoothstep(0.3, 0.36, progress));
     const material = current.material as THREE.PointsMaterial;
 
-    material.opacity = opacity * 0.9;
+    material.opacity = opacity * 0.95;
     current.visible = opacity > 0.004;
-    current.rotation.y = clock.elapsedTime * 0.06;
-    current.rotation.x = Math.sin(clock.elapsedTime * 0.11) * 0.15;
-    current.scale.setScalar(0.62 + 0.58 * smoothstep(0.17, 0.3, progress));
+    current.rotation.y = clock.elapsedTime * 0.05;
+    current.rotation.x = Math.sin(clock.elapsedTime * 0.09) * 0.12;
+    current.scale.setScalar(0.7 + 0.5 * smoothstep(0.17, 0.3, progress));
   });
 
   return (
@@ -812,7 +817,7 @@ function PrimordialSoup({
       </bufferGeometry>
       <pointsMaterial
         map={glowTexture()}
-        size={0.085}
+        size={0.11}
         vertexColors
         transparent
         opacity={0}
@@ -824,37 +829,38 @@ function PrimordialSoup({
   );
 }
 
-function Nuclei({ timeline }: { timeline: RefObject<TimelineState> }) {
+function Nuclei({ timeline, quality }: { timeline: RefObject<TimelineState>; quality: Quality }) {
   const group = useRef<THREE.Group>(null);
   const sprites = useRef<Array<THREE.Sprite | null>>([]);
 
   const nuclei = useMemo(() => {
     const random = createRandom(0x51e11);
-    const palette = ["#ffd27a", "#9fd8ff", "#ff8ad8", "#ffffff"];
+    const palette = ["#ff2e7e", "#00e5ff", "#ffab00", "#8dff3a", "#a44dff", "#ffffff"];
+    const count = quality === "mobile" ? 26 : 44;
 
-    return Array.from({ length: 28 }, (_, index) => {
+    return Array.from({ length: count }, (_, index) => {
       const direction = new THREE.Vector3(random() * 2 - 1, random() * 2 - 1, random() * 2 - 1);
 
       if (direction.lengthSq() < 0.0001) direction.set(0, 1, 0);
       direction.normalize();
-      const radius = 0.25 + Math.sqrt(random()) * 1.9;
+      const radius = 2 + Math.cbrt(random()) * 19;
 
       return {
-        position: [direction.x * radius, direction.y * radius * 0.72, direction.z * radius] as [
+        position: [direction.x * radius, direction.y * radius * 0.78, direction.z * radius] as [
           number,
           number,
           number,
         ],
         color: palette[index % palette.length],
-        size: 0.14 + random() * 0.24,
+        size: 0.5 + random() * 0.75,
         phase: random() * Math.PI * 2,
       };
     });
-  }, []);
+  }, [quality]);
 
   useFrame(({ clock }, delta) => {
     const progress = timeline.current?.progress ?? 0;
-    const power = smoothstep(0.16, 0.19, progress) * (1 - smoothstep(0.28, 0.33, progress));
+    const power = smoothstep(0.16, 0.2, progress) * (1 - smoothstep(0.29, 0.34, progress));
 
     if (group.current) {
       group.current.rotation.y = clock.elapsedTime * 0.16;
@@ -1385,7 +1391,7 @@ export function UniverseScene({
       <NebulaBackdrop />
       <Cosmos data={data} timeline={timeline} selected={selected} hovered={hovered} />
       <PrimordialSoup timeline={timeline} quality={quality} />
-      <Nuclei timeline={timeline} />
+      <Nuclei timeline={timeline} quality={quality} />
       <CMBShell timeline={timeline} />
       <CosmicWeb data={data} timeline={timeline} />
       <FirstStars data={data} timeline={timeline} />
