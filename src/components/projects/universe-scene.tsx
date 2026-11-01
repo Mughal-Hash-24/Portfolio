@@ -2,7 +2,7 @@
 
 /* eslint-disable react-hooks/immutability -- three.js objects, camera controls, and shader uniforms are mutated imperatively inside useFrame. */
 
-import { Html, OrbitControls, Stars } from "@react-three/drei";
+import { Html, OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef, type CSSProperties, type RefObject } from "react";
@@ -14,7 +14,14 @@ import {
   universeDuration,
 } from "@/content/projects-universe";
 import { starWorld, type UniverseData } from "./universe-build";
-import { cosmosFragmentShader, cosmosVertexShader } from "./universe-shaders";
+import {
+  cosmosFragmentShader,
+  cosmosVertexShader,
+  meteorFragmentShader,
+  meteorVertexShader,
+  starfieldFragmentShader,
+  starfieldVertexShader,
+} from "./universe-shaders";
 import {
   backgroundGalaxyTexture,
   cmbTexture,
@@ -327,6 +334,8 @@ function BigBangFlash({ timeline }: { timeline: RefObject<TimelineState> }) {
 }
 
 function NebulaBackdrop() {
+  const group = useRef<THREE.Group>(null);
+
   const clouds = [
     {
       position: [-32, 8, -24] as const,
@@ -382,10 +391,46 @@ function NebulaBackdrop() {
       color: "#ff6b8a",
       opacity: 0.03,
     },
+    {
+      position: [22, 24, 30] as const,
+      scale: 66,
+      color: "#b44dff",
+      opacity: 0.032,
+    },
+    {
+      position: [-18, -18, 34] as const,
+      scale: 58,
+      color: "#ff4d9e",
+      opacity: 0.03,
+    },
+    {
+      position: [40, 4, 26] as const,
+      scale: 54,
+      color: "#3550b8",
+      opacity: 0.03,
+    },
+    {
+      position: [-6, 26, 10] as const,
+      scale: 64,
+      color: "#2ec7c0",
+      opacity: 0.026,
+    },
+    {
+      position: [14, -8, 42] as const,
+      scale: 70,
+      color: "#ffb36b",
+      opacity: 0.024,
+    },
   ];
 
+  useFrame(({ clock }) => {
+    if (!group.current) return;
+    group.current.rotation.y = clock.elapsedTime * 0.004;
+    group.current.rotation.x = Math.sin(clock.elapsedTime * 0.003) * 0.015;
+  });
+
   return (
-    <>
+    <group ref={group}>
       {clouds.map((cloud, index) => (
         <sprite
           key={`${cloud.color}-${index}`}
@@ -405,7 +450,252 @@ function NebulaBackdrop() {
           />
         </sprite>
       ))}
-    </>
+    </group>
+  );
+}
+
+const STARFIELD_COLORS: Array<[string, number]> = [
+  ["#a8c1ff", 0.3],
+  ["#f6f4ff", 0.26],
+  ["#fff3e0", 0.18],
+  ["#ffd9a0", 0.12],
+  ["#ffb36b", 0.08],
+  ["#ff8a70", 0.06],
+];
+
+function Starfield({ quality }: { quality: Quality }) {
+  const points = useRef<THREE.Points>(null);
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: starfieldVertexShader,
+        fragmentShader: starfieldFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0 },
+          uScale: { value: 800 },
+        },
+      }),
+    [],
+  );
+
+  const field = useMemo(() => {
+    const count = quality === "mobile" ? 2600 : 5200;
+    const random = createRandom(0x57a1);
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const twinkle = new Float32Array(count * 2);
+    const tint = new THREE.Color();
+
+    for (let index = 0; index < count; index += 1) {
+      const direction = new THREE.Vector3(random() * 2 - 1, random() * 2 - 1, random() * 2 - 1);
+
+      if (direction.lengthSq() < 0.0001) direction.set(0, 1, 0);
+      direction.normalize();
+      const radius = 105 + random() * 60;
+
+      positions.set([direction.x * radius, direction.y * radius, direction.z * radius], index * 3);
+
+      const roll = random();
+      let cursor = 0;
+      let hex = STARFIELD_COLORS[0][0];
+
+      for (const candidate of STARFIELD_COLORS) {
+        cursor += candidate[1];
+        if (roll <= cursor) {
+          hex = candidate[0];
+          break;
+        }
+      }
+      tint.set(hex);
+      colors.set([tint.r, tint.g, tint.b], index * 3);
+
+      sizes[index] = 0.3 + Math.pow(random(), 3) * 0.9;
+      twinkle[index * 2] = random() * Math.PI * 2;
+      twinkle[index * 2 + 1] = 0.4 + random() * 2.2;
+    }
+
+    return { positions, colors, sizes, twinkle };
+  }, [quality]);
+
+  useFrame(({ clock, size, camera, gl }) => {
+    if (points.current) points.current.rotation.y = clock.elapsedTime * 0.0016;
+
+    const fov = (camera as THREE.PerspectiveCamera).fov;
+    material.uniforms.uTime.value = clock.elapsedTime;
+    material.uniforms.uScale.value =
+      (size.height * gl.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(fov) / 2));
+  });
+
+  return (
+    <points ref={points} frustumCulled={false} renderOrder={-6}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[field.positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[field.colors, 3]} />
+        <bufferAttribute attach="attributes-aSize" args={[field.sizes, 1]} />
+        <bufferAttribute attach="attributes-aTwinkle" args={[field.twinkle, 2]} />
+      </bufferGeometry>
+      <primitive object={material} attach="material" />
+    </points>
+  );
+}
+
+const METEOR_COUNT = 3;
+const METEOR_TRAIL = 16;
+const METEOR_COLORS = ["#cfe4ff", "#ffe9c9", "#bff2ff"];
+
+type Meteor = {
+  on: boolean;
+  age: number;
+  life: number;
+  position: THREE.Vector3;
+  velocity: THREE.Vector3;
+  history: THREE.Vector3[];
+};
+
+function ShootingStars({ active }: { active: boolean }) {
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: meteorVertexShader,
+        fragmentShader: meteorFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uScale: { value: 800 },
+        },
+      }),
+    [],
+  );
+
+  const field = useMemo(() => {
+    const count = METEOR_COUNT * METEOR_TRAIL;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const fades = new Float32Array(count);
+    const tint = new THREE.Color();
+
+    for (let meteor = 0; meteor < METEOR_COUNT; meteor += 1) {
+      tint.set(METEOR_COLORS[meteor % METEOR_COLORS.length]);
+
+      for (let step = 0; step < METEOR_TRAIL; step += 1) {
+        const index = meteor * METEOR_TRAIL + step;
+        colors.set([tint.r, tint.g, tint.b], index * 3);
+        sizes[index] = step === 0 ? 1.5 : 1 - (step / METEOR_TRAIL) * 0.55;
+      }
+    }
+
+    return { positions, colors, sizes, fades };
+  }, []);
+
+  const positionAttribute = useRef<THREE.BufferAttribute>(null);
+  const sizeAttribute = useRef<THREE.BufferAttribute>(null);
+  const fadeAttribute = useRef<THREE.BufferAttribute>(null);
+  const meteors = useRef<Meteor[]>(
+    Array.from({ length: METEOR_COUNT }, () => ({
+      on: false,
+      age: 0,
+      life: 1.2,
+      position: new THREE.Vector3(),
+      velocity: new THREE.Vector3(),
+      history: Array.from({ length: METEOR_TRAIL }, () => new THREE.Vector3()),
+    })),
+  );
+  const next = useRef(2);
+
+  useFrame(({ size, camera, gl }, delta) => {
+    const dt = Math.min(delta, 0.1);
+    const fov = (camera as THREE.PerspectiveCamera).fov;
+    material.uniforms.uScale.value =
+      (size.height * gl.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(fov) / 2));
+
+    next.current -= dt;
+
+    if (active && next.current <= 0) {
+      const slot = meteors.current.find((candidate) => !candidate.on);
+
+      if (slot) {
+        const direction = new THREE.Vector3(
+          Math.random() * 2 - 1,
+          Math.random() * 2 - 1,
+          Math.random() * 2 - 1,
+        );
+
+        if (direction.lengthSq() < 0.0001) direction.set(0, 1, 0);
+        direction.normalize();
+        slot.position.copy(direction).multiplyScalar(70 + Math.random() * 40);
+
+        const tangent = new THREE.Vector3(
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+        ).cross(slot.position);
+
+        if (tangent.lengthSq() < 0.001) tangent.set(1, 0, 0);
+        tangent.normalize();
+        slot.velocity.copy(tangent).multiplyScalar(38 + Math.random() * 22);
+        slot.on = true;
+        slot.age = 0;
+        slot.life = 1 + Math.random() * 0.7;
+        slot.history.forEach((point) => point.copy(slot.position));
+      }
+
+      next.current = 2.8 + Math.random() * 3.4;
+    }
+
+    meteors.current.forEach((meteor, meteorIndex) => {
+      if (meteor.on) {
+        meteor.age += dt;
+        meteor.position.addScaledVector(meteor.velocity, dt);
+
+        for (let step = METEOR_TRAIL - 1; step > 0; step -= 1) {
+          meteor.history[step].copy(meteor.history[step - 1]);
+        }
+        meteor.history[0].copy(meteor.position);
+
+        if (meteor.age >= meteor.life) meteor.on = false;
+      }
+
+      const life = Math.min(meteor.age / meteor.life, 1);
+      const envelope =
+        meteor.on && active ? smoothstep(0, 0.12, life) * (1 - smoothstep(0.55, 1, life)) : 0;
+
+      for (let step = 0; step < METEOR_TRAIL; step += 1) {
+        const index = meteorIndex * METEOR_TRAIL + step;
+        const point = meteor.history[step];
+
+        field.positions[index * 3] = point.x;
+        field.positions[index * 3 + 1] = point.y;
+        field.positions[index * 3 + 2] = point.z;
+        field.fades[index] = envelope * Math.pow(1 - step / METEOR_TRAIL, 1.5);
+        field.sizes[index] = step === 0 ? 1.5 : 1 - (step / METEOR_TRAIL) * 0.55;
+      }
+    });
+
+    if (positionAttribute.current) positionAttribute.current.needsUpdate = true;
+    if (sizeAttribute.current) sizeAttribute.current.needsUpdate = true;
+    if (fadeAttribute.current) fadeAttribute.current.needsUpdate = true;
+  });
+
+  return (
+    <points frustumCulled={false} renderOrder={-3}>
+      <bufferGeometry>
+        <bufferAttribute
+          ref={positionAttribute}
+          attach="attributes-position"
+          args={[field.positions, 3]}
+        />
+        <bufferAttribute attach="attributes-color" args={[field.colors, 3]} />
+        <bufferAttribute ref={sizeAttribute} attach="attributes-aSize" args={[field.sizes, 1]} />
+        <bufferAttribute ref={fadeAttribute} attach="attributes-aFade" args={[field.fades, 1]} />
+      </bufferGeometry>
+      <primitive object={material} attach="material" />
+    </points>
   );
 }
 
@@ -420,7 +710,7 @@ type DistantGalaxyGroup = {
 
 const distantGalaxyGroups: DistantGalaxyGroup[] = [
   {
-    count: 48,
+    count: 60,
     inner: 42,
     outer: 72,
     size: 1.9,
@@ -428,7 +718,7 @@ const distantGalaxyGroups: DistantGalaxyGroup[] = [
     opacity: 0.34,
   },
   {
-    count: 70,
+    count: 84,
     inner: 58,
     outer: 105,
     size: 2.2,
@@ -436,7 +726,7 @@ const distantGalaxyGroups: DistantGalaxyGroup[] = [
     opacity: 0.34,
   },
   {
-    count: 55,
+    count: 66,
     inner: 78,
     outer: 132,
     size: 2.7,
@@ -444,12 +734,20 @@ const distantGalaxyGroups: DistantGalaxyGroup[] = [
     opacity: 0.27,
   },
   {
-    count: 45,
+    count: 54,
     inner: 100,
     outer: 165,
     size: 3.2,
     color: "#a97bff",
     opacity: 0.22,
+  },
+  {
+    count: 96,
+    inner: 130,
+    outer: 195,
+    size: 1.35,
+    color: "#b8d4ff",
+    opacity: 0.15,
   },
 ];
 
@@ -1373,14 +1671,8 @@ export function UniverseScene({
       {explore ? <Markers data={data} onHover={onHover} onSelect={onSelect} /> : null}
       <Supernovae data={data} active={explore && !reducedMotion} selected={selected} />
       <DistantSupernovae active={!reducedMotion} />
-      <Stars
-        radius={140}
-        depth={70}
-        count={quality === "mobile" ? 3000 : 6000}
-        factor={4}
-        fade
-        speed={reducedMotion ? 0 : 0.5}
-      />
+      <ShootingStars active={!reducedMotion} />
+      <Starfield quality={quality} />
       <OrbitControls
         makeDefault
         enablePan={false}

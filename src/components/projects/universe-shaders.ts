@@ -94,3 +94,68 @@ export const cosmosFragmentShader = /* glsl */ `
     gl_FragColor = vec4(vColor, f * vAlpha);
   }
 `;
+
+export const starfieldVertexShader = /* glsl */ `
+  uniform float uTime;
+  uniform float uScale;
+
+  attribute float aSize;
+  attribute vec3 aColor;
+  attribute vec2 aTwinkle;
+
+  varying vec3 vColor;
+  varying float vTwinkle;
+
+  void main() {
+    vTwinkle = 0.72 + 0.28 * sin(uTime * aTwinkle.y + aTwinkle.x);
+    vColor = aColor;
+
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = clamp(aSize * uScale / -mv.z, 1.0, 7.0);
+  }
+`;
+
+export const starfieldFragmentShader = /* glsl */ `
+  varying vec3 vColor;
+  varying float vTwinkle;
+
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float f = pow(1.0 - d * 2.0, 1.8);
+    gl_FragColor = vec4(vColor * vTwinkle, f);
+  }
+`;
+
+export const meteorVertexShader = /* glsl */ `
+  uniform float uScale;
+
+  attribute float aSize;
+  attribute vec3 aColor;
+  attribute float aFade;
+
+  varying vec3 vColor;
+  varying float vFade;
+
+  void main() {
+    vColor = aColor;
+    vFade = aFade;
+
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = clamp(aSize * uScale / -mv.z, 1.0, 9.0);
+  }
+`;
+
+export const meteorFragmentShader = /* glsl */ `
+  varying vec3 vColor;
+  varying float vFade;
+
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float f = pow(1.0 - d * 2.0, 2.0) * vFade;
+    gl_FragColor = vec4(vColor, f);
+  }
+`;
