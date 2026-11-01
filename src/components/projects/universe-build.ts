@@ -30,7 +30,6 @@ export type UniverseData = {
   center: Float32Array;
   color: Float32Array;
   attr: Float32Array;
-  filamentPositions: Float32Array;
 };
 
 type TemplateConfig = {
@@ -421,13 +420,6 @@ export function buildUniverse(options: { perGalaxy: number; dust: number }): Uni
     }
   }
 
-  const filamentPositions = new Float32Array(segments.length * 6);
-  segments.forEach(([a, b], index) => {
-    const from = galaxies[a].center;
-    const to = galaxies[b].center;
-    filamentPositions.set([from.x, from.y, from.z, to.x, to.y, to.z], index * 6);
-  });
-
   for (let dustIndex = 0; dustIndex < options.dust; dustIndex += 1) {
     const index = galaxyCount * options.perGalaxy + dustIndex;
     const offset = index * 3;
@@ -484,7 +476,6 @@ export function buildUniverse(options: { perGalaxy: number; dust: number }): Uni
     center,
     color,
     attr,
-    filamentPositions,
   };
 }
 

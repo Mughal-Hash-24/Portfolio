@@ -941,38 +941,6 @@ function CMBShell({ timeline }: { timeline: RefObject<TimelineState> }) {
   );
 }
 
-function CosmicWeb({ data, timeline }: { data: UniverseData; timeline: RefObject<TimelineState> }) {
-  const web = useRef<THREE.LineSegments>(null);
-  const material = useRef<THREE.LineBasicMaterial>(null);
-
-  useFrame(() => {
-    const progress = timeline.current?.progress ?? 0;
-    const current = web.current;
-    if (!current || !material.current) return;
-
-    const base = smoothstep(0.4, 0.48, progress) * (1 - 0.35 * smoothstep(0.75, 1, progress));
-    material.current.opacity = base * 0.2;
-    current.visible = base > 0.004;
-    current.scale.setScalar(expansionFor(progress));
-  });
-
-  return (
-    <lineSegments ref={web} frustumCulled={false} visible={false}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[data.filamentPositions, 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial
-        ref={material}
-        color="#3b5bb5"
-        transparent
-        opacity={0}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
-    </lineSegments>
-  );
-}
-
 const FIRST_STAR_COUNT = 160;
 
 function FirstStars({
@@ -1393,7 +1361,6 @@ export function UniverseScene({
       <PrimordialSoup timeline={timeline} quality={quality} />
       <Nuclei timeline={timeline} quality={quality} />
       <CMBShell timeline={timeline} />
-      <CosmicWeb data={data} timeline={timeline} />
       <FirstStars data={data} timeline={timeline} />
       <GalaxyCores
         data={data}
