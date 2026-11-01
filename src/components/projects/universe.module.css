@@ -194,16 +194,15 @@
     transparent 72%
   );
   content: "";
-  backdrop-filter: blur(3px);
 }
 
 .eventName h2 {
   margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(44px, 6.4vw, 100px);
+  font-family: var(--sans);
+  font-size: clamp(30px, 4vw, 62px);
   font-weight: 700;
   line-height: 0.94;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
   text-shadow:
     0 2px 26px rgb(2 3 10 / 0.95),
@@ -548,7 +547,7 @@
   }
 
   .eventName h2 {
-    font-size: clamp(36px, 10vw, 58px);
+    font-size: clamp(26px, 7vw, 42px);
   }
 
   .domainIndex {
@@ -610,7 +609,7 @@
   }
 
   .eventName h2 {
-    font-size: clamp(32px, 10vw, 46px);
+    font-size: clamp(24px, 7vw, 36px);
   }
 
   .beginButton {
@@ -625,7 +624,7 @@
 
 @media (max-height: 720px) and (min-width: 901px) {
   .eventName h2 {
-    font-size: clamp(34px, 4.4vw, 58px);
+    font-size: clamp(26px, 3.4vw, 44px);
   }
 
   .domainIndex,
