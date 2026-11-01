@@ -27,6 +27,8 @@ export type UniverseDomain = {
     rim: string;
     halo: string;
   };
+  inspiration: string;
+  config?: { radius?: number; spin?: number };
   projectIds: string[];
 };
 
@@ -417,11 +419,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "Pre-Uni Games",
     template: "flocculent",
     palette: {
-      core: "#f6f0ff",
-      mid: "#7ee8ff",
-      rim: "#b58cff",
-      halo: "#7ee8ff",
+      core: "#fff0cf",
+      mid: "#cfe0ff",
+      rim: "#6f9dff",
+      halo: "#cfe2ff",
     },
+    inspiration: "Pinwheel Galaxy · M101",
+    config: { radius: 2.5, spin: 0.86 },
     projectIds: [
       "space-invaders",
       "socket-chess",
@@ -444,11 +448,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "University",
     template: "grand-design",
     palette: {
-      core: "#ffe0a8",
-      mid: "#ff9a4d",
-      rim: "#6fd6ff",
-      halo: "#ffb36b",
+      core: "#ffe9bd",
+      mid: "#ffc98f",
+      rim: "#7fb2ff",
+      halo: "#ffd9a6",
     },
+    inspiration: "Andromeda Galaxy · M31",
+    config: { radius: 2.65, spin: 0.95 },
     projectIds: [
       "buzz-bomberz",
       "sonic-classic-heroes",
@@ -465,11 +471,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "Agentic AI",
     template: "interacting",
     palette: {
-      core: "#ffe2f1",
-      mid: "#ff6fb5",
-      rim: "#53f0d0",
-      halo: "#ff82c8",
+      core: "#ffefc9",
+      mid: "#ff9ed2",
+      rim: "#5f9dff",
+      halo: "#ffb8dc",
     },
+    inspiration: "Whirlpool Galaxy · M51",
+    config: { radius: 2.3, spin: 1.18 },
     projectIds: ["the-odyssey", "google-mas", "coding-mas", "musannif", "ai-agent-security"],
   },
   {
@@ -478,11 +486,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "NLP & Graphs",
     template: "ring",
     palette: {
-      core: "#e4f6ff",
-      mid: "#74c8ff",
-      rim: "#3f6dff",
-      halo: "#7fd8ff",
+      core: "#ffd28f",
+      mid: "#ffab4f",
+      rim: "#4fd4ff",
+      halo: "#ffb36b",
     },
+    inspiration: "Cartwheel Galaxy",
+    config: { radius: 2.15, spin: 0.9 },
     projectIds: ["naaas-newsnet", "kybernetes", "edugap", "taxnet"],
   },
   {
@@ -491,11 +501,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "Hackathons",
     template: "irregular",
     palette: {
-      core: "#fff1c9",
-      mid: "#ff8a4d",
-      rim: "#ff4d6d",
-      halo: "#ff8a4d",
+      core: "#fff4e3",
+      mid: "#b8dcff",
+      rim: "#ff8fb8",
+      halo: "#a8ccff",
     },
+    inspiration: "Large Magellanic Cloud",
+    config: { radius: 1.85, spin: 0.72 },
     projectIds: ["edugap", "taxnet", "documind", "pokayoke", "gridguard"],
   },
   {
@@ -504,11 +516,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "Products",
     template: "barred",
     palette: {
-      core: "#fff0c8",
-      mid: "#ffd166",
-      rim: "#4fb8ff",
-      halo: "#ffd166",
+      core: "#ffe3ae",
+      mid: "#ffc27a",
+      rim: "#8fc3ff",
+      halo: "#ffcf8f",
     },
+    inspiration: "Milky Way",
+    config: { radius: 2.4, spin: 1.05 },
     projectIds: ["maktaba", "proxenos", "musannif", "verteon", "nu-hub"],
   },
   {
@@ -517,11 +531,13 @@ export const projectDomains: UniverseDomain[] = [
     label: "Systems",
     template: "edge-on",
     palette: {
-      core: "#f4f8ff",
-      mid: "#9fc8ff",
-      rim: "#4d7dff",
-      halo: "#9fc8ff",
+      core: "#fff0c9",
+      mid: "#f2d9a6",
+      rim: "#7f9fc9",
+      halo: "#ffe2a8",
     },
+    inspiration: "Sombrero Galaxy · M104",
+    config: { radius: 2.45, spin: 1.3 },
     projectIds: ["verteon", "consolegraphics"],
   },
 ];

@@ -482,6 +482,7 @@ export function UniverseExperience() {
               <CloseIcon />
             </button>
           </div>
+          <p className={styles.panelInspiration}>Modeled after {selectedDomain.inspiration}</p>
           <DomainProjects domain={selectedDomain} />
         </aside>
       ) : null}

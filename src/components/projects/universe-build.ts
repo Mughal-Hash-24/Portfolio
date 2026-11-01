@@ -320,7 +320,7 @@ export function buildUniverse(options: { perGalaxy: number; dust: number }): Uni
       ((index % 4) - 1.5) * 2.7 + (random() - 0.5) * 0.8,
       Math.sin(angle) * ring,
     );
-    const config = templateConfig[domain.template];
+    const config = { ...templateConfig[domain.template], ...(domain.config ?? {}) };
 
     return {
       id: index,

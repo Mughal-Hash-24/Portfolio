@@ -66,6 +66,9 @@ export function UniverseStatic() {
                   className="rounded-xl border border-white/10 bg-[#05070e] p-5"
                 >
                   <h3 className="font-serif text-2xl leading-tight">{domain.name}</h3>
+                  <p className="mt-1 font-mono text-[10px] tracking-[0.14em] text-[#8f8a7e] uppercase">
+                    {domain.inspiration}
+                  </p>
                   <ul className="mt-4 flex flex-col gap-3">
                     {projects.map((project) => (
                       <li key={project.id}>
