@@ -131,8 +131,8 @@ export function phaseIndexAt(elapsed: number) {
 }
 
 export const cameraKeyframes = [
-  { at: 0, radius: 5, height: 0.5, angle: 0.2, fov: 50, target: [0, 0, 0] },
-  { at: 0.07, radius: 6.5, height: 1, angle: 0.45, fov: 52, target: [0, 0, 0] },
+  { at: 0, radius: 15, height: 3.5, angle: 0.2, fov: 55, target: [0, 0, 0] },
+  { at: 0.05, radius: 7, height: 1.2, angle: 0.45, fov: 48, target: [0, 0, 0] },
   { at: 0.12, radius: 16, height: 5, angle: 0.8, fov: 55, target: [0, 0, 0] },
   { at: 0.17, radius: 10, height: 3, angle: 1.2, fov: 52, target: [0, 0, 0] },
   { at: 0.23, radius: 4.8, height: 1.4, angle: 1.65, fov: 44, target: [0.5, 0.2, 0] },
@@ -154,6 +154,7 @@ export const cameraKeyframes = [
 export type CameraKeyframe = (typeof cameraKeyframes)[number];
 
 export const expansionAtPresent = 1.1;
+export const bigBangProgress = 0.07;
 
 export const universeProjects: UniverseProject[] = [
   {

@@ -1,5 +1,8 @@
+import { bigBangProgress } from "@/content/projects-universe";
+
 export const cosmosVertexShader = /* glsl */ `
   const float SPIN = 0.45;
+  const float BANG = ${bigBangProgress.toFixed(3)};
 
   uniform float uProg;
   uniform float uTime;
@@ -36,9 +39,10 @@ export const cosmosVertexShader = /* glsl */ `
     float gid = aData.z;
     float size = aData.w;
 
-    float expEnd = 0.16 + 0.06 * seed;
-    float ex = smoothstep(0.025, expEnd, uProg);
-    vec3 cloud = position * ex;
+    float collapse = 1.0 - smoothstep(0.0, BANG, uProg);
+    float expEnd = BANG + 0.09 + 0.05 * seed;
+    float ex = smoothstep(BANG, expEnd, uProg);
+    vec3 cloud = position * max(ex, collapse * 0.55);
 
     float col = sm(0.52, 0.80, uProg);
     float variation = 0.82 + 0.12 * mod(gid, 3.0);
@@ -46,15 +50,17 @@ export const cosmosVertexShader = /* glsl */ `
     vec3 gal = aCenter * uExpand + rot(aLocal, aAxis, uTime * w);
 
     float swirl = col * (1.0 - col) * 4.0 * (1.0 - clamp(length(position) / 14.0, 0.0, 1.0));
+    swirl += collapse * collapse * 2.4 * (1.0 - clamp(length(position) / 22.0, 0.0, 1.0));
     cloud = rot(cloud, vec3(0.0, 1.0, 0.0), swirl);
     vec3 p = mix(cloud, gal, col);
 
-    vec3 c = mix(vec3(1.0, 0.96, 0.88), vec3(1.0, 0.38, 0.1), sm(0.0, 0.2, uProg));
-    c = mix(c, vec3(0.35, 0.06, 0.05), sm(0.2, 0.42, uProg));
+    vec3 c = mix(vec3(0.58, 0.66, 0.92), vec3(1.0, 0.47, 0.1), sm(BANG, 0.2, uProg));
+    c = mix(c, vec3(0.42, 0.06, 0.03), sm(0.2, 0.42, uProg));
     c = mix(c, aColor, sm(0.55, 0.9, uProg));
     c = mix(c, c * vec3(1.26, 0.72, 0.54), uRedshift);
 
-    float b = mix(1.5, 0.45, sm(0.0, 0.3, uProg));
+    float b = mix(1.05, 0.45, sm(0.0, 0.3, uProg));
+    b *= 1.0 - 0.45 * collapse;
     b = mix(b, 1.0, sm(0.6, 0.95, uProg));
 
     float isSel = 1.0 - step(0.5, abs(gid - uSel));
@@ -70,7 +76,7 @@ export const cosmosVertexShader = /* glsl */ `
     float s = size * mix(1.8, 1.0, sm(0.0, 0.4, uProg)) * (1.0 + 0.35 * isHov);
     gl_PointSize = clamp(s * uScale / -mv.z * 1.35, 1.2, 34.0);
 
-    float density = mix(0.28, 0.95, sm(0.32, 0.62, uProg));
+    float density = mix(0.28, 0.95, sm(0.32, 0.62, uProg)) + collapse * 0.2;
 
     vColor = c;
     vAlpha = b * tw * 0.92 * density;

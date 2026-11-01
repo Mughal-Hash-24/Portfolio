@@ -274,31 +274,55 @@ function CameraRig({
 }
 
 function BigBangFlash({ timeline }: { timeline: RefObject<TimelineState> }) {
-  const sprite = useRef<THREE.Sprite>(null);
+  const core = useRef<THREE.Sprite>(null);
+  const shell = useRef<THREE.Sprite>(null);
 
   useFrame(() => {
     const progress = timeline.current?.progress ?? 0;
-    const current = sprite.current;
-    if (!current) return;
+    const coreSprite = core.current;
+    const shellSprite = shell.current;
+    if (!coreSprite || !shellSprite) return;
 
-    current.visible = progress < 0.09;
-    const k = Math.min(progress / 0.06, 1);
-    current.scale.setScalar(1 + 8 * (1 - Math.pow(1 - k, 3)));
-    current.material.opacity = 0.55 * (1 - smoothstep(0, 0.06, progress));
+    const k = (progress - 0.055) / 0.08;
+    const active = k > 0 && k < 1;
+    coreSprite.visible = active;
+    shellSprite.visible = active;
+    if (!active) return;
+
+    const power = smoothstep(0, 0.18, k) * (1 - smoothstep(0.25, 1, k));
+
+    coreSprite.scale.setScalar(0.5 + 6.5 * (1 - Math.pow(1 - k, 3)));
+    coreSprite.material.opacity = 0.4 * power;
+
+    shellSprite.scale.setScalar(1 + 15 * (1 - Math.pow(1 - k, 2.2)));
+    shellSprite.material.opacity = 0.26 * power;
   });
 
   return (
-    <sprite ref={sprite} frustumCulled={false}>
-      <spriteMaterial
-        map={glowTexture()}
-        color={new THREE.Color(1.4, 1.3, 1.2)}
-        blending={THREE.AdditiveBlending}
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        toneMapped={false}
-      />
-    </sprite>
+    <>
+      <sprite ref={core} frustumCulled={false} renderOrder={5}>
+        <spriteMaterial
+          map={glowTexture()}
+          color={new THREE.Color(1.25, 1.02, 0.78)}
+          blending={THREE.AdditiveBlending}
+          transparent
+          depthWrite={false}
+          depthTest={false}
+          toneMapped={false}
+        />
+      </sprite>
+      <sprite ref={shell} frustumCulled={false} renderOrder={4}>
+        <spriteMaterial
+          map={ringTexture()}
+          color={new THREE.Color(1, 0.6, 0.3)}
+          blending={THREE.AdditiveBlending}
+          transparent
+          depthWrite={false}
+          depthTest={false}
+          toneMapped={false}
+        />
+      </sprite>
+    </>
   );
 }
 
