@@ -19,10 +19,8 @@ import { buildUniverse } from "./universe-build";
 import { UniverseScene } from "./universe-scene";
 import { UniverseAudioDock } from "./universe-audio-dock";
 import { useUniverseScore } from "./use-universe-score";
-import type { TimelineState, UniverseMode } from "./universe-types";
+import type { Quality, TimelineState, UniverseMode } from "./universe-types";
 import styles from "./universe.module.css";
-
-type Quality = "mobile" | "desktop";
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (

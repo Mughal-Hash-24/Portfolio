@@ -1,3 +1,5 @@
+export type Quality = "mobile" | "desktop";
+
 export type TimelineState = {
   elapsed: number;
   progress: number;
@@ -6,3 +8,5 @@ export type TimelineState = {
 };
 
 export type UniverseMode = "intro" | "explore";
+
+export type UniverseStage = "map" | "system";
