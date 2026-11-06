@@ -432,6 +432,7 @@ export function UniverseExperience() {
               focusedProject={focusedProject}
               focusedPlanet={focusedPlanet}
               hoveredProject={hoveredSystem}
+              revealed={!transit}
               onHoverProject={setHoveredSystem}
               onSelectProject={focusProject}
               onSelectPlanet={selectPlanet}
@@ -476,7 +477,7 @@ export function UniverseExperience() {
             <ArrowLeftIcon />
           </Link>
 
-          {started && inSystem ? (
+          {started && inSystem && !transit ? (
             <button
               type="button"
               className={styles.mapButton}
@@ -554,13 +555,13 @@ export function UniverseExperience() {
         </nav>
       ) : null}
 
-      {started && inSystem && selectedDomain ? (
+      {started && inSystem && !transit && selectedDomain ? (
         <>
           <section className={styles.systemHead}>
             <p className={styles.systemKicker}>Star field</p>
             <h2 className={styles.systemName}>{selectedDomain.name}</h2>
             <p className={styles.systemNote}>
-              Modeled on {selectedDomain.inspiration} · {systems.length} systems
+              Modeled on {selectedDomain.inspiration} · {systems.length} systems · Drag to orbit
             </p>
           </section>
 
