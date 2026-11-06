@@ -27,10 +27,25 @@ Locked creative direction. Update this file when a decision changes.
 Each chapter is its own route with its own theme scope while sharing the grid, spacing scale, nav, logo, and accessibility rules. The title screen stays at `/`; chapters live at `/projects`, `/arcade`, `/ask`, `/about`, and `/contact`.
 
 - **About** — warm paper, editorial serif, grain, asymmetric layout. Holds the story, skills, stack, languages, and honors.
-- **Projects** — brutalist grid, monochrome, mono labels, pinned scroll.
+- **Projects** — a cinematic universe timeline that becomes an explorable galaxy map.
 - **Arcade** — a literal arcade hall: cabinets, CRT screens, insert-coin interaction, high-score board. Games are WebAssembly builds launched full-screen.
 - **Ask My AI** — terminal charcoal and green, monospace, typewriter reveals. AI agent with a persistent dock.
 - **Contact** — light, minimal, generous whitespace, slow fades. Reached from the phone icon.
+
+## Projects universe
+
+- `/projects` opens on a full-screen cinematic timeline, from the initial singularity to the present day, then becomes an explorable map of galaxies.
+- The cinematic runs at most about twenty seconds across nine epochs: singularity, inflation, nucleosynthesis, recombination, dark ages, first stars, galaxy formation, accelerated expansion, and present day.
+- During the cinematic the only visible text is the bold name of the current epoch. The event descriptions remain in the screen-reader status and the static no-WebGL fallback, not in the visual HUD.
+- The camera follows a fixed scripted path with deliberate zoom-ins for nucleosynthesis and galaxy formation and zoom-outs for recombination, the dark ages, and accelerated expansion.
+- Matter starts uniform and only begins collapsing after the first stars ignite. The first-star field is deliberately larger than the final galaxy count, and those stars converge into the galaxies during galaxy formation.
+- Seven galaxies represent the project domains: Pre-University Games, University Projects, Agentic AI & Multi-Agent Systems, NLP & Knowledge Graph Research, Hackathon Projects, Products, and Systems & Embedded. All 37 resume projects are represented; four projects are intentionally cross-listed where they belong to more than one domain.
+- Each domain galaxy is modeled on a distinct real object — M101, M31, M51, the Cartwheel Galaxy, the Large Magellanic Cloud, the Milky Way, and M104 — with morphology, size, and palette tuned to each; no two galaxies are copies.
+- Selecting a galaxy flies a warp transit into it: a perspective star field stretches into streaks as it accelerates toward light speed with a live velocity readout, holds at the peak, then brakes into that galaxy's star field. The field keeps the same deep-sky background as the map and holds one star system per project, scattered randomly without overlap, each modeled on a real star system (TRAPPIST-1, Kepler-90, Proxima Centauri and so on), with one planet per stack item, each modeled on a real world (Mercury, Mars, 55 Cancri e, HD 189733 b and so on). Planets only materialize after the transit ends. Selecting a system zooms in and opens the project card with its planets labeled; selecting a planet opens a dossier naming its real-world inspiration and what the technology does. Dragging rotates the camera around the current focus at every level, and Escape plus a Galaxy map button step back out one level at a time.
+- The background is populated with faint distant galaxies (including a farther, fainter shell), drifting nebulas, space dust, occasional shooting stars and distant supernovae, and a twinkling starfield of varied sizes and stellar colors — blue-white through red — so the space outside the domain galaxies is not empty.
+- The score begins only after the Big Bang, because sound has no medium in the early universe. It enters 19 seconds into the track as inflation begins and fades out when the cinematic ends. The track is read from `NEXT_PUBLIC_UNIVERSE_SCORE_URL` in production, or the gitignored `public/audio/_dev/universe/` folder in development. No score file is committed.
+- A signal-deck dock (bottom-left on desktop, top-right on mobile) manages the ambient soundtrack with the same track pool and golden-record disc archive as the other chapters. Starting the soundtrack fades the cinematic score, and beginning or replaying the cinematic pauses the soundtrack, so the two never overlap.
+- The experience is client-only and lazy-loaded, pauses rendering when the tab is hidden, respects reduced motion, and falls back to a static timeline when WebGL is unavailable.
 
 ## Arcade
 

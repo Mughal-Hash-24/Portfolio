@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
-import { ChapterPage } from "@/components/chapters/chapter-page";
+import { UniverseStage } from "@/components/projects/universe-stage";
+import { UniverseStatic } from "@/components/projects/universe-static";
+import { universeDescription } from "@/content/projects-universe";
 import { chapterContent } from "@/content/site";
 import { chapterMetadata } from "@/lib/chapter-metadata";
 
-const chapter = chapterContent.projects;
+const chapter = {
+  ...chapterContent.projects,
+  description: universeDescription,
+};
 
 export const metadata: Metadata = chapterMetadata(chapter);
 
 export default function ProjectsPage() {
   return (
-    <ChapterPage chapter={chapter}>
-      <p className="chapter-note">
-        Selected work, case studies, and process notes are being assembled.
-      </p>
-    </ChapterPage>
+    <>
+      <UniverseStage />
+      <noscript>
+        <UniverseStatic />
+      </noscript>
+    </>
   );
 }

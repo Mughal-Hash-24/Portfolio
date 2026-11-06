@@ -19,6 +19,7 @@
     "@ai-sdk/openai": "^4.0.103",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
+    "@react-three/postprocessing": "^3.2.2",
     "ai": "^7.0.154",
     "clsx": "^2.1.1",
     "gsap": "^3.15.0",
