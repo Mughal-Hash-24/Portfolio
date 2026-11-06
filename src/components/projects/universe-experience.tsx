@@ -6,20 +6,20 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { useAudio } from "@/components/audio/audio-provider";
 import {
   explorationPhase,
-  projectById,
   projectDomains,
   universeDuration,
   universePhases,
   universeStats,
-  type UniverseDomain,
-  type UniverseProject,
 } from "@/content/projects-universe";
+import { resolveProjectSystems } from "@/content/project-systems";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { buildUniverse } from "./universe-build";
 import { UniverseScene } from "./universe-scene";
+import { ProjectSystemScene } from "./universe-systems";
+import { WarpTransit } from "./universe-warp";
 import { UniverseAudioDock } from "./universe-audio-dock";
 import { useUniverseScore } from "./use-universe-score";
-import type { Quality, TimelineState, UniverseMode } from "./universe-types";
+import type { Quality, TimelineState, UniverseMode, UniverseStage } from "./universe-types";
 import styles from "./universe.module.css";
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
@@ -113,44 +113,6 @@ function CloseIcon() {
   );
 }
 
-function DomainProjects({ domain }: { domain: UniverseDomain }) {
-  const projects = domain.projectIds
-    .map((id) => projectById.get(id))
-    .filter((project): project is UniverseProject => Boolean(project));
-
-  return (
-    <ul className={styles.projectList}>
-      {projects.map((project) => (
-        <li key={project.id} className={styles.project}>
-          <div className={styles.projectHead}>
-            <h3 className={styles.projectName}>{project.name}</h3>
-            {project.href ? (
-              <a
-                className={styles.projectLink}
-                href={project.href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Repo ↗
-              </a>
-            ) : (
-              <span className={styles.projectPrivate}>Private</span>
-            )}
-          </div>
-          <p className={styles.projectTagline}>{project.tagline}</p>
-          <ul className={styles.stack} aria-label={`${project.name} stack`}>
-            {project.stack.map((technology) => (
-              <li key={technology} className={styles.chip}>
-                {technology}
-              </li>
-            ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function UniverseExperience() {
   const [quality] = useState<Quality>(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches
@@ -178,6 +140,11 @@ export function UniverseExperience() {
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
+  const [stage, setStage] = useState<UniverseStage>("map");
+  const [transit, setTransit] = useState(false);
+  const [focusedProject, setFocusedProject] = useState<string | null>(null);
+  const [focusedPlanet, setFocusedPlanet] = useState<number | null>(null);
+  const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
   const [visible, setVisible] = useState(true);
   const {
     status: scoreStatus,
@@ -194,6 +161,53 @@ export function UniverseExperience() {
   const phase = universePhases[phaseIndex];
   const selectedDomain = selected === null ? null : projectDomains[selected];
   const explore = mode === "explore";
+  const inSystem = stage === "system";
+  const systems = useMemo(
+    () => (selectedDomain ? resolveProjectSystems(selectedDomain) : []),
+    [selectedDomain],
+  );
+  const focusedSystem =
+    focusedProject === null
+      ? null
+      : (systems.find((system) => system.projectId === focusedProject) ?? null);
+  const focusedPlanetInfo =
+    focusedSystem && focusedPlanet !== null ? (focusedSystem.planets[focusedPlanet] ?? null) : null;
+
+  const enterSystem = useCallback((index: number) => {
+    setSelected(index);
+    setHovered(null);
+    setHoveredSystem(null);
+    setFocusedProject(null);
+    setFocusedPlanet(null);
+    setStage("system");
+    setTransit(true);
+  }, []);
+
+  const exitSystem = useCallback(() => {
+    setStage("map");
+    setSelected(null);
+    setFocusedProject(null);
+    setFocusedPlanet(null);
+    setHoveredSystem(null);
+    setTransit(false);
+  }, []);
+
+  const focusProject = useCallback((projectId: string) => {
+    setFocusedProject(projectId);
+    setFocusedPlanet(null);
+  }, []);
+
+  const selectPlanet = useCallback((projectId: string, planetIndex: number) => {
+    setFocusedProject(projectId);
+    setFocusedPlanet(planetIndex);
+  }, []);
+
+  const resetSystem = useCallback(() => {
+    setStage("map");
+    setFocusedProject(null);
+    setFocusedPlanet(null);
+    setTransit(false);
+  }, []);
 
   const begin = useCallback(() => {
     if (audio.isPlaying) audio.toggle();
@@ -209,11 +223,12 @@ export function UniverseExperience() {
     setPlaying(!reducedMotion);
     setMode(reducedMotion ? "explore" : "intro");
     setPhaseIndex(reducedMotion ? explorationPhase : 0);
+    resetSystem();
 
     if (!reducedMotion) {
       syncScore(0);
     }
-  }, [audio, reducedMotion, syncScore]);
+  }, [audio, reducedMotion, syncScore, resetSystem]);
 
   const skip = useCallback(() => {
     const state = timeline.current;
@@ -227,8 +242,9 @@ export function UniverseExperience() {
     setMode("explore");
     setPhaseIndex(explorationPhase);
     setSelected(null);
+    resetSystem();
     stopScore(600);
-  }, [stopScore]);
+  }, [resetSystem, stopScore]);
 
   const replay = useCallback(() => {
     if (audio.isPlaying) audio.toggle();
@@ -245,8 +261,9 @@ export function UniverseExperience() {
     setPhaseIndex(0);
     setSelected(null);
     setHovered(null);
+    resetSystem();
     syncScore(0);
-  }, [audio, syncScore]);
+  }, [audio, resetSystem, syncScore]);
 
   const yieldScore = useCallback(() => {
     if (scoreStatus === "playing") {
@@ -309,8 +326,18 @@ export function UniverseExperience() {
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setSelected(null);
-        setHovered(null);
+        if (stage === "system") {
+          if (focusedPlanet !== null) {
+            setFocusedPlanet(null);
+          } else if (focusedProject !== null) {
+            setFocusedProject(null);
+          } else {
+            exitSystem();
+          }
+        } else {
+          setSelected(null);
+          setHovered(null);
+        }
         return;
       }
 
@@ -329,7 +356,7 @@ export function UniverseExperience() {
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [started, mode, togglePlayback]);
+  }, [started, mode, togglePlayback, stage, focusedProject, focusedPlanet, exitSystem]);
 
   const handleAudio = useCallback(() => {
     if (!scoreAvailable) return;
@@ -378,41 +405,89 @@ export function UniverseExperience() {
             powerPreference: "high-performance",
           }}
           frameloop={visible ? "always" : "never"}
+          onPointerMissed={() => {
+            if (stage === "system") {
+              setFocusedPlanet(null);
+              setFocusedProject(null);
+            }
+          }}
         >
-          <UniverseScene
-            data={data}
-            timeline={timeline}
-            mode={mode}
-            selected={selected}
-            hovered={hovered}
-            onHover={setHovered}
-            onSelect={setSelected}
-            onPhase={setPhaseIndex}
-            onComplete={complete}
-            quality={quality}
-            reducedMotion={reducedMotion}
-          />
+          {stage === "map" ? (
+            <UniverseScene
+              data={data}
+              timeline={timeline}
+              mode={mode}
+              selected={selected}
+              hovered={hovered}
+              onHover={setHovered}
+              onSelect={enterSystem}
+              onPhase={setPhaseIndex}
+              onComplete={complete}
+              quality={quality}
+              reducedMotion={reducedMotion}
+            />
+          ) : (
+            <ProjectSystemScene
+              systems={systems}
+              focusedProject={focusedProject}
+              focusedPlanet={focusedPlanet}
+              hoveredProject={hoveredSystem}
+              onHoverProject={setHoveredSystem}
+              onSelectProject={focusProject}
+              onSelectPlanet={selectPlanet}
+              quality={quality}
+              reducedMotion={reducedMotion}
+            />
+          )}
         </Canvas>
       </div>
+
+      {transit && selectedDomain ? (
+        <WarpTransit
+          destination={selectedDomain.inspiration}
+          reducedMotion={reducedMotion}
+          onDone={() => setTransit(false)}
+        />
+      ) : null}
 
       <div className={styles.scrim} aria-hidden="true" />
 
       <div className={styles.srOnly} role="status" aria-live="polite">
-        {explore
-          ? `Present day. ${universeStats.domains} domains.`
-          : `${phase.title}. ${phase.era}. ${phase.copy}`}
+        {inSystem && selectedDomain
+          ? focusedPlanetInfo
+            ? `${focusedPlanetInfo.tech}, modeled on ${focusedPlanetInfo.inspiration}. ${focusedPlanetInfo.note}`
+            : focusedSystem
+              ? `${focusedSystem.projectName} star system, modeled on ${focusedSystem.inspiration}. ${focusedSystem.planets.length} planets.`
+              : `${selectedDomain.name}. ${systems.length} project star systems.`
+          : explore
+            ? `Present day. ${universeStats.domains} domains.`
+            : `${phase.title}. ${phase.era}. ${phase.copy}`}
       </div>
 
       <header className={styles.topbar}>
-        <Link
-          href="/"
-          prefetch={false}
-          className={styles.iconButton}
-          aria-label="Back to title screen"
-          title="Back to title screen"
-        >
-          <ArrowLeftIcon />
-        </Link>
+        <div className={styles.topbarCluster}>
+          <Link
+            href="/"
+            prefetch={false}
+            className={styles.iconButton}
+            aria-label="Back to title screen"
+            title="Back to title screen"
+          >
+            <ArrowLeftIcon />
+          </Link>
+
+          {started && inSystem ? (
+            <button
+              type="button"
+              className={styles.mapButton}
+              onClick={exitSystem}
+              aria-label="Back to the galaxy map"
+              title="Back to the galaxy map"
+            >
+              Galaxy map
+            </button>
+          ) : null}
+        </div>
 
         {started && scoreAvailable && mode === "intro" ? (
           <button
@@ -450,7 +525,7 @@ export function UniverseExperience() {
         </section>
       ) : null}
 
-      {started && explore && selectedDomain === null ? (
+      {started && explore && stage === "map" && selected === null ? (
         <nav className={styles.domainIndex} aria-label="Project domains">
           <div className={styles.panelHeader}>
             <span>Domains</span>
@@ -462,7 +537,7 @@ export function UniverseExperience() {
                 <button
                   type="button"
                   className={styles.domainButton}
-                  onClick={() => setSelected(index)}
+                  onClick={() => enterSystem(index)}
                   style={
                     {
                       "--domain-color": domain.palette.mid,
@@ -479,23 +554,128 @@ export function UniverseExperience() {
         </nav>
       ) : null}
 
-      {started && explore && selectedDomain !== null ? (
-        <aside className={styles.projectPanel} aria-label={`${selectedDomain.name} projects`}>
-          <div className={styles.panelHeader}>
-            <span>{selectedDomain.name}</span>
-            <button
-              type="button"
-              className={styles.panelClose}
-              onClick={() => setSelected(null)}
-              aria-label="Back to the cosmos"
-              title="Back to the cosmos"
+      {started && inSystem && selectedDomain ? (
+        <>
+          <section className={styles.systemHead}>
+            <p className={styles.systemKicker}>Star field</p>
+            <h2 className={styles.systemName}>{selectedDomain.name}</h2>
+            <p className={styles.systemNote}>
+              Modeled on {selectedDomain.inspiration} · {systems.length} systems
+            </p>
+          </section>
+
+          {focusedSystem === null ? (
+            <nav className={styles.domainIndex} aria-label="Project star systems">
+              <div className={styles.panelHeader}>
+                <span>Systems</span>
+                <span>{systems.length}</span>
+              </div>
+              <ul className={styles.domainList}>
+                {systems.map((system) => (
+                  <li key={system.projectId}>
+                    <button
+                      type="button"
+                      className={styles.domainButton}
+                      onClick={() => focusProject(system.projectId)}
+                      style={
+                        {
+                          "--domain-color": system.starColor,
+                        } as CSSProperties
+                      }
+                    >
+                      <span className={styles.domainDot} aria-hidden="true" />
+                      <span>{system.projectName}</span>
+                      <span className={styles.domainCount}>{system.planets.length}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ) : null}
+
+          {focusedSystem !== null && focusedPlanetInfo === null ? (
+            <aside
+              className={styles.projectPanel}
+              aria-label={`${focusedSystem.projectName} star system`}
             >
-              <CloseIcon />
-            </button>
-          </div>
-          <p className={styles.panelInspiration}>Modeled after {selectedDomain.inspiration}</p>
-          <DomainProjects domain={selectedDomain} />
-        </aside>
+              <div className={styles.panelHeader}>
+                <span>Star system</span>
+                <button
+                  type="button"
+                  className={styles.panelClose}
+                  onClick={() => setFocusedProject(null)}
+                  aria-label="Back to the star field"
+                  title="Back to the star field"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <h3 className={styles.projectName}>{focusedSystem.projectName}</h3>
+              <p className={styles.panelInspiration}>Modeled on {focusedSystem.inspiration}</p>
+              <p className={styles.systemInspirationNote}>{focusedSystem.inspirationNote}</p>
+              <p className={styles.projectTagline}>{focusedSystem.tagline}</p>
+              <ul className={styles.stack} aria-label={`${focusedSystem.projectName} stack`}>
+                {focusedSystem.planets.map((planet, index) => (
+                  <li key={planet.tech}>
+                    <button
+                      type="button"
+                      className={styles.chipButton}
+                      onClick={() => setFocusedPlanet(index)}
+                      style={
+                        {
+                          "--planet-color": planet.color,
+                        } as CSSProperties
+                      }
+                    >
+                      <span className={styles.chipDot} aria-hidden="true" />
+                      {planet.tech}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {focusedSystem.href ? (
+                <a
+                  className={styles.projectLink}
+                  href={focusedSystem.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open repository ↗
+                </a>
+              ) : (
+                <span className={styles.projectPrivate}>Private project</span>
+              )}
+            </aside>
+          ) : null}
+
+          {focusedSystem !== null && focusedPlanetInfo !== null ? (
+            <aside
+              className={styles.projectPanel}
+              aria-label={`${focusedPlanetInfo.tech} planet dossier`}
+            >
+              <div className={styles.panelHeader}>
+                <span>Planet dossier</span>
+                <button
+                  type="button"
+                  className={styles.panelClose}
+                  onClick={() => setFocusedPlanet(null)}
+                  aria-label="Back to the star system"
+                  title="Back to the star system"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <h3 className={styles.projectName}>{focusedPlanetInfo.tech}</h3>
+              <p className={styles.panelInspiration}>Modeled on {focusedPlanetInfo.inspiration}</p>
+              <p className={styles.systemInspirationNote}>{focusedPlanetInfo.inspirationNote}</p>
+              <p className={styles.planetNote}>{focusedPlanetInfo.note}</p>
+              <p className={styles.projectTagline}>
+                Orbit {focusedPlanet === null ? 1 : focusedPlanet + 1} of{" "}
+                {focusedSystem.planets.length} · {focusedSystem.projectName}
+              </p>
+            </aside>
+          ) : null}
+        </>
       ) : null}
 
       {started && mode === "intro" ? (

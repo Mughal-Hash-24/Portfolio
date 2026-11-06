@@ -133,6 +133,37 @@ export function backgroundGalaxyTexture() {
   return backgroundGalaxyCache;
 }
 
+let planetCache: THREE.CanvasTexture | null = null;
+
+export function planetTexture() {
+  if (planetCache) return planetCache;
+
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const context = canvas.getContext("2d");
+
+  if (context) {
+    const light = context.createRadialGradient(50, 46, 4, 64, 64, 68);
+    light.addColorStop(0, "#ffffff");
+    light.addColorStop(0.4, "#e4e4e4");
+    light.addColorStop(0.72, "#8f8f8f");
+    light.addColorStop(1, "#141414");
+    context.fillStyle = light;
+    context.fillRect(0, 0, size, size);
+
+    const limb = context.createRadialGradient(64, 64, 30, 64, 64, 64);
+    limb.addColorStop(0, "rgba(0,0,0,0)");
+    limb.addColorStop(1, "rgba(0,0,0,0.55)");
+    context.fillStyle = limb;
+    context.fillRect(0, 0, size, size);
+  }
+
+  planetCache = new THREE.CanvasTexture(canvas);
+  planetCache.colorSpace = THREE.SRGBColorSpace;
+  return planetCache;
+}
+
 let cmbCache: THREE.CanvasTexture | null = null;
 
 export function cmbTexture() {

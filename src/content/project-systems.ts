@@ -349,7 +349,7 @@ export function resolveProjectSystems(domain: UniverseDomain): ResolvedSystem[] 
             inspirationNote: planet.note,
             color: planet.color,
             size: planet.size * (0.92 + wobble * 0.16),
-            orbit: 1.15 + planetIndex * 0.55 + wobble * 0.15,
+            orbit: 1.1 + planetIndex * 0.5 + wobble * 0.15,
             speed: (0.34 + wobble * 0.2) / (1 + planetIndex * 0.3),
             phase: wobble * Math.PI * 2,
           };
