@@ -159,3 +159,43 @@ export const meteorFragmentShader = /* glsl */ `
     gl_FragColor = vec4(vColor, f);
   }
 `;
+
+export const sparkVertexShader = /* glsl */ `
+  uniform float uProgress;
+  uniform float uTime;
+  uniform float uPointSize;
+  uniform float uMotion;
+
+  attribute vec3 aScatter;
+  attribute float aSeed;
+
+  varying float vAlpha;
+
+  void main() {
+    float stagger = aSeed * 0.35;
+    float p = clamp((uProgress - stagger) / (1.0 - stagger), 0.0, 1.0);
+    p = p * p * (3.0 - 2.0 * p);
+
+    vec3 local = position + aScatter * (1.0 - p) * (0.6 + aSeed * 0.9);
+    vec4 mv = modelViewMatrix * vec4(local, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = uPointSize;
+
+    float twinkle = 0.55 + 0.45 * sin(uTime * (1.6 + aSeed * 4.5) + aSeed * 60.0);
+    twinkle = mix(1.0, twinkle, uMotion);
+    vAlpha = p * twinkle;
+  }
+`;
+
+export const sparkFragmentShader = /* glsl */ `
+  uniform vec3 uColor;
+  varying float vAlpha;
+
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float f = pow(1.0 - d * 2.0, 1.6);
+    vec3 color = mix(uColor, vec3(1.0), 0.35 * f);
+    gl_FragColor = vec4(color, f * vAlpha);
+  }
+`;

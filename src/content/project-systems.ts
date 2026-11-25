@@ -292,6 +292,16 @@ export type ResolvedPlanet = {
   phase: number;
 };
 
+export type SystemPersonality = {
+  scale: number;
+  tiltX: number;
+  tiltZ: number;
+  elongation: number;
+  eccentricity: number;
+  retrograde: boolean;
+  belts: Array<"rock" | "ice">;
+};
+
 export type ResolvedSystem = {
   projectId: string;
   projectName: string;
@@ -301,6 +311,7 @@ export type ResolvedSystem = {
   inspirationNote: string;
   starColor: string;
   starScale: number;
+  personality: SystemPersonality;
   planets: ResolvedPlanet[];
 };
 
@@ -315,7 +326,19 @@ function hashString(value: string) {
   return hash >>> 0;
 }
 
+function mixHex(from: string, to: string, amount: number) {
+  const a = parseInt(from.slice(1), 16);
+  const b = parseInt(to.slice(1), 16);
+  const channel = (shift: number) => {
+    const value = ((a >> shift) & 255) + (((b >> shift) & 255) - ((a >> shift) & 255)) * amount;
+    return Math.min(255, Math.max(0, Math.round(value)));
+  };
+
+  return `#${((channel(16) << 16) | (channel(8) << 8) | channel(0)).toString(16).padStart(6, "0")}`;
+}
+
 const fallbackNote = "A tool this project leans on.";
+const planetStrides = [5, 7, 11, 13] as const;
 
 export function resolveProjectSystems(domain: UniverseDomain): ResolvedSystem[] {
   const systemStart = hashString(domain.id) % starSystems.length;
@@ -326,6 +349,28 @@ export function resolveProjectSystems(domain: UniverseDomain): ResolvedSystem[] 
 
     const system = starSystems[(systemStart + systemIndex) % starSystems.length];
     const planetStart = hashString(`${domain.id}:${projectId}`) % planetInspirations.length;
+    const salt = (name: string) => hashString(`${domain.id}:${projectId}:${name}`) / 4294967296;
+    const stride =
+      planetStrides[Math.floor(salt("stride") * planetStrides.length) % planetStrides.length];
+    const beltRoll = salt("belt");
+    const belts: SystemPersonality["belts"] =
+      beltRoll < 0.26
+        ? []
+        : beltRoll < 0.52
+          ? ["rock"]
+          : beltRoll < 0.76
+            ? ["ice"]
+            : ["rock", "ice"];
+    const personality: SystemPersonality = {
+      scale: 0.82 + salt("scale") * 0.42,
+      tiltX: (salt("tilt-x") - 0.5) * 0.9,
+      tiltZ: (salt("tilt-z") - 0.5) * 0.9,
+      elongation: 0.8 + salt("elongation") * 0.5,
+      eccentricity: salt("eccentricity") * 0.24,
+      retrograde: salt("retrograde") > 0.72,
+      belts,
+    };
+    const sizeFactor = 0.85 + salt("planet-size") * 0.3;
 
     return [
       {
@@ -337,18 +382,21 @@ export function resolveProjectSystems(domain: UniverseDomain): ResolvedSystem[] 
         inspirationNote: system.note,
         starColor: system.starColor,
         starScale: system.starScale,
+        personality,
         planets: project.stack.map((tech, planetIndex) => {
           const planet =
-            planetInspirations[(planetStart + planetIndex * 5) % planetInspirations.length];
+            planetInspirations[(planetStart + planetIndex * stride) % planetInspirations.length];
           const wobble = hashString(`${projectId}:${tech}`) / 4294967296;
+          const tint = 0.14 + salt(`tint-${planetIndex}`) * 0.26;
+          const shade = 0.86 + salt(`shade-${planetIndex}`) * 0.26;
 
           return {
             tech,
             note: techNotes[tech] ?? fallbackNote,
             inspiration: planet.name,
             inspirationNote: planet.note,
-            color: planet.color,
-            size: planet.size * (0.92 + wobble * 0.16),
+            color: mixHex(planet.color, system.starColor, tint),
+            size: planet.size * sizeFactor * (0.92 + wobble * 0.16) * shade,
             orbit: 1.1 + planetIndex * 0.5 + wobble * 0.15,
             speed: (0.34 + wobble * 0.2) / (1 + planetIndex * 0.3),
             phase: wobble * Math.PI * 2,
