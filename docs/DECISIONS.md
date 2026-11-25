@@ -24,10 +24,11 @@ Locked creative direction. Update this file when a decision changes.
 
 ## Chapters
 
-Each chapter is its own route with its own theme scope while sharing the grid, spacing scale, nav, logo, and accessibility rules. The title screen stays at `/`; chapters live at `/projects`, `/arcade`, `/ask`, `/about`, and `/contact`.
+Each chapter is its own route with its own theme scope while sharing the grid, spacing scale, nav, logo, and accessibility rules. The title screen stays at `/`; chapters live at `/projects`, `/arcade`, `/ask`, `/atlas`, `/about`, and `/contact`.
 
 - **About** — warm paper, editorial serif, grain, asymmetric layout. Holds the story, skills, stack, languages, and honors.
 - **Projects** — a cinematic universe timeline that becomes an explorable galaxy map.
+- **Atlas** — a walkable top-down world of the songs, films, books, poems, and ideas that shaped me.
 - **Arcade** — a literal arcade hall: cabinets, CRT screens, insert-coin interaction, high-score board. Games are WebAssembly builds launched full-screen.
 - **Ask My AI** — terminal charcoal and green, monospace, typewriter reveals. AI agent with a persistent dock.
 - **Contact** — light, minimal, generous whitespace, slow fades. Reached from the phone icon.
@@ -49,10 +50,20 @@ Each chapter is its own route with its own theme scope while sharing the grid, s
 - A signal-deck dock (bottom-left on desktop, top-right on mobile) manages the ambient soundtrack with the same track pool and golden-record disc archive as the other chapters. Starting the soundtrack fades the cinematic score, and beginning or replaying the cinematic pauses the soundtrack, so the two never overlap.
 - The experience is client-only and lazy-loaded, pauses rendering when the tab is hidden, respects reduced motion, and falls back to a static timeline when WebGL is unavailable.
 
+## Atlas
+
+- A walkable top-down 2D world at `/atlas` (chapter 04) for the non-CS things that shaped the owner: music, film, books, poetry, and philosophy. It is deliberately separate from the resume-facing pages; its audience is the curious visitor.
+- All art is original and generated in code (canvas-drawn terrain, structures, sprites, icons). No external or Mojang assets are added; the chapter respects the existing asset policy.
+- The world is data-driven. Content lives in `src/content/atlas.ts`: regions (mediums), entries, relics, and world anchors. Regions and interiors are appended data, not layout code. Entries carry a required why-line, optional quote/note/links, connections for trails, and optional night gating.
+- Five regions: The Listening Glade (music), The Picture House (film), The Long Library (books), The Poem Garden (poetry), and The Quiet Hill (philosophy). Each entry is a pedestal landmark with its own item icon; walking close raises a prompt and opens a dark tooltip-style panel with the why-line, a purple lore quote, and trail chips.
+- The world starts on the visitor's local clock. A slow day/night cycle (12 minutes) runs while the tab is visible; resting at the campfire advances six hours with a fade. One relic appears only at night, and the campfire exists so nobody has to wait for the clock.
+- Extras: an NPC guide near spawn with rotating lines, lantern posts that glow after dark, fireflies, birds, drifting petals/pages/notes by region, an index drawer with fast travel, linked trails between related entries, one enterable interior (the Long Library hall), and found-state persistence in `localStorage`.
+- Accessibility and performance: keyboard movement, Escape closes overlays, the index is the semantic list of every entry, each entry is shareable at `/atlas#<slug>` (the world spawns beside its landmark with the panel open), reduced motion fixes golden hour and stops ambient motion, and the canvas loop pauses when the tab is hidden or the chapter is offscreen. The static fallback lists every entry and relic for no-JS and no-canvas visitors.
+- The starter entries are placeholders drawn from widely known works, clearly marked in the content file; they are meant to be replaced with the owner's real influences.
+
 ## Arcade
 
 - A real arcade room, not a grid of cards.
-- Each cabinet maps to a game project. Selecting one boots a WASM build.
 - C++/SFML games are ported via Emscripten (SDL2 where SFML support is impractical).
 - Python/pygame games are packaged with pygbag.
 - Builds are lazy-loaded and hosted in `public/games/<slug>/` or an external bucket.

@@ -2,6 +2,8 @@
 
 The raw material for the `/atlas` chapter. This file is filled in **before** any map work, because regions are derived from the material, not invented ahead of it.
 
+> **Status:** the first walkable iteration ships with starter entries in `src/content/atlas.ts` (clearly marked placeholders). Edit that file to add or replace influences — regions, landmarks, trails, and the index all derive from it. This document stays as the intake template for future dumps.
+
 ## How to add an entry
 
 Use this shape for every influence. Only `why` is non-negotiable.
