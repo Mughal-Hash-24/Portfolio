@@ -23,13 +23,12 @@ type PlanetPositions = Map<string, THREE.Vector3>;
 type OrbitView = { azimuth: number; polar: number };
 
 const STAR_MARKER_RADIUS = 1.05;
-const FOCUS_DISTANCE = 7.8;
 const PLANET_FOCUS_DISTANCE = 1.7;
 const FOCUS_ORBIT_SPEED = 0.12;
 
 function systemRadius(system: ResolvedSystem) {
   const maxOrbit = system.planets.reduce((max, planet) => Math.max(max, planet.orbit + 0.4), 0);
-  return maxOrbit + 0.7;
+  return maxOrbit * system.personality.scale * system.personality.elongation + 0.9;
 }
 
 function layoutSystems(systems: ResolvedSystem[]) {
@@ -95,15 +94,15 @@ function fitDistance(width: number, height: number, fov: number, aspect: number)
   return Math.max(vertical, horizontal) * 1.08 + 6;
 }
 
-function orbitRing(radius: number) {
+function orbitRing(radius: number, elongation: number) {
   const segments = 72;
   const positions = new Float32Array(segments * 3);
 
   for (let index = 0; index < segments; index += 1) {
     const angle = (index / segments) * Math.PI * 2;
-    positions[index * 3] = Math.cos(angle) * radius;
+    positions[index * 3] = Math.cos(angle) * radius * elongation;
     positions[index * 3 + 1] = 0;
-    positions[index * 3 + 2] = Math.sin(angle) * radius;
+    positions[index * 3 + 2] = (Math.sin(angle) * radius) / elongation;
   }
 
   return positions;
@@ -202,7 +201,7 @@ function SystemCameraRig({
 
       if (index >= 0) {
         focusPosition = positions[index];
-        distance = FOCUS_DISTANCE;
+        distance = systemRadius(systems[index]) + 2.6;
 
         if (focusedPlanet !== null) {
           const live = planetPositions.current.get(`${focusedProject}:${focusedPlanet}`);
@@ -287,9 +286,19 @@ function ProjectSystem({
   const [hoveredPlanet, setHoveredPlanet] = useState<number | null>(null);
   const localTime = useRef(0);
   const revealStart = useRef<number | null>(null);
+  const orbitPosition = useRef(new THREE.Vector3());
+  const persona = system.personality;
+  const tilt = useMemo(
+    () => new THREE.Euler(persona.tiltX, 0, persona.tiltZ),
+    [persona.tiltX, persona.tiltZ],
+  );
+  const tiltMatrix = useMemo(() => new THREE.Matrix4().makeRotationFromEuler(tilt), [tilt]);
   const rings = useMemo(
-    () => system.planets.map((planet) => orbitRing(planet.orbit + 0.4)),
-    [system.planets],
+    () =>
+      system.planets.map((planet) =>
+        orbitRing((planet.orbit + 0.4) * persona.scale, persona.elongation),
+      ),
+    [system.planets, persona.scale, persona.elongation],
   );
 
   useFrame(({ clock }, delta) => {
@@ -306,12 +315,18 @@ function ProjectSystem({
       const group = planetGroups.current[index];
       if (!group) return;
 
-      const angle = time * planet.speed + planet.phase;
-      group.position.set(
-        Math.cos(angle) * (planet.orbit + 0.4),
-        Math.sin(angle * 2 + planet.phase) * 0.08 * (planet.orbit + 0.4),
-        Math.sin(angle) * (planet.orbit + 0.4),
-      );
+      const angle = (persona.retrograde ? -1 : 1) * time * planet.speed + planet.phase;
+      const radius = (planet.orbit + 0.4) * persona.scale;
+      const radial = radius * (1 + persona.eccentricity * Math.cos(angle));
+
+      orbitPosition.current
+        .set(
+          Math.cos(angle) * radial * persona.elongation,
+          Math.sin(angle * 2 + planet.phase) * 0.06 * radial,
+          (Math.sin(angle) * radial) / persona.elongation,
+        )
+        .applyMatrix4(tiltMatrix);
+      group.position.copy(orbitPosition.current);
 
       let registered = planetPositions.current.get(`${system.projectId}:${index}`);
 
@@ -342,7 +357,7 @@ function ProjectSystem({
 
   return (
     <group position={position}>
-      <sprite scale={3 * system.starScale} frustumCulled={false}>
+      <sprite scale={3 * system.starScale * persona.scale} frustumCulled={false}>
         <spriteMaterial
           map={glowTexture()}
           color={system.starColor}
@@ -353,7 +368,7 @@ function ProjectSystem({
           toneMapped={false}
         />
       </sprite>
-      <sprite scale={0.9 * system.starScale} frustumCulled={false}>
+      <sprite scale={0.9 * system.starScale * persona.scale} frustumCulled={false}>
         <spriteMaterial
           map={glowTexture()}
           color="#fff6e8"
@@ -365,7 +380,7 @@ function ProjectSystem({
       </sprite>
 
       {system.planets.map((planet, index) => (
-        <lineLoop key={`ring-${planet.tech}`} frustumCulled={false}>
+        <lineLoop key={`ring-${planet.tech}`} frustumCulled={false} rotation={tilt}>
           <bufferGeometry>
             <bufferAttribute attach="attributes-position" args={[rings[index], 3]} />
           </bufferGeometry>
