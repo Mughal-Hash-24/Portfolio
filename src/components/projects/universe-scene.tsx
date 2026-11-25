@@ -2,10 +2,10 @@
 
 /* eslint-disable react-hooks/immutability -- three.js objects, camera controls, and shader uniforms are mutated imperatively inside useFrame. */
 
-import { Html, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
-import { useEffect, useMemo, useRef, type CSSProperties, type RefObject } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import {
   cameraKeyframes,
@@ -23,6 +23,7 @@ import {
   Starfield,
 } from "./universe-background";
 import { cosmosFragmentShader, cosmosVertexShader } from "./universe-shaders";
+import { SparkText } from "./universe-spark-text";
 import {
   cmbTexture,
   createRandom,
@@ -30,7 +31,6 @@ import {
   ringTexture,
   smoothstep,
 } from "./universe-textures";
-import styles from "./universe.module.css";
 import type { Quality, TimelineState, UniverseMode } from "./universe-types";
 
 type UniverseSceneProps = {
@@ -745,53 +745,39 @@ function GalaxyCores({
   );
 }
 
-function GalaxyLabels({
+function GalaxySparkLabels({
   data,
   mode,
-  selected,
   hovered,
+  quality,
+  reducedMotion,
 }: {
   data: UniverseData;
   mode: UniverseMode;
-  selected: number | null;
   hovered: number | null;
+  quality: Quality;
+  reducedMotion: boolean;
 }) {
   if (mode !== "explore") return null;
 
   return (
     <>
-      {data.galaxies.map((galaxy) => {
-        const active = selected === galaxy.id || hovered === galaxy.id;
-        const dimmed = selected !== null && selected !== galaxy.id;
-
-        return (
-          <Html
-            key={galaxy.id}
-            position={[
-              galaxy.center.x * expansionAtPresent,
-              galaxy.center.y * expansionAtPresent + galaxy.radius * 1.35,
-              galaxy.center.z * expansionAtPresent,
-            ]}
-            center
-            zIndexRange={[5, 0]}
-            style={{ pointerEvents: "none" }}
-          >
-            <span
-              className={styles.worldLabel}
-              data-active={active}
-              data-dim={dimmed}
-              style={
-                {
-                  "--domain-color": galaxy.domain.palette.mid,
-                } as CSSProperties
-              }
-            >
-              <span className={styles.worldLabelDot} aria-hidden="true" />
-              {galaxy.domain.label}
-            </span>
-          </Html>
-        );
-      })}
+      {data.galaxies.map((galaxy) => (
+        <SparkText
+          key={`spark-${galaxy.id}`}
+          text={galaxy.domain.label}
+          color={galaxy.domain.palette.mid}
+          position={[
+            galaxy.center.x * expansionAtPresent,
+            galaxy.center.y * expansionAtPresent,
+            galaxy.center.z * expansionAtPresent,
+          ]}
+          radius={galaxy.radius * 1.6}
+          screenHeight={quality === "mobile" ? 34 : 44}
+          active={hovered === galaxy.id}
+          reducedMotion={reducedMotion}
+        />
+      ))}
     </>
   );
 }
@@ -1013,7 +999,13 @@ export function UniverseScene({
         hovered={hovered}
         mode={mode}
       />
-      <GalaxyLabels data={data} mode={mode} selected={selected} hovered={hovered} />
+      <GalaxySparkLabels
+        data={data}
+        mode={mode}
+        hovered={hovered}
+        quality={quality}
+        reducedMotion={reducedMotion}
+      />
       {explore ? <Markers data={data} onHover={onHover} onSelect={onSelect} /> : null}
       <Supernovae data={data} active={explore && !reducedMotion} selected={selected} />
       <DistantSupernovae active={!reducedMotion} />

@@ -7,7 +7,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", ".commandcode/**"]),
+  globalIgnores([".next/**", "out/**", "build/**", "games/**", "next-env.d.ts", ".commandcode/**"]),
 ]);
 
 export default eslintConfig;
