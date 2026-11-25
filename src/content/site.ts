@@ -40,15 +40,23 @@ const contactChapter = {
   id: "contact",
   label: "Contact",
   href: "/contact",
-  number: "04",
+  number: "05",
   description: "The fastest ways to reach me.",
+} as const;
+
+const atlasChapter = {
+  id: "atlas",
+  label: "Atlas",
+  href: "/atlas",
+  number: "04",
+  description: "A walkable world of the songs, films, books, poems, and ideas that shaped me.",
 } as const;
 
 const aboutChapter = {
   id: "about",
   label: "About",
   href: "/about",
-  number: "05",
+  number: "06",
   description: "The story, the stack, the honors, and the detours.",
 } as const;
 
@@ -56,6 +64,7 @@ export const chapters = [
   projectsChapter,
   arcadeChapter,
   askChapter,
+  atlasChapter,
   contactChapter,
   aboutChapter,
 ] as const;
@@ -64,6 +73,7 @@ export const chapterContent = {
   projects: projectsChapter,
   arcade: arcadeChapter,
   ask: askChapter,
+  atlas: atlasChapter,
   contact: contactChapter,
   about: aboutChapter,
 } as const;
