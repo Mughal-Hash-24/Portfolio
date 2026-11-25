@@ -2,10 +2,9 @@
 
 /* eslint-disable react-hooks/immutability -- three.js objects, camera, and shader uniforms are mutated imperatively inside useFrame. */
 
-import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
-import { useEffect, useMemo, useRef, type CSSProperties, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import type { ResolvedSystem } from "@/content/project-systems";
 import {
@@ -16,8 +15,8 @@ import {
   ShootingStars,
   Starfield,
 } from "./universe-background";
+import { SparkText } from "./universe-spark-text";
 import { createRandom, glowTexture, planetTexture } from "./universe-textures";
-import styles from "./universe.module.css";
 import type { Quality } from "./universe-types";
 
 type PlanetPositions = Map<string, THREE.Vector3>;
@@ -285,6 +284,7 @@ function ProjectSystem({
   const planetMeshes = useRef<Array<THREE.Mesh | null>>([]);
   const planetGlows = useRef<Array<THREE.Sprite | null>>([]);
   const ringMaterials = useRef<Array<THREE.LineBasicMaterial | null>>([]);
+  const [hoveredPlanet, setHoveredPlanet] = useState<number | null>(null);
   const localTime = useRef(0);
   const revealStart = useRef<number | null>(null);
   const rings = useMemo(
@@ -421,10 +421,12 @@ function ProjectSystem({
             onPointerOver={(event) => {
               event.stopPropagation();
               event.object.scale.setScalar(1.18);
+              setHoveredPlanet(index);
               document.body.style.cursor = "pointer";
             }}
             onPointerOut={(event) => {
               event.object.scale.setScalar(1);
+              setHoveredPlanet((current) => (current === index ? null : current));
               document.body.style.cursor = "auto";
             }}
           >
@@ -454,31 +456,25 @@ function ProjectSystem({
               toneMapped={false}
             />
           </sprite>
-          {focused ? (
-            <Html
-              position={[0, planet.size * 0.32 + 0.18, 0]}
-              center
-              zIndexRange={[5, 0]}
-              style={{ pointerEvents: "none" }}
-            >
-              <span className={styles.planetLabel} data-active={focusedPlanet === index}>
-                {planet.tech}
-              </span>
-            </Html>
-          ) : null}
+          <SparkText
+            text={planet.tech}
+            color={planet.color}
+            radius={planet.size * 0.34}
+            screenHeight={22}
+            active={focusedPlanet === index || hoveredPlanet === index}
+            reducedMotion={reducedMotion}
+          />
         </group>
       ))}
 
-      <Html position={[0, -2.6, 0]} center zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
-        <span
-          className={styles.systemLabel}
-          data-active={focused || hovered}
-          style={{ "--domain-color": system.starColor } as CSSProperties}
-        >
-          <span className={styles.worldLabelDot} aria-hidden="true" />
-          {system.projectName}
-        </span>
-      </Html>
+      <SparkText
+        text={system.projectName}
+        color={system.starColor}
+        radius={systemRadius(system) * 0.82}
+        screenHeight={30}
+        active={focused || hovered}
+        reducedMotion={reducedMotion}
+      />
     </group>
   );
 }
