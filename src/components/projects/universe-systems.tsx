@@ -16,7 +16,7 @@ import {
   Starfield,
 } from "./universe-background";
 import { SparkText } from "./universe-spark-text";
-import { createRandom, glowTexture, planetTexture } from "./universe-textures";
+import { createRandom, glowTexture, hashString, planetTexture } from "./universe-textures";
 import type { Quality } from "./universe-types";
 
 type PlanetPositions = Map<string, THREE.Vector3>;
@@ -106,6 +106,82 @@ function orbitRing(radius: number, elongation: number) {
   }
 
   return positions;
+}
+
+type BeltData = {
+  kind: "rock" | "ice";
+  positions: Float32Array;
+  colors: Float32Array;
+  opacity: number;
+};
+
+const ROCK_COLORS = ["#8c7f6f", "#6f6357", "#a3947f", "#55483e"];
+const ICE_COLORS = ["#bfe6ff", "#9fd0ff", "#e8f7ff", "#7fb0d9"];
+
+function buildBelt(system: ResolvedSystem, kind: "rock" | "ice", quality: Quality): BeltData {
+  const persona = system.personality;
+  const random = createRandom(hashString(`${system.projectId}:belt:${kind}`));
+  const count = quality === "mobile" ? 240 : 420;
+  const orbits = system.planets.map((planet) => (planet.orbit + 0.4) * persona.scale);
+  const outer = Math.max(...orbits);
+  const inner = kind === "rock" ? Math.min(orbits[1] ?? outer * 0.6, outer) + 0.35 : outer + 1.1;
+  const width = kind === "rock" ? 0.5 : 0.85;
+  const palette = kind === "rock" ? ROCK_COLORS : ICE_COLORS;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const tint = new THREE.Color();
+
+  for (let index = 0; index < count; index += 1) {
+    const angle = random() * Math.PI * 2;
+    const radius = inner + (random() - 0.5) * width;
+
+    positions.set(
+      [
+        Math.cos(angle) * radius * persona.elongation,
+        (random() - 0.5) * (kind === "rock" ? 0.12 : 0.2),
+        (Math.sin(angle) * radius) / persona.elongation,
+      ],
+      index * 3,
+    );
+    tint.set(palette[Math.floor(random() * palette.length)]);
+    const brightness = 0.55 + random() * 0.45;
+    colors.set([tint.r * brightness, tint.g * brightness, tint.b * brightness], index * 3);
+  }
+
+  return {
+    kind,
+    positions,
+    colors,
+    opacity: kind === "rock" ? 0.5 : 0.6,
+  };
+}
+
+type ProjectAsteroid = {
+  radius: number;
+  speed: number;
+  phase: number;
+  height: number;
+  size: number;
+  color: string;
+  spin: THREE.Vector3;
+};
+
+function buildAsteroids(system: ResolvedSystem): ProjectAsteroid[] {
+  const persona = system.personality;
+  const random = createRandom(hashString(`${system.projectId}:asteroids`));
+  const outer = Math.max(...system.planets.map((planet) => (planet.orbit + 0.4) * persona.scale));
+
+  return Array.from({ length: 6 }, () => ({
+    radius: 0.7 + random() * (outer + 0.9),
+    speed: (0.06 + random() * 0.16) * (persona.retrograde ? -1 : 1),
+    phase: random() * Math.PI * 2,
+    height: (random() - 0.5) * 0.5,
+    size: 0.055 + random() * 0.06,
+    color: ROCK_COLORS[Math.floor(random() * ROCK_COLORS.length)],
+    spin: new THREE.Vector3(random() - 0.5, random() - 0.5, random() - 0.5)
+      .normalize()
+      .multiplyScalar(0.5 + random() * 0.9),
+  }));
 }
 
 function SystemOrbit({ view }: { view: MutableRefObject<OrbitView> }) {
@@ -261,6 +337,7 @@ function ProjectSystem({
   focusedPlanet,
   hovered,
   revealed,
+  quality,
   onHoverProject,
   onSelectProject,
   onSelectPlanet,
@@ -273,6 +350,7 @@ function ProjectSystem({
   focusedPlanet: number | null;
   hovered: boolean;
   revealed: boolean;
+  quality: Quality;
   onHoverProject: (projectId: string | null) => void;
   onSelectProject: (projectId: string) => void;
   onSelectPlanet: (planetIndex: number) => void;
@@ -283,6 +361,8 @@ function ProjectSystem({
   const planetMeshes = useRef<Array<THREE.Mesh | null>>([]);
   const planetGlows = useRef<Array<THREE.Sprite | null>>([]);
   const ringMaterials = useRef<Array<THREE.LineBasicMaterial | null>>([]);
+  const beltMaterials = useRef<Array<THREE.PointsMaterial | null>>([]);
+  const asteroidMeshes = useRef<Array<THREE.Mesh | null>>([]);
   const [hoveredPlanet, setHoveredPlanet] = useState<number | null>(null);
   const localTime = useRef(0);
   const revealStart = useRef<number | null>(null);
@@ -300,6 +380,11 @@ function ProjectSystem({
       ),
     [system.planets, persona.scale, persona.elongation],
   );
+  const belts = useMemo(
+    () => persona.belts.map((kind) => buildBelt(system, kind, quality)),
+    [system, persona.belts, quality],
+  );
+  const asteroids = useMemo(() => buildAsteroids(system), [system]);
 
   useFrame(({ clock }, delta) => {
     const dt = Math.min(delta, 0.1);
@@ -353,6 +438,31 @@ function ProjectSystem({
       const ring = ringMaterials.current[index];
       if (ring) ring.opacity = (focused ? 0.22 : 0.1) * eased;
     });
+
+    const beltAppear = since < 0 ? 0 : Math.min(since / 0.9, 1);
+    const beltEase = beltAppear * beltAppear * (3 - 2 * beltAppear);
+
+    belts.forEach((belt, index) => {
+      const material = beltMaterials.current[index];
+      if (material) material.opacity = belt.opacity * beltEase;
+    });
+
+    asteroids.forEach((asteroid, index) => {
+      const mesh = asteroidMeshes.current[index];
+      if (!mesh) return;
+
+      const angle = time * asteroid.speed + asteroid.phase;
+      mesh.position.set(
+        Math.cos(angle) * asteroid.radius * persona.elongation,
+        asteroid.height + Math.sin(angle * 2 + asteroid.phase) * 0.12,
+        (Math.sin(angle) * asteroid.radius) / persona.elongation,
+      );
+      mesh.rotation.x += asteroid.spin.x * dt;
+      mesh.rotation.y += asteroid.spin.y * dt;
+      mesh.rotation.z += asteroid.spin.z * dt;
+      mesh.scale.setScalar(Math.max(asteroid.size * beltEase, 0.0001));
+      (mesh.material as THREE.MeshBasicMaterial).opacity = beltEase;
+    });
   });
 
   return (
@@ -378,6 +488,49 @@ function ProjectSystem({
           toneMapped={false}
         />
       </sprite>
+
+      <group rotation={tilt}>
+        {belts.map((belt, index) => (
+          <points key={`belt-${belt.kind}`} frustumCulled={false}>
+            <bufferGeometry>
+              <bufferAttribute attach="attributes-position" args={[belt.positions, 3]} />
+              <bufferAttribute attach="attributes-color" args={[belt.colors, 3]} />
+            </bufferGeometry>
+            <pointsMaterial
+              ref={(element) => {
+                beltMaterials.current[index] = element;
+              }}
+              map={glowTexture()}
+              size={belt.kind === "rock" ? 0.075 : 0.06}
+              vertexColors
+              transparent
+              opacity={0}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+              sizeAttenuation
+              toneMapped={false}
+            />
+          </points>
+        ))}
+        {asteroids.map((asteroid, index) => (
+          <mesh
+            key={`asteroid-${index}`}
+            ref={(element) => {
+              asteroidMeshes.current[index] = element;
+            }}
+            frustumCulled={false}
+          >
+            <sphereGeometry args={[1, 7, 5]} />
+            <meshBasicMaterial
+              map={planetTexture()}
+              color={asteroid.color}
+              transparent
+              opacity={0}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+      </group>
 
       {system.planets.map((planet, index) => (
         <lineLoop key={`ring-${planet.tech}`} frustumCulled={false} rotation={tilt}>
@@ -501,6 +654,7 @@ function ProjectSystems({
   focusedPlanet,
   hoveredProject,
   revealed,
+  quality,
   onHoverProject,
   onSelectProject,
   onSelectPlanet,
@@ -513,6 +667,7 @@ function ProjectSystems({
   focusedPlanet: number | null;
   hoveredProject: string | null;
   revealed: boolean;
+  quality: Quality;
   onHoverProject: (projectId: string | null) => void;
   onSelectProject: (projectId: string) => void;
   onSelectPlanet: (projectId: string, planetIndex: number) => void;
@@ -530,6 +685,7 @@ function ProjectSystems({
           focusedPlanet={focusedProject === system.projectId ? focusedPlanet : null}
           hovered={hoveredProject === system.projectId}
           revealed={revealed}
+          quality={quality}
           onHoverProject={onHoverProject}
           onSelectProject={onSelectProject}
           onSelectPlanet={(planetIndex) => onSelectPlanet(system.projectId, planetIndex)}
@@ -596,6 +752,7 @@ export function ProjectSystemScene({
         focusedPlanet={focusedPlanet}
         hoveredProject={hoveredProject}
         revealed={revealed}
+        quality={quality}
         onHoverProject={onHoverProject}
         onSelectProject={onSelectProject}
         onSelectPlanet={onSelectPlanet}
