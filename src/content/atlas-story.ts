@@ -32,6 +32,7 @@ export type ArcadeStatue = {
 };
 
 export const guideName = "Pir-e-Iqbal";
+export const guideAlias = "Bireqbal";
 export const guideTitle = "Guide";
 
 // Placeholder mission statement — replace when the real one arrives.
@@ -48,6 +49,7 @@ export type StoryStage =
 export const storyLines = {
   intro: [
     "I am Pir-e-Iqbal. I keep this road — the things that made you, not the things you made.",
+    "Some call me Bireqbal. I answer to both.",
     "You wrote your mission on the water before you could swim. I read it every morning.",
     "Now come. Before the shelves and the songs, there is a room where it all began.",
   ],

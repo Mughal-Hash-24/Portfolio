@@ -1,0 +1,13 @@
+{
+  "enabledMuted": true,
+  "enabledWalk": {
+    "oscillators": 6,
+    "sources": 4
+  },
+  "initialSwitch": "true",
+  "mutedWalk": {
+    "oscillators": 0,
+    "sources": 0
+  },
+  "switchAfterClick": "false"
+}
