@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bresenham Line-Drawing Visualizer</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #07080b; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  canvas.emscripten {
+    display: block;
+    border: 0;
+    background: #000;
+    /* SFML writes the window size as inline width/height. Fit that into the
+       frame without distorting the game, so the cabinet shows the whole screen. */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+  .status { color: #71717a; font: 0.7rem ui-monospace, monospace; letter-spacing: 0.2em;
+            text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="status" class="status">Loading…</div>
+<script>
+  var statusElement = document.getElementById('status');
+  var Module = {
+    canvas: (function () {
+      var canvas = document.createElement('canvas');
+      canvas.className = 'emscripten';
+      canvas.id = 'canvas';
+      canvas.tabIndex = 1;
+      canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); }, false);
+      document.body.insertBefore(canvas, statusElement);
+      return canvas;
+    })(),
+    arguments: [],
+    print: function () {},
+    printErr: function () {},
+    setStatus: function (text) {
+      if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+      if (text === Module.setStatus.last.text) return;
+      statusElement.textContent = text || '';
+      statusElement.style.display = text ? 'block' : 'none';
+    },
+    monitorRunDependencies: function (left) {
+      if (left === 0) Module.setStatus('');
+      else Module.setStatus('Loading…');
+    },
+    onRuntimeInitialized: function () { Module.setStatus(''); }
+  };
+  window.Module = Module;
+  Module.setStatus('Loading…');
+</script>
+<script async src="index.js"></script>
+</body>
+</html>
