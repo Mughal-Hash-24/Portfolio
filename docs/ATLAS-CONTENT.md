@@ -106,3 +106,25 @@ Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-lov
 - A new interior is appended room data referenced by an entry.
 - Trails are derived from `connections` and must point both ways.
 - Any `night` entry needs a reachable rest point (campfire or bed) so nobody has to wait for the clock.
+
+## Story layer
+
+The Atlas also has a guided storyline. Its content is separate from the regions:
+
+- `src/content/atlas-story.ts`:
+  - `guideName` / `guideTitle` and `storyLines` — the guide's dialogue for the prologue, the 2011 memory, the dimension, and free-roam greetings.
+  - `missionStatement` — the quote on the Pond of Wisdom. The current line is a placeholder; replace `quote` and `attribution` when the final statement is ready.
+  - `storyWorld` — the pond, inscription stone, 2011 shrine, gate, and the guide's walking path on the tile plane.
+  - `arcadeStatues` — the seventeen stone inscriptions. Each has `game`, `year`, `quote`, an optional `reference: true` for lines that describe the game rather than quote it, a `motif` that the art renderer swaps in, and a `paint` accent.
+  - `arcadeProps` / `arcadeDimension` — the dimension's game props, decor, spawn, and exit.
+
+### Quote rules
+
+Keep each inscription to one short line, attributed to the game, and set `reference: true` when it is a description rather than a quote. Avoid long passages, lyrics, or text that needs a content licence; the card is designed for a single engraved sentence.
+
+### Extending the journey
+
+- Add a statue by appending to `arcadeStatues`; the ring layout and plinth distribution are derived from the list length.
+- A new motif needs a case in `drawMotif` in `atlas-art.ts`.
+- Story beats live in the engine's stage machine; content belongs in `storyLines`. Do not put dialogue strings in the engine.
+- The story is persisted under `atlas:story:v1`. Clear that key to replay the prologue.
