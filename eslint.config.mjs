@@ -7,7 +7,17 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
-  globalIgnores([".next/**", "out/**", "build/**", "games/**", "next-env.d.ts", ".commandcode/**"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "games/**",
+    "next-env.d.ts",
+    ".commandcode/**",
+    // Compiled game bundles: Emscripten and pygbag emit their own runtime JS.
+    "public/arcade/**",
+    "public/arcade-runtime/**",
+  ]),
 ]);
 
 export default eslintConfig;

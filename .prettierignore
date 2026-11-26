@@ -7,3 +7,6 @@ package-lock.json
 next-env.d.ts
 AGENTS.md
 public/arcade
+
+public/arcade-runtime/
+public/arcade/

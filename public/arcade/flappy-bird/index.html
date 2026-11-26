@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flappy Bird Recreation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+</style>
+<script src="/arcade-runtime/pythons.js" data-python="cpython3.12" type="module" id="__main__" data-os="gui" data-ume_block="0" async defer>#<!--
+import asyncio
+import base64
+import os
+import pathlib
+import sys
+import tempfile
+
+# The runtime only treats this script as the program entry point when
+# sys.argv[0] names it; otherwise that has to come from the page URL hash.
+# The loader leaves a blank placeholder at [0], so replace it in place.
+if not sys.argv or not sys.argv[0]:
+    if sys.argv:
+        sys.argv[0] = "main.py"
+    else:
+        sys.argv.append("main.py")
+
+ASSETS = {
+    "README.md": (
+        "IyDwn5CmIEZsYXBweSBCaXJkCgpBIHlvdW5nIG1lLCBmdWVsZWQgYnkgY3JlYXRpdml0eSBhbmQgbG92ZSBmb3IgZ2FtaW5nLCBkZWNpZGVkIHRvIHRha2Ug"
+        "b24gaGlzIGZpZnRoIGdhbWUgZGV2ZWxvcG1lbnQgcHJvamVjdCDigJQgKioiRmxhcHB5IEJpcmQiKiogaW4gUHl0aG9uIChQeWdhbWUpLiAgCkNhbGwgaXQg"
+        "ZWZmaWNpZW50IHRpbWUgbWFuYWdlbWVudCBvciBteSBoYXRlIGZvciBwaXhlbCBhcnQgYXQgdGhhdCB0aW1lLCBidXQgSSBkZWNpZGVkIHRvIHNraXAgcGl4"
+        "ZWwgYXJ0IGVudGlyZWx5IGZvciB0aGlzIGdhbWUuLi4gIApXaGljaCwgbG9va2luZyBiYWNrLCBtYXliZSBJIHNob3VsZG4ndCBoYXZlLiBCdXQgdGhhdOKA"
+        "mXMgd2hhdCBncm93dGggaXMgZm9yLCByaWdodD8KClRoaXMgdmVyc2lvbiBvZiBGbGFwcHkgQmlyZCBpc27igJl0IGZsYXNoeSDigJQgYnV0IGl0IGZsaWVz"
+        "LiBBbmQgaXQgY2FycmllcyB3aXRoIGl0IHRoZSBzcGlyaXQgb2YgcHVzaGluZyB0aHJvdWdoIGZydXN0cmF0aW9uLCBvbmUgZmxhcCBhdCBhIHRpbWUuCgot"
+        "LS0KCiMjIPCfjq4gSW5zaWdodHMKCkEgMjAxMyBtb2JpbGUgY2xhc3NpYyBkZXZlbG9wZWQgYnkgYSBWaWV0bmFtZXNlIGRldmVsb3BlciDigJQgKkZsYXBw"
+        "eSBCaXJkKiBjYXB0aXZhdGVkIHRoZSB3b3JsZCB3aXRoIGl0cyBzaW1wbGUsIGZydXN0cmF0aW5nbHkgYWRkaWN0aXZlIGdhbWVwbGF5LiAgCkEgZnVubnkt"
+        "bG9va2luZyBiaXJkLiBBIHNlcmllcyBvZiBwaXBlcy4gQW5kIG9uZSBxdWVzdGlvbiBvbiBldmVyeSBwbGF5ZXLigJlzIG1pbmQ6ICAKKioiSG93IGZhciBj"
+        "YW4gSSBnbz8iKioKCkl0IHdhcyBjaGFvdGljLiBJdCB3YXMgYnJpbGxpYW50LiBJdCB3YXMgZXZlcnl3aGVyZS4gIApBbmQgdGhpcyBpcyAqKm15IHRha2Uq"
+        "KiBvbiB0aGUgbGVnZW5kIOKAlCBtaW51cyB0aGUgcGl4ZWwgYXJ0LCBtaW51cyB0aGUgbXVzaWMsIGJ1dCBmaWxsZWQgd2l0aCB0aGUgc2FtZSBzdHViYm9y"
+        "biBkZXRlcm1pbmF0aW9uIHRvICpqdXN0IG5vdCBoaXQgYSBwaXBlKi4KCi0tLQoKIyMg4pqZ77iPIEZlYXR1cmVzCgotIPCfkKQgR3Jhdml0eS1iYXNlZCBw"
+        "aHlzaWNzIHdpdGggdmVsb2NpdHkgYW5kIGp1bXAgYWNjZWxlcmF0aW9uICAKLSDwn6exIFByb2NlZHVyYWxseSBnZW5lcmF0ZWQgb2JzdGFjbGVzIHdpdGgg"
+        "cmFuZG9tIHBpcGUgaGVpZ2h0cyAgCi0g8J+SpSBDb2xsaXNpb24gZGV0ZWN0aW9uIHdpdGggYm90aCBzY3JlZW4gYm91bmRzIGFuZCBwaXBlcyAgCi0g4o+x"
+        "77iPIFN0YWJsZSA2MCBGUFMgZ2FtZSBsb29wIHdpdGggc21vb3RoIHNwcml0ZSB1cGRhdGVzICAKLSDwn46vIExpdmUgc2NvcmUgc3lzdGVtIGRpc3BsYXll"
+        "ZCBvbi1zY3JlZW4gIAotIPCflIEgUmVzdGFydCBmZWF0dXJlIGFmdGVyIGdhbWUgb3ZlciB3aXRoIGEgY2xlYW4gbG9vcAoKLS0tCgojIyDwn5qAIEhvdyB0"
+        "byBSdW4KCjEuICoqSW5zdGFsbCBQeWdhbWUqKiAoaWYgbm90IGFscmVhZHkgaW5zdGFsbGVkKToKICAgYGBgYmFzaAogICBwaXAgaW5zdGFsbCBweWdhbWUK"
+        "ICAgYGBgCgoyLiAqKkNsb25lIHRoZSByZXBvc2l0b3J5Kio6CiAgIGBgYGJhc2gKICAgZ2l0IGNsb25lIGh0dHBzOi8vZ2l0aHViLmNvbS9NdWdoYWwtSGFz"
+        "aC0yNC9GbGFwcHktQmlyZAogICBjZCBGbGFwcHktQmlyZAogICBgYGAKCjMuICoqUnVuIHRoZSBnYW1lKio6CiAgIGBgYGJhc2gKICAgcHl0aG9uIG1haW4u"
+        "cHkKICAgYGBgCgotLS0KCiMjIPCfjq4gQ29udHJvbHMKCi0gKipGbGFwIFVwIC8gSnVtcDoqKiDihpEgQXJyb3cgS2V5ICAKLSAqKlJlc3RhcnQgKGFmdGVy"
+        "IEdhbWUgT3Zlcik6KiogRW50ZXIvUmV0dXJuICAKCi0tLQoKIyMg8J+TmiBXaGF0IEkgTGVhcm5lZAoKLSBTaW11bGF0aW5nIGdyYXZpdHkgYW5kIHBoeXNp"
+        "Y3MgdGhyb3VnaCB2ZWxvY2l0eSBjb250cm9sICAKLSBNYW5hZ2luZyBvYmplY3Qtb3JpZW50ZWQgZGVzaWduIHVzaW5nIGBTcHJpdGVgIGNsYXNzZXMgIAot"
+        "IENyZWF0aW5nIHRpbWVkIG9ic3RhY2xlIHNwYXduaW5nIHVzaW5nIHRpY2tzICAKLSBDb2xsaXNpb24gbG9naWMgdXNpbmcgYFJlY3RgIG9iamVjdHMgYW5k"
+        "IGhpdCBkZXRlY3Rpb24gIAotIEtlZXBpbmcgZ2FtZXBsYXkgZmx1aWQgd2l0aG91dCBmcmFtZSBkcm9wcyAgCi0gQnVpbGRpbmcgcmVzdGFydCBsb2dpYyB3"
+        "aXRob3V0IHJlc2V0dGluZyB0aGUgZW50aXJlIHByb2dyYW0KCi0tLQoKIyMg8J+SrCBSZWZsZWN0aW9uCgpGbGFwcHkgQmlyZCB3YXMgbGVzcyBhYm91dCBt"
+        "ZWNoYW5pY3MgYW5kIG1vcmUgYWJvdXQgKipmZWVsKiouICAKSXQgdGF1Z2h0IG1lIHRoYXQgYSBnYW1lIGNhbiBiZSBzaW1wbGUgYnV0IHN0aWxsICpncmlw"
+        "cGluZyouIFRoYXQgZnJ1c3RyYXRpb24gYW5kIHJld2FyZCBjYW4gYmUgdGlnaHRseSBpbnRlcndvdmVuIHRocm91Z2ggcmh5dGhtIGFsb25lLiAgCgpJdCBh"
+        "bHNvIHRhdWdodCBtZSB0aGF0IHNraXBwaW5nIHBpeGVsIGFydCBtYXkgc2F2ZSB0aW1l4oCmIGJ1dCBpdCByb2JzIHRoZSBnYW1lIG9mIHNvbWUgc291bC4g"
+        "IApJIGRpZG7igJl0IHJlYWxpemUgaXQgdGhlbi4gQnV0IEkgZG8gbm93LgoKU3RpbGwsIHRoaXMgdmVyc2lvbiB3YXMgbWluZSDigJQgcmF3LCBjbGVhbiwg"
+        "YW5kIGZsYXBwaW5nIGZvciBkZWFyIGxpZmUuCgotLS0KCioqQ3JlYXRlZCBCeToqKiBJYnRhc2FhbSBBbWphZCAgCioqTGFuZ3VhZ2U6KiogUHl0aG9uIHwg"
+        "UHlnYW1lICAKKipDcmVhdGVkOioqIEF1Z3VzdOKAk1NlcHRlbWJlciAyMDIzCg=="
+    ),
+}
+# Helper modules are shipped base64-encoded. Writing them as Python string
+# literals breaks on modules that contain quotes, triple quotes, or backslash
+# escapes, which is exactly what a real dependency looks like.
+MODULES = {}
+
+
+def prepare_filesystem():
+    workdir = pathlib.Path(tempfile.mkdtemp(prefix="arcade-"))
+    os.chdir(workdir)
+
+    for name, payload in ASSETS.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(payload))
+
+    for name, source in MODULES.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(source))
+
+    # Helper packages live beside the entry point, so make them importable.
+    if str(workdir) not in sys.path:
+        sys.path.insert(0, str(workdir))
+
+
+prepare_filesystem()
+
+import asyncio
+import pygame
+import math
+import random
+
+def score_screen(text, color, x, y):
+    screen_text = font.render(text, True, color)
+    window.blit(screen_text, [x, y])
+
+class Bird(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 50), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.center = (200, win_res[1] / 2)
+        self.vel = 0
+        self.acc = 0.2
+        self.draw()
+
+    def draw(self):
+        pygame.draw.circle(self.image, (255, 0, 0), (25, 25), 25)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def update(self):
+        if self.rect.y >= 0 and self.rect.y <= win_res[1] - 55:
+            self.vel += self.acc
+            self.rect.y += self.vel
+
+    def jump(self):
+        self.vel = -6
+
+class Obstacles:
+
+    def __init__(self, x, y, width, height, gap):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.gap = gap
+        self.vel = 3
+
+    def draw(self, win):
+        pygame.draw.rect(win, (0, 0, 255), (self.x, self.y, self.width, self.height))
+        pygame.draw.rect(win, (0, 0, 255), (self.x, self.y + self.height + self.gap, self.width, self.height))
+
+    def update(self):
+        self.x -= self.vel
+
+async def game_loop():
+    score = 0
+    bird = Bird()
+    obstacles = []
+    obstacle_spawn_timer = pygame.time.get_ticks()
+    obstacle_spawn_interval = 3000
+    obstacle = Obstacles(790, 0, 100, random.randint(200, 400), 200)
+    obstacles.append(obstacle)
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(bird)
+    game_over = False
+    running = True
+    while running:
+        await asyncio.sleep(0)
+        if game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        game_loop()
+            score_screen('Game Over! Press Enter to restart', (0, 0, 0), 120, win_res[1] / 2 - 30)
+        else:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        bird.jump()
+            if bird.rect.y <= 0 or bird.rect.y >= win_res[1] - 50:
+                game_over = True
+            current_time = pygame.time.get_ticks()
+            if current_time - obstacle_spawn_timer >= obstacle_spawn_interval:
+                obstacle_spawn_timer = current_time
+                new_obstacle = Obstacles(790, 0, 100, random.randint(200, 380), 200)
+                obstacles.append(new_obstacle)
+                score += 1
+            window.fill(bg_color)
+            for obs in obstacles:
+                top_obs_rect = pygame.Rect(obs.x, obs.y, obs.width, obs.height)
+                bottom_obs_rect = pygame.Rect(obs.x, obs.y + obs.height + obs.gap, obs.width, obs.height)
+                if bird.rect.colliderect(top_obs_rect) or bird.rect.colliderect(bottom_obs_rect):
+                    game_over = True
+            for obs in obstacles.copy():
+                if obs.x + obs.width < 0:
+                    obstacles.remove(obs)
+            for obs in obstacles:
+                obs.draw(window)
+                obs.update()
+            all_sprites.draw(window)
+            score_screen('Score: ' + str(score), (0, 0, 0), 10, 10)
+            all_sprites.update()
+        pygame.display.update()
+        clock.tick(60)
+    pygame.quit()
+
+async def main():
+    global bg_color, clock, font, win_res, window
+    pygame.init()
+    clock = pygame.time.Clock()
+    win_res = (800, 600)
+    window = pygame.display.set_mode(win_res)
+    bg_color = (150, 220, 255)
+    font = pygame.font.SysFont('Arial', 45)
+    await game_loop()
+
+try:
+    asyncio.run(main())
+except SystemExit:
+    pass
+except BaseException:
+    # A portable game can still fail on a platform detail (a missing
+    # codec, a font). Surface it in the page instead of a black screen.
+    import traceback
+    info = traceback.format_exc()
+    traceback.print_exc()
+    try:
+        from js import document
+        box = document.createElement('pre')
+        box.style.cssText = (
+            'position:fixed;inset:0;margin:0;padding:16px;z-index:99;'
+            'background:black;color:#ff8080;font:11px monospace;'
+            'white-space:pre-wrap;overflow:auto'
+        )
+        box.textContent = info
+        document.body.appendChild(box)
+    except BaseException:
+        pass
+
+
+# -->
+</script>
+<script>
+  // pygbag creates the canvas without a tabindex, so it can never take focus and
+  // keyboard events land on the body instead of the game. Make it focusable and
+  // focus it on any interaction, which is also what unlocks browser audio.
+  (function () {
+    function wire() {
+      var canvas = document.getElementById("canvas");
+      if (!canvas) return false;
+      if (!canvas.hasAttribute("tabindex")) canvas.setAttribute("tabindex", "0");
+      if (canvas.dataset.arcadeFocus) return true;
+      canvas.dataset.arcadeFocus = "1";
+      ["pointerdown", "click", "keydown"].forEach(function (type) {
+        canvas.addEventListener(type, function () { canvas.focus(); });
+      });
+      return true;
+    }
+    if (!wire()) {
+      var tries = 0;
+      var timer = setInterval(function () {
+        if (wire() || ++tries > 200) clearInterval(timer);
+      }, 100);
+    }
+  })();
+</script>
+</head>
+<body></body>
+</html>

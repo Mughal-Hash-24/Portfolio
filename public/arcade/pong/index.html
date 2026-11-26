@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pong Recreation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+</style>
+<script src="/arcade-runtime/pythons.js" data-python="cpython3.12" type="module" id="__main__" data-os="gui" data-ume_block="0" async defer>#<!--
+import asyncio
+import base64
+import os
+import pathlib
+import sys
+import tempfile
+
+# The runtime only treats this script as the program entry point when
+# sys.argv[0] names it; otherwise that has to come from the page URL hash.
+# The loader leaves a blank placeholder at [0], so replace it in place.
+if not sys.argv or not sys.argv[0]:
+    if sys.argv:
+        sys.argv[0] = "main.py"
+    else:
+        sys.argv.append("main.py")
+
+ASSETS = {
+    "README.md": (
+        "IyDwn4+TIFBvbmcgaW4gUHl0aG9uCgoqKkNyZWF0ZWQ6KiogQXVndXN0IDIwMjMgIAoqKkxhbmd1YWdlOioqIFB5dGhvbiAoUHlnYW1lKSAgCioqRGV2ZWxv"
+        "cGVyOioqIElidGFzYWFtIEFtamFkCgotLS0KCiMjIPCflbnvuI8gQWJvdXQgdGhlIEdhbWUKCipQb25nIGluIFB5dGhvbiogaXMgYSByZWNyZWF0aW9uIG9m"
+        "IG9uZSBvZiB0aGUgbW9zdCBpY29uaWMgZ2FtZXMgb2YgYWxsIHRpbWUg4oCUIGEgY2xhc3NpYyAxdjEgcGFkZGxlIGJhdHRsZSBicm91Z2h0IHRvIGxpZmUg"
+        "dXNpbmcgKipQeWdhbWUqKi4KClRoaXMgd2Fzbid0IGp1c3QgYW5vdGhlciBwcm9qZWN0LiBJdCB3YXMgYSBtb21lbnQgb2YgcmVhbGl6YXRpb24uICAKU2Vw"
+        "dGVtYmVyIDIwMjMgbWFya2VkIGEgc2hpZnQ6IEkgd2FzbuKAmXQganVzdCBidWlsZGluZyBnYW1lcyB0byBsZWFybiBhbnltb3JlIOKAlCBJIHdhcyBsZWFy"
+        "bmluZyB0byBidWlsZCB0aGVtIGJldHRlci4KClRoaXMgdmVyc2lvbiBvZiBQb25nIHJlcHJlc2VudHMgb25lIG9mIG15IGVhcmxpZXN0IGF0dGVtcHRzIGF0"
+        "IHN0cnVjdHVyaW5nIGdhbWVwbGF5IHN5c3RlbXMgd2l0aCBtb3JlIHByZWNpc2lvbiwgYWRkaW5nIHBvbGlzaCwgYW5kIHRoaW5raW5nIGFib3V0IHRoZSAq"
+        "ZmVlbCogb2YgYSBnYW1lLCBub3QganVzdCBpdHMgZnVuY3Rpb25hbGl0eS4KCi0tLQoKIyMg4pyoIEZlYXR1cmVzCgotIPCfj5MgVHdvLXBsYXllciBtb2Rl"
+        "IHdpdGggcmVzcG9uc2l2ZSBwYWRkbGUgY29udHJvbHMgIAotIPCfp6AgU2ltcGxlIHlldCBlZmZlY3RpdmUgYmFsbCBwaHlzaWNzIHVzaW5nIHZlbG9jaXR5"
+        "IHZlY3RvcnMgIAotIPCfmoAgRHluYW1pYyBzcGVlZCBzY2FsaW5nIGFzIHJhbGxpZXMgZ2V0IGxvbmdlciAgCi0g8J+OryBBY2N1cmF0ZSBjb2xsaXNpb24g"
+        "ZGV0ZWN0aW9uIHdpdGggcGFkZGxlIGFuZCB3YWxsIGJvdW5jZXMgIAotIPCflqXvuI8gU2NvcmUgdHJhY2tpbmcgc3lzdGVtIHdpdGggbGl2ZSB1cGRhdGVz"
+        "ICAKLSDij7HvuI8gQ29uc2lzdGVudCBmcmFtZXJhdGUgYW5kIHRpbWUtYmFzZWQgbW92ZW1lbnQgY29udHJvbCAgCi0g8J+qniBDbGVhbiBzY3JlZW4gcmVu"
+        "ZGVyaW5nIGFuZCBwYWRkbGUtYmFsbCBzeW5jCgotLS0KCiMjIOKWtu+4jyBIb3cgdG8gUnVuIHRoZSBHYW1lCgoxLiAqKkluc3RhbGwgUHlnYW1lKiogKGlm"
+        "IG5vdCBhbHJlYWR5IGluc3RhbGxlZCk6CiAgIGBgYGJhc2gKICAgcGlwIGluc3RhbGwgcHlnYW1lCiAgIGBgYAoKMi4gKipEb3dubG9hZCBvciBjbG9uZSB0"
+        "aGUgcmVwb3NpdG9yeToqKgogICBgYGBiYXNoCiAgIGdpdCBjbG9uZSBodHRwczovL2dpdGh1Yi5jb20vTXVnaGFsLUhhc2gtMjQvUG9uZwogICBjZCBQb25n"
+        "CiAgIGBgYAoKMy4gKipNYWtlIHN1cmUgYWxsIHJlcXVpcmVkIGFzc2V0cyAoaWYgYW55KSBhcmUgaW4gdGhlIHNhbWUgZGlyZWN0b3J5IGFzIGBtYWluLnB5"
+        "YC4qKgoKNC4gKipSdW4gdGhlIGdhbWU6KioKICAgYGBgYmFzaAogICBweXRob24gbWFpbi5weQogICBgYGAKCkNvbnRyb2xzOgotICoqUGxheWVyIDE6Kiog"
+        "VyAodXApLCBTIChkb3duKSAgCi0gKipQbGF5ZXIgMjoqKiBVcCBBcnJvdyAo4oaRKSwgRG93biBBcnJvdyAo4oaTKQoKLS0tCgojIyDwn6egIFdoYXQgSSBM"
+        "ZWFybmVkCgotIEJ1aWxkaW5nIGEgcmVhbC10aW1lLCB0d28tcGxheWVyIGdhbWUgbG9vcCAgCi0gSW1wbGVtZW50aW5nIHJlbGlhYmxlIGNvbGxpc2lvbiBk"
+        "ZXRlY3Rpb24gYmV0d2VlbiBmYXN0LW1vdmluZyBvYmplY3RzICAKLSBDb250cm9sbGluZyBiYWxsIGRpcmVjdGlvbiBhbmQgc3BlZWQgcG9zdC1jb2xsaXNp"
+        "b24gIAotIEhhbmRsaW5nIGtleXByZXNzZXMgZm9yIHR3byBwbGF5ZXJzIHNpbXVsdGFuZW91c2x5ICAKLSBGaW5lLXR1bmluZyBtb3Rpb24gdXNpbmcgZnJh"
+        "bWUtYmFzZWQgdGltaW5nIGFuZCBkZWx0YSB2ZWxvY2l0eSAgCi0gVGhlIGltcG9ydGFuY2Ugb2YgZ2FtZSAqZmVlbCogYW5kIHBhY2luZwoKLS0tCgojIyDw"
+        "n46vIFJlZmxlY3Rpb25zCgpMb29raW5nIGJhY2ssIFBvbmcgd2FzIG1vcmUgdGhhbiBqdXN0IGEgcmVtYWtlLiBJdCB3YXMgYSBjaGFuY2UgdG8gcmV2aXNp"
+        "dCB0aGUgZm91bmRhdGlvbnMgb2YgZ2FtZSBkZXNpZ24g4oCUIHNpbXBsaWNpdHksIGNsYXJpdHksIGFuZCBwcmVjaXNpb24uCgpObyBmbGFzaHkgZ3JhcGhp"
+        "Y3MuIE5vIGNvbXBsZXggcGh5c2ljcy4gSnVzdCBwYWRkbGVzLCBhIGJhbGwsIGFuZCB0aGUgdGhyaWxsIG9mIGtlZXBpbmcgaXQgYWxsIGluIHN5bmMuCgpU"
+        "aGlzIHByb2plY3QgaGVscGVkIG1lIHRoaW5rIGJleW9uZCBqdXN0ICJtYWtpbmcgdGhpbmdzIHdvcmsiIOKAlCBhbmQgbW9yZSBhYm91dCAqbWFraW5nIHRo"
+        "aW5ncyBmZWVsIGdvb2QqLiAgCkl04oCZcyBub3QgdGhlIG1vc3QgY29tcGxleCBnYW1lIEnigJl2ZSBtYWRlLiBCdXQgaXTigJlzIG9uZSBvZiB0aGUgbW9z"
+        "dCBob25lc3QuCgp+SWJ0YXNhYW0gQW1qYWQgKEFwcmlsIDIwMjUpCgotLS0K"
+    ),
+}
+# Helper modules are shipped base64-encoded. Writing them as Python string
+# literals breaks on modules that contain quotes, triple quotes, or backslash
+# escapes, which is exactly what a real dependency looks like.
+MODULES = {}
+
+
+def prepare_filesystem():
+    workdir = pathlib.Path(tempfile.mkdtemp(prefix="arcade-"))
+    os.chdir(workdir)
+
+    for name, payload in ASSETS.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(payload))
+
+    for name, source in MODULES.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(source))
+
+    # Helper packages live beside the entry point, so make them importable.
+    if str(workdir) not in sys.path:
+        sys.path.insert(0, str(workdir))
+
+
+prepare_filesystem()
+
+import asyncio
+import pygame
+import math
+
+class Ball(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, vel, angle, radius, color):
+        super().__init__()
+        self.image = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, color, (radius, radius), radius)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.vel = vel
+        self.angle = angle
+        self.radius = radius
+
+    def update(self):
+        self.rect.x += self.vel * math.cos(self.angle)
+        self.rect.y += self.vel * math.sin(self.angle)
+        if self.rect.colliderect(pad1.rect):
+            self.angle = math.pi - self.angle
+        if self.rect.colliderect(pad2.rect):
+            self.angle = math.pi - self.angle
+
+    def reflect_horizontal(self):
+        self.angle = math.pi - self.angle
+
+    def reflect_vertical(self):
+        self.angle = -self.angle
+
+class Pad1(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((20, 120))
+        self.image.fill((0, 0, 255))
+        self.rect = self.image.get_rect()
+        self.rect.midleft = (5, height // 2)
+        self.vel = 8
+
+    def move_up(self):
+        self.rect.y -= self.vel
+
+    def move_down(self):
+        self.rect.y += self.vel
+
+class Pad2(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((20, 120))
+        self.image.fill((0, 0, 255))
+        self.rect = self.image.get_rect()
+        self.rect.x = width - 25
+        self.rect.y = height // 2 - 60
+        self.vel = 8
+
+    def move_up(self):
+        self.rect.y -= self.vel
+
+    def move_down(self):
+        self.rect.y += self.vel
+
+async def main():
+    global all_sprites, ball, event, height, keys, pad1, pad2, running, screen, width
+    pygame.init()
+    width, height = (900, 600)
+    all_sprites = pygame.sprite.Group()
+    ball = Ball(400, 300, 6, math.pi / 6, 10, (255, 0, 0))
+    pad1 = Pad1()
+    pad2 = Pad2()
+    all_sprites.add(ball, pad1, pad2)
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption('Ball Reflection')
+    running = True
+    while running:
+        await asyncio.sleep(0)
+        pygame.time.delay(12)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP] and pad2.rect.y > 0:
+            pad2.rect.y -= 5
+        if keys[pygame.K_DOWN] and pad2.rect.y < height - 120:
+            pad2.rect.y += 5
+        if keys[pygame.K_w] and pad1.rect.y > 0:
+            pad1.rect.y -= 5
+        if keys[pygame.K_s] and pad1.rect.y < height - 120:
+            pad1.rect.y += 5
+        if ball.rect.center[0] <= 10 or ball.rect.center[0] >= width - 10:
+            ball.rect.center = (width // 2, height // 2)
+            ball.angle = math.pi / 6
+        if ball.rect.center[1] <= 10 or ball.rect.center[1] >= height - 10:
+            ball.angle = -ball.angle
+        screen.fill((255, 255, 255))
+        all_sprites.draw(screen)
+        all_sprites.update()
+        pygame.display.flip()
+    pygame.quit()
+
+try:
+    asyncio.run(main())
+except SystemExit:
+    pass
+except BaseException:
+    # A portable game can still fail on a platform detail (a missing
+    # codec, a font). Surface it in the page instead of a black screen.
+    import traceback
+    info = traceback.format_exc()
+    traceback.print_exc()
+    try:
+        from js import document
+        box = document.createElement('pre')
+        box.style.cssText = (
+            'position:fixed;inset:0;margin:0;padding:16px;z-index:99;'
+            'background:black;color:#ff8080;font:11px monospace;'
+            'white-space:pre-wrap;overflow:auto'
+        )
+        box.textContent = info
+        document.body.appendChild(box)
+    except BaseException:
+        pass
+
+
+# -->
+</script>
+<script>
+  // pygbag creates the canvas without a tabindex, so it can never take focus and
+  // keyboard events land on the body instead of the game. Make it focusable and
+  // focus it on any interaction, which is also what unlocks browser audio.
+  (function () {
+    function wire() {
+      var canvas = document.getElementById("canvas");
+      if (!canvas) return false;
+      if (!canvas.hasAttribute("tabindex")) canvas.setAttribute("tabindex", "0");
+      if (canvas.dataset.arcadeFocus) return true;
+      canvas.dataset.arcadeFocus = "1";
+      ["pointerdown", "click", "keydown"].forEach(function (type) {
+        canvas.addEventListener(type, function () { canvas.focus(); });
+      });
+      return true;
+    }
+    if (!wire()) {
+      var tries = 0;
+      var timer = setInterval(function () {
+        if (wire() || ++tries > 200) clearInterval(timer);
+      }, 100);
+    }
+  })();
+</script>
+</head>
+<body></body>
+</html>

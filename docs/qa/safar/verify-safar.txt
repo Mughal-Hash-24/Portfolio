@@ -1,0 +1,206 @@
+npm notice run ibtasaam-portfolio@0.1.0 verify:safar
+npm notice run node --experimental-strip-types --no-warnings scripts/verify-safar.mjs
+PASS  mission inscription is the supplied interim line
+PASS  guide is Pir-e-Iqbal — Pir-e-Iqbal
+PASS  guide alias is Bireqbal — Bireqbal
+PASS  guide introductions name both Pir-e-Iqbal and Bireqbal
+PASS  2011 memory names Uphill Rush and the middle mouse button
+PASS  arcade welcome starts at 2011 with San Andreas and the following games
+PASS  story contains a follow stage and a gate stage
+PASS  seventeen monuments — 17
+PASS  arcade props — 8
+PASS  custom arcade dimension
+PASS  monument exists: GTA: San Andreas
+PASS  game name: GTA: San Andreas — GTA: San Andreas
+PASS  release year: GTA: San Andreas — 2004
+PASS  quote source: GTA: San Andreas — Carl Johnson
+PASS  visual motif: GTA: San Andreas — lowrider
+PASS  direct quote: GTA: San Andreas — “Ah shit, here we go again.”
+PASS  no descriptive reference flag: GTA: San Andreas
+PASS  monument exists: GTA III
+PASS  game name: GTA III — GTA III
+PASS  release year: GTA III — 2001
+PASS  quote source: GTA III — Opening prologue
+PASS  visual motif: GTA III — skyline
+PASS  direct quote: GTA III — “Liberty City. The worst place in America.”
+PASS  no descriptive reference flag: GTA III
+PASS  monument exists: GTA: Vice City
+PASS  game name: GTA: Vice City — GTA: Vice City
+PASS  release year: GTA: Vice City — 2002
+PASS  quote source: GTA: Vice City — Tommy Vercetti
+PASS  visual motif: GTA: Vice City — palm
+PASS  direct quote: GTA: Vice City — “Remember the name! Tommy Vercetti!”
+PASS  no descriptive reference flag: GTA: Vice City
+PASS  monument exists: GTA IV
+PASS  game name: GTA IV — GTA IV
+PASS  release year: GTA IV — 2008
+PASS  quote source: GTA IV — Roman Bellic
+PASS  visual motif: GTA IV — bowling
+PASS  direct quote: GTA IV — “Cousin! Let's go bowling!”
+PASS  no descriptive reference flag: GTA IV
+PASS  monument exists: GTA V
+PASS  game name: GTA V — GTA V
+PASS  release year: GTA V — 2013
+PASS  quote source: GTA V — Michael De Santa
+PASS  visual motif: GTA V — helicopter
+PASS  direct quote: GTA V — “You forget a thousand things every day, pal. Make sure this is one of 'em.”
+PASS  no descriptive reference flag: GTA V
+PASS  monument exists: Assassin's Creed
+PASS  game name: Assassin's Creed — Assassin's Creed
+PASS  release year: Assassin's Creed — 2007
+PASS  quote source: Assassin's Creed — The Creed
+PASS  visual motif: Assassin's Creed — hood
+PASS  direct quote: Assassin's Creed — “Nothing is true; everything is permitted.”
+PASS  no descriptive reference flag: Assassin's Creed
+PASS  monument exists: Watch Dogs
+PASS  game name: Watch Dogs — Watch Dogs
+PASS  release year: Watch Dogs — 2014
+PASS  quote source: Watch Dogs — Aiden Pearce
+PASS  visual motif: Watch Dogs — signal
+PASS  direct quote: Watch Dogs — “Everything is connected. And I'll use that to expose, to protect, and, if necessary, to punish.”
+PASS  no descriptive reference flag: Watch Dogs
+PASS  monument exists: Minecraft
+PASS  game name: Minecraft — Minecraft
+PASS  release year: Minecraft — 2011
+PASS  quote source: Minecraft — The End Poem
+PASS  visual motif: Minecraft — block
+PASS  direct quote: Minecraft — “and the universe said I love you”
+PASS  no descriptive reference flag: Minecraft
+PASS  monument exists: Among Us
+PASS  game name: Among Us — Among Us
+PASS  release year: Among Us — 2018
+PASS  quote source: Among Us — Red
+PASS  visual motif: Among Us — crewmate
+PASS  direct quote: Among Us — “I do not want to alarm you, but there is an Impostor among us.”
+PASS  no descriptive reference flag: Among Us
+PASS  monument exists: Mortal Kombat
+PASS  game name: Mortal Kombat — Mortal Kombat
+PASS  release year: Mortal Kombat — 1992
+PASS  quote source: Mortal Kombat — The announcer
+PASS  visual motif: Mortal Kombat — dragon
+PASS  direct quote: Mortal Kombat — “Finish him!”
+PASS  no descriptive reference flag: Mortal Kombat
+PASS  monument exists: Call of Duty
+PASS  game name: Call of Duty — Call of Duty
+PASS  release year: Call of Duty — 2003
+PASS  quote source: Call of Duty — Captain MacMillan
+PASS  visual motif: Call of Duty — soldier
+PASS  direct quote: Call of Duty — “Fifty thousand people used to live in this city. Now it's a ghost town.”
+PASS  no descriptive reference flag: Call of Duty
+PASS  monument exists: Project I.G.I.
+PASS  game name: Project I.G.I. — Project I.G.I.
+PASS  release year: Project I.G.I. — 2000
+PASS  quote source: Project I.G.I. — The game's own subtitle
+PASS  visual motif: Project I.G.I. — scope
+PASS  direct quote: Project I.G.I. — “I'm going in.”
+PASS  no descriptive reference flag: Project I.G.I.
+PASS  monument exists: Tekken
+PASS  game name: Tekken — Tekken
+PASS  release year: Tekken — 1994
+PASS  quote source: Tekken — The announcer
+PASS  visual motif: Tekken — fist
+PASS  direct quote: Tekken — “Get ready for the next battle.”
+PASS  no descriptive reference flag: Tekken
+PASS  monument exists: FIFA
+PASS  game name: FIFA — FIFA
+PASS  release year: FIFA — 1993
+PASS  quote source: FIFA — FIFA 06 introduction
+PASS  visual motif: FIFA — ball
+PASS  direct quote: FIFA — “This is the beautiful game.”
+PASS  no descriptive reference flag: FIFA
+PASS  monument exists: Cricket 07
+PASS  game name: Cricket 07 — Cricket 07
+PASS  release year: Cricket 07 — 2006
+PASS  quote source: Cricket 07 — Richie Benaud
+PASS  visual motif: Cricket 07 — cricket
+PASS  direct quote: Cricket 07 — “Terrible running by the batsmen.”
+PASS  no descriptive reference flag: Cricket 07
+PASS  monument exists: WWE 2K15
+PASS  game name: WWE 2K15 — WWE 2K15
+PASS  release year: WWE 2K15 — 2014
+PASS  quote source: WWE 2K15 — John Cena
+PASS  visual motif: WWE 2K15 — belt
+PASS  direct quote: WWE 2K15 — “The champ is here!”
+PASS  no descriptive reference flag: WWE 2K15
+PASS  monument exists: Far Cry 3
+PASS  game name: Far Cry 3 — Far Cry 3
+PASS  release year: Far Cry 3 — 2012
+PASS  quote source: Far Cry 3 — Vaas Montenegro
+PASS  visual motif: Far Cry 3 — island
+PASS  direct quote: Far Cry 3 — “Did I ever tell you the definition of insanity?”
+PASS  no descriptive reference flag: Far Cry 3
+PASS  audio dock wires useAudio
+PASS  audio dock wires backgroundTracks
+PASS  audio dock wires discTracks
+PASS  audio dock wires playDisc
+PASS  audio dock wires Records
+PASS  audio dock wires Soundtrack
+PASS  audio dock wires Toggle game sound effects
+PASS  sound engine provides class SafarSfx
+PASS  sound engine provides step(
+PASS  sound engine provides setEnabled
+PASS  sound engine provides grass
+PASS  sound engine provides water
+PASS  sound engine provides arcade
+PASS  engine wires onStep
+PASS  engine wires onSfx
+PASS  engine wires setReducedMotion
+PASS  engine wires MAX_DPR
+PASS  engine wires prepareArcade
+PASS  engine wires getGlowSprite
+PASS  engine wires requestIdleCallback
+PASS  experience wires SafarAudioDock
+PASS  experience wires SafarSfx
+PASS  experience wires onStep
+PASS  experience wires onSfx
+PASS  experience wires screenFx
+PASS  experience wires plaqueLayer
+PASS  experience wires missionStatement
+PASS  plaque/screen styling: .screenFx
+PASS  plaque/screen styling: .plaque
+PASS  plaque/screen styling: var(--font-silkscreen
+PASS  plaque/screen styling: var(--serif)
+PASS  monument scene renders lowrider
+PASS  monument scene renders skyline
+PASS  monument scene renders palm
+PASS  monument scene renders bowling
+PASS  monument scene renders helicopter
+PASS  monument scene renders hood
+PASS  monument scene renders signal
+PASS  monument scene renders block
+PASS  monument scene renders crewmate
+PASS  monument scene renders dragon
+PASS  monument scene renders soldier
+PASS  monument scene renders scope
+PASS  monument scene renders fist
+PASS  monument scene renders ball
+PASS  monument scene renders cricket
+PASS  monument scene renders belt
+PASS  monument scene renders island
+PASS  precomputed art provides paintArcadeFrontage
+PASS  precomputed art provides paintArcadeReflections
+PASS  precomputed art provides drawArcadeDoorGlow
+PASS  precomputed art provides paintCastShadows
+PASS  precomputed art provides paintPondFinish
+PASS  precomputed art provides paintArcadeShafts
+
+INSCRIPTIONS
+GTA: San Andreas (2004) — Carl Johnson — “Ah shit, here we go again.”
+GTA III (2001) — Opening prologue — “Liberty City. The worst place in America.”
+GTA: Vice City (2002) — Tommy Vercetti — “Remember the name! Tommy Vercetti!”
+GTA IV (2008) — Roman Bellic — “Cousin! Let's go bowling!”
+GTA V (2013) — Michael De Santa — “You forget a thousand things every day, pal. Make sure this is one of 'em.”
+Assassin's Creed (2007) — The Creed — “Nothing is true; everything is permitted.”
+Watch Dogs (2014) — Aiden Pearce — “Everything is connected. And I'll use that to expose, to protect, and, if necessary, to punish.”
+Minecraft (2011) — The End Poem — “and the universe said I love you”
+Among Us (2018) — Red — “I do not want to alarm you, but there is an Impostor among us.”
+Mortal Kombat (1992) — The announcer — “Finish him!”
+Call of Duty (2003) — Captain MacMillan — “Fifty thousand people used to live in this city. Now it's a ghost town.”
+Project I.G.I. (2000) — The game's own subtitle — “I'm going in.”
+Tekken (1994) — The announcer — “Get ready for the next battle.”
+FIFA (1993) — FIFA 06 introduction — “This is the beautiful game.”
+Cricket 07 (2006) — Richie Benaud — “Terrible running by the batsmen.”
+WWE 2K15 (2014) — John Cena — “The champ is here!”
+Far Cry 3 (2012) — Vaas Montenegro — “Did I ever tell you the definition of insanity?”
+
+All Safar content, audio, card, story and monument wiring checks passed.
