@@ -16,17 +16,20 @@ import {
 import {
   arcadeStatues,
   guideName,
-  guideTitle,
   missionStatement,
   type ArcadeStatue,
   type StoryStage,
 } from "@/content/atlas-story";
+import { useAudio } from "@/components/audio/audio-provider";
+import { SafarSfx } from "./atlas-sfx";
+import { SafarAudioDock } from "./safar-audio-dock";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { AtlasEngine, type Nearby } from "./atlas-engine";
 import styles from "./atlas.module.css";
 
 const FOUND_KEY = "atlas:found:v1";
 const STORY_KEY = "atlas:story:v1";
+const SFX_KEY = "safar:sfx:v1";
 const RELIC_TOTAL = atlasRelics.length + 1;
 const TOTAL_FINDS = atlasEntries.length + RELIC_TOTAL + arcadeStatues.length;
 
@@ -90,6 +93,24 @@ function saveStoryComplete() {
   }
 }
 
+function loadSfxEnabled() {
+  if (typeof window === "undefined") return true;
+
+  try {
+    return window.localStorage.getItem(SFX_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function saveSfxEnabled(enabled: boolean) {
+  try {
+    window.localStorage.setItem(SFX_KEY, enabled ? "on" : "off");
+  } catch {
+    // Ignore.
+  }
+}
+
 function hashEntry(): AtlasEntry | null {
   if (typeof window === "undefined") return null;
 
@@ -106,6 +127,7 @@ function setHash(id: string | null) {
 
 export function AtlasExperience() {
   const reducedMotion = useReducedMotion();
+  const audio = useAudio();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<AtlasEngine | null>(null);
@@ -119,6 +141,9 @@ export function AtlasExperience() {
   const joystickPointer = useRef<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const missionButtonRef = useRef<HTMLButtonElement>(null);
+  const sfxRef = useRef<SafarSfx | null>(null);
+  const sceneRef = useRef<"world" | "library" | "arcade">("world");
+  const hourRef = useRef(12);
 
   const [deepEntry] = useState(hashEntry);
   const startedRef = useRef(Boolean(deepEntry));
@@ -136,6 +161,7 @@ export function AtlasExperience() {
   const [storyComplete, setStoryComplete] = useState(false);
   const [storyReady, setStoryReady] = useState(false);
   const [scene, setScene] = useState<"world" | "library" | "arcade">("world");
+  const [sfxEnabled, setSfxEnabled] = useState(loadSfxEnabled);
   const [found, setFound] = useState<Set<string>>(new Set());
   const [knob, setKnob] = useState({ x: 0, y: 0 });
   const [mobile, setMobile] = useState(false);
@@ -145,15 +171,12 @@ export function AtlasExperience() {
   const overlayOpen = Boolean(entry || relic || statue || missionOpen || memoryOpen || indexOpen);
   const storyActive = storyStage !== "done";
 
-  const tagline =
-    scene === "arcade"
-      ? "The Gamer's Dimension — seventeen worlds, carved in stone."
-      : scene === "library"
-        ? "The Long Library — shelves that outlast their readers."
-        : "A walkable world of the things that shaped me.";
+  const location =
+    scene === "arcade" ? "The Arcade" : scene === "library" ? "The Long Library" : "The Meadow";
 
   useEffect(() => {
     optionsRef.current.reducedMotion = reducedMotion;
+    engineRef.current?.setReducedMotion(reducedMotion);
   }, [reducedMotion]);
 
   useEffect(() => {
@@ -165,6 +188,76 @@ export function AtlasExperience() {
 
     return () => query.removeEventListener("change", update);
   }, []);
+
+  useEffect(() => {
+    const sfx = new SafarSfx();
+    sfxRef.current = sfx;
+    sfx.setEnabled(loadSfxEnabled());
+    sfx.setRoom(sceneRef.current === "arcade" ? "arcade" : "none");
+
+    return () => {
+      sfx.dispose();
+      sfxRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    saveSfxEnabled(sfxEnabled);
+    sfxRef.current?.setEnabled(sfxEnabled);
+  }, [sfxEnabled]);
+
+  useEffect(() => {
+    sceneRef.current = scene;
+    sfxRef.current?.setRoom(scene === "arcade" ? "arcade" : "none");
+  }, [scene]);
+
+  useEffect(() => {
+    hourRef.current = hour;
+  }, [hour]);
+
+  useEffect(() => {
+    if (!started) return;
+
+    const first = window.setTimeout(() => {
+      const sfx = sfxRef.current;
+      if (!sfx || document.hidden) return;
+      if (sceneRef.current === "arcade") sfx.arcadeBuzz();
+      else if (hourRef.current >= 19.5 || hourRef.current < 5.5) sfx.crickets();
+      else sfx.birds();
+    }, 3500);
+
+    let timer = 0;
+
+    const schedule = () => {
+      timer = window.setTimeout(
+        () => {
+          const sfx = sfxRef.current;
+
+          if (sfx && !document.hidden && sfxEnabled) {
+            if (sceneRef.current === "arcade") {
+              if (Math.random() < 0.55) sfx.arcadeBuzz();
+              else sfx.coin();
+            } else if (hourRef.current >= 19.5 || hourRef.current < 5.5) {
+              sfx.crickets();
+            } else {
+              sfx.birds();
+            }
+          }
+
+          schedule();
+        },
+        6500 + Math.random() * 7500,
+      );
+    };
+
+    const starter = window.setTimeout(schedule, 5000);
+
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(starter);
+      window.clearTimeout(timer);
+    };
+  }, [started, sfxEnabled]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -227,6 +320,8 @@ export function AtlasExperience() {
           setStoryComplete(true);
         },
         onScene: setScene,
+        onStep: (surface) => sfxRef.current?.step(surface),
+        onSfx: (event) => sfxRef.current?.play(event),
       },
       optionsRef.current,
     );
@@ -326,6 +421,8 @@ export function AtlasExperience() {
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+
       if (event.key === "Escape") {
         dismissOverlays();
         return;
@@ -351,6 +448,9 @@ export function AtlasExperience() {
     if (startedRef.current) return;
     startedRef.current = true;
     setStarted(true);
+    audio.playClick();
+    void sfxRef.current?.resume();
+    audio.startBackground();
     engineRef.current?.begin();
 
     if (loadStoryComplete()) {
@@ -361,7 +461,7 @@ export function AtlasExperience() {
 
     setMissionOpen(true);
     engineRef.current?.setInputEnabled(false);
-  }, []);
+  }, [audio]);
 
   const closeMission = useCallback(() => {
     setMissionOpen(false);
@@ -438,12 +538,8 @@ export function AtlasExperience() {
   const region = entry ? regionById.get(entry.region) : null;
 
   return (
-    <main
-      className={styles.shell}
-      aria-label="The Atlas"
-      data-overlay={overlayOpen ? "true" : "false"}
-    >
-      <h1 className={styles.srOnly}>The Atlas — a walkable world of influences</h1>
+    <main className={styles.shell} aria-label="Safar" data-overlay={overlayOpen ? "true" : "false"}>
+      <h1 className={styles.srOnly}>Safar — a walk through the things that shaped me</h1>
 
       <div className={styles.stage} ref={stageRef} aria-hidden="true">
         <canvas ref={canvasRef} />
@@ -453,41 +549,47 @@ export function AtlasExperience() {
         {nearby ? `${nearby.label}. ${nearby.hint}.` : ""}
       </div>
 
-      <header className={styles.hud}>
-        <div className={styles.brand}>
-          <p className={styles.kicker}>Chapter 04 · The Atlas</p>
-          <h2 className={styles.title}>The Atlas</h2>
-          <p className={styles.tagline}>{tagline}</p>
-        </div>
+      {started ? (
+        <header className={styles.hud}>
+          <div className={styles.brand}>
+            <p className={styles.wordmark}>Safar</p>
+            <p className={styles.location}>{location}</p>
+          </div>
 
-        <div className={styles.hudActions}>
-          <Link
-            href="/"
-            prefetch={false}
-            className={styles.button}
-            aria-label="Back to title screen"
-          >
-            ← Title
-          </Link>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => {
-              begin();
-              setIndexOpen(true);
-            }}
-            aria-haspopup="dialog"
-          >
-            Index
-          </button>
-          {scene === "world" ? (
-            <span className={styles.clock} title="World time">
-              <span className={styles.clockIcon} data-night={night} aria-hidden="true" />
-              {formatHour(hour)}
-            </span>
-          ) : null}
-        </div>
-      </header>
+          <div className={styles.hudActions}>
+            <Link
+              href="/"
+              prefetch={false}
+              className={styles.button}
+              aria-label="Back to title screen"
+              onClick={() => audio.playClick()}
+            >
+              ← Home
+            </Link>
+            <SafarAudioDock
+              sfxEnabled={sfxEnabled}
+              onToggleSfx={() => setSfxEnabled((value) => !value)}
+            />
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                audio.playClick();
+                openList();
+              }}
+              aria-haspopup="dialog"
+            >
+              Journal
+            </button>
+            {scene === "world" ? (
+              <span className={styles.clock} title="World time">
+                <span className={styles.clockIcon} data-night={night} aria-hidden="true" />
+                {formatHour(hour)}
+              </span>
+            ) : null}
+          </div>
+        </header>
+      ) : null}
 
       {started && guideLine && !overlayOpen ? (
         <section className={styles.dialogue} aria-label={`${guideName} speaks`}>
@@ -497,7 +599,10 @@ export function AtlasExperience() {
             <button
               type="button"
               className={styles.dialogueContinue}
-              onClick={() => engineRef.current?.advanceDialogue()}
+              onClick={() => {
+                audio.playClick();
+                engineRef.current?.advanceDialogue();
+              }}
             >
               Continue{mobile ? "" : " · Space"}
             </button>
@@ -599,63 +704,73 @@ export function AtlasExperience() {
       ) : null}
 
       {statue ? (
-        <aside
-          className={`${styles.panel} ${styles.statuePanel}`}
-          style={{ "--region-color": statue.paint } as CSSProperties}
-          role="dialog"
-          aria-label={statue.game}
+        <div
+          className={styles.plaqueLayer}
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              audio.playClick();
+              setStatue(null);
+            }
+          }}
         >
-          <div className={styles.panelHead}>
-            <div>
-              <p className={styles.panelKicker}>Stone inscription · The Gamer&apos;s Dimension</p>
-              <h2 className={styles.panelTitle}>{statue.game}</h2>
-              <p className={styles.panelMeta}>
-                {statue.year} · {statue.reference ? "Reference" : "Quote"}
-              </p>
-            </div>
+          <section
+            className={styles.plaque}
+            style={{ "--game-accent": statue.paint } as CSSProperties}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${statue.game} inscription`}
+          >
+            <span className={styles.plaqueRivet} data-corner="tl" aria-hidden="true" />
+            <span className={styles.plaqueRivet} data-corner="tr" aria-hidden="true" />
+            <span className={styles.plaqueRivet} data-corner="bl" aria-hidden="true" />
+            <span className={styles.plaqueRivet} data-corner="br" aria-hidden="true" />
+
+            <header className={styles.plaqueHead}>
+              <div>
+                <p className={styles.plaqueGame}>{statue.game}</p>
+                <p className={styles.plaqueSource}>{statue.source}</p>
+              </div>
+              <span className={styles.plaqueYear}>{statue.year}</span>
+            </header>
+
+            <blockquote className={styles.plaqueQuote}>“{statue.quote}”</blockquote>
+
+            <footer className={styles.plaqueFoot}>
+              <span className={styles.plaqueMark}>{statue.game}</span>
+              <span className={styles.plaqueCloseHint}>
+                {found.has(statue.id) ? "read" : "new"} · {mobile ? "tap outside" : "E / Esc"}
+              </span>
+            </footer>
+
             <button
               type="button"
-              className={styles.close}
-              onClick={() => setStatue(null)}
+              className={styles.plaqueClose}
+              onClick={() => {
+                audio.playClick();
+                setStatue(null);
+              }}
               aria-label="Close inscription"
               ref={closeButtonRef}
             >
               ✕
             </button>
-          </div>
-
-          <blockquote className={styles.statueQuote}>
-            <p className={styles.statueQuoteText}>
-              {statue.reference ? statue.quote : `“${statue.quote}”`}
-            </p>
-            <p className={styles.statueAttribution}>— {statue.game}</p>
-          </blockquote>
-
-          <p className={styles.panelNote}>
-            Carved into the stone of the Gamer&apos;s Dimension — a world that raised a generation.
-          </p>
-
-          <div className={styles.panelFoot}>
-            <span className={styles.foundBadge}>{found.has(statue.id) ? "Read" : "Unread"}</span>
-            <span>
-              {foundCount}/{TOTAL_FINDS} found
-            </span>
-          </div>
-        </aside>
+          </section>
+        </div>
       ) : null}
 
       {indexOpen ? (
-        <aside className={styles.index} role="dialog" aria-label="Atlas index">
+        <aside className={styles.index} role="dialog" aria-label="Safar journal">
           <div className={styles.indexHead}>
             <div>
-              <p className={styles.panelKicker}>The Index</p>
-              <h2 className={styles.indexTitle}>Every path, written down</h2>
+              <p className={styles.panelKicker}>Safar</p>
+              <h2 className={styles.indexTitle}>Journal</h2>
             </div>
             <button
               type="button"
               className={styles.close}
               onClick={() => setIndexOpen(false)}
-              aria-label="Close index"
+              aria-label="Close journal"
+              onClickCapture={() => audio.playClick()}
               ref={closeButtonRef}
             >
               ✕
@@ -706,7 +821,7 @@ export function AtlasExperience() {
               <div className={styles.indexRegionHead}>
                 <span className={styles.indexRegionName}>
                   <span className={styles.indexDot} aria-hidden="true" />
-                  The Gamer&apos;s Dimension
+                  The Arcade
                 </span>
                 <span>{arcadeStatues.length} statues</span>
               </div>
@@ -741,7 +856,7 @@ export function AtlasExperience() {
                 setMissionOpen(true);
               }}
             >
-              Read the mission statement
+              Read the pond inscription
             </button>
           </div>
         </aside>
@@ -760,7 +875,10 @@ export function AtlasExperience() {
             <button
               type="button"
               className={styles.missionButton}
-              onClick={closeMission}
+              onClick={() => {
+                audio.playClick();
+                closeMission();
+              }}
               ref={missionButtonRef}
             >
               Continue the journey
@@ -791,7 +909,7 @@ export function AtlasExperience() {
       {relic ? (
         <div className={styles.relicBackdrop} role="dialog" aria-label={relic.title}>
           <div className={styles.relicCard}>
-            <p className={styles.relicKicker}>A relic of the Atlas</p>
+            <p className={styles.relicKicker}>A relic from the road</p>
             <h2 className={styles.relicTitle}>{relic.title}</h2>
             <p className={styles.relicQuote}>“{relic.quote}”</p>
             <p className={styles.relicAttribution}>{relic.attribution}</p>
@@ -809,36 +927,49 @@ export function AtlasExperience() {
 
       {!started ? (
         <div className={styles.intro}>
-          <div className={styles.introCard}>
-            <p className={styles.kicker}>Chapter 04 · The Atlas</p>
-            <h2 className={styles.introTitle}>The Atlas</h2>
+          <div className={styles.introPanel}>
+            <p className={styles.introKicker}>
+              <span lang="ur" dir="rtl">
+                سفر
+              </span>
+              <span>the journey</span>
+            </p>
+            <h2 className={styles.introTitle}>Safar</h2>
             <p className={styles.introLine}>
-              A walkable world of the songs, films, books, poems, and ideas that shaped how I think.
-              Pir-e-Iqbal waits by the Pond of Wisdom with a story that starts in 2011.
+              A walk through the songs, films, books, and games that made me.
             </p>
-            <p className={styles.introMeta}>
-              Walk with the guide, read the stones, and come back at night.
-            </p>
+            <p className={styles.introMeta}>Pir-e-Iqbal is waiting at the pond.</p>
+            <div className={styles.introMenu}>
+              <button type="button" className={styles.introPrimary} onClick={begin}>
+                <span>Walk in</span>
+                <span aria-hidden="true">→</span>
+              </button>
+              <button
+                type="button"
+                className={styles.introSecondary}
+                onClick={() => {
+                  audio.playClick();
+                  openList();
+                }}
+              >
+                <span>Open the journal</span>
+                <span aria-hidden="true">↗</span>
+              </button>
+            </div>
             <ul className={styles.introControls}>
               <li>
                 <kbd>WASD</kbd> walk
               </li>
               <li>
-                <kbd>E</kbd> look closer
+                <kbd>E</kbd> look
               </li>
               <li>
                 <kbd>Space</kbd> talk
               </li>
               <li>
-                <kbd>M</kbd> index
+                <kbd>J</kbd> journal
               </li>
             </ul>
-            <button type="button" className={styles.introButton} onClick={begin}>
-              Walk in
-            </button>
-            <button type="button" className={styles.introListLink} onClick={openList}>
-              Read it as a list instead
-            </button>
           </div>
         </div>
       ) : null}
@@ -855,7 +986,7 @@ export function AtlasExperience() {
             <kbd>Space</kbd> talk
           </span>
           <span>
-            <kbd>M</kbd> index
+            <kbd>J</kbd> journal
           </span>
         </div>
       ) : null}
@@ -908,9 +1039,9 @@ export function AtlasExperience() {
       ) : null}
 
       <p className={styles.srOnly}>
-        {region ? `${region.name}: ${entry?.title}` : ""} · Guide: {guideName}, {guideTitle} ·
-        Story: {storyStage} · Regions: {atlasRegions.map((item) => item.name).join(", ")} · Library
-        relic: {libraryRelic.title} · Statues: {arcadeStatues.length} · Story complete:{" "}
+        {region ? `${region.name}: ${entry?.title}` : ""} · Guide: {guideName} · Story: {storyStage}{" "}
+        · Regions: {atlasRegions.map((item) => item.name).join(", ")} · Library relic:{" "}
+        {libraryRelic.title} · Statues: {arcadeStatues.length} · Story complete:{" "}
         {storyComplete ? "yes" : "no"} · Story ready: {storyReady ? "yes" : "no"}
       </p>
     </main>

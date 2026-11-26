@@ -100,6 +100,7 @@ export type StoryWorld = {
   };
   portal: { x: number; y: number };
   guidePath: Array<{ x: number; y: number }>;
+  gatePath: Array<{ x: number; y: number }>;
 };
 
 export type ArcadeStatueSpot = {
@@ -329,6 +330,11 @@ export function buildWorld(): World {
     Tile.Forest,
   ]);
   paintPath(tiles, storyWorld.path[storyWorld.path.length - 1], storyWorld.portal, random, 1.1);
+  paintDisc(tiles, storyWorld.portal.x, storyWorld.portal.y + 0.5, 2.5, Tile.Plaza, [
+    Tile.Grass,
+    Tile.Forest,
+    Tile.Path,
+  ]);
 
   // Region plazas (the poem garden keeps its grass).
   const plazas: World["plazas"] = [];
@@ -480,8 +486,8 @@ export function buildWorld(): World {
   colliders.push({ ...missionStone, r: 8 });
   colliders.push({ x: shrine.monitor.x, y: shrine.monitor.y, w: 5.4 * TILE, h: 3.6 * TILE });
   colliders.push({ ...shrine.mouse, r: 9 });
-  colliders.push({ x: portal.x - 22, y: portal.y, r: 7 });
-  colliders.push({ x: portal.x + 22, y: portal.y, r: 7 });
+  colliders.push({ x: portal.x - 36, y: portal.y - 4, r: 7 });
+  colliders.push({ x: portal.x + 36, y: portal.y - 4, r: 7 });
 
   // Trees: a dense border, region groves, and meadow clusters.
   const trees: Tree[] = [];
@@ -522,7 +528,9 @@ export function buildWorld(): World {
     const reserved = [missionStone, shrine.monitor, shrine.mouse, shrine.anchor, portal];
 
     for (const spot of reserved) {
-      if (Math.hypot(spot.x - worldX, spot.y - worldY) < 58) return false;
+      const clearance = spot === portal ? 112 : 62;
+
+      if (Math.hypot(spot.x - worldX, spot.y - worldY) < clearance) return false;
     }
 
     const size = 13 + random() * 13;
@@ -723,6 +731,7 @@ export function buildWorld(): World {
       },
       portal,
       guidePath: storyWorld.guidePath.map((point) => tileCenter(point.x, point.y)),
+      gatePath: storyWorld.gatePath.map((point) => tileCenter(point.x, point.y)),
     },
   };
 }

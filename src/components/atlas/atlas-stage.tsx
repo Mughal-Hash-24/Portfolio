@@ -27,7 +27,7 @@ const AtlasExperience = dynamic(
   () => import("./atlas-experience").then((module) => module.AtlasExperience),
   {
     ssr: false,
-    loading: () => <div className="h-dvh w-full bg-[#0a120d]" aria-label="Loading the Atlas" />,
+    loading: () => <div className="h-dvh w-full bg-[#0a120d]" aria-label="Loading Safar" />,
   },
 );
 

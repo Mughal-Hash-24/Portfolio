@@ -6,7 +6,7 @@ import { chapterContent } from "@/content/site";
 import { chapterMetadata } from "@/lib/chapter-metadata";
 
 const chapter = {
-  ...chapterContent.atlas,
+  ...chapterContent.safar,
   description: atlasDescription,
 };
 

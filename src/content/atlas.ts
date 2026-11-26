@@ -1,4 +1,4 @@
-// The Atlas: a walkable world of the things that shaped me.
+// Safar: a walkable world of the things that shaped me. (Internal atlas:* names kept for old saves.)
 // Starter content — replace these entries with your own influences.
 // Region centers, pedestal slots, the lake, and the campfire all derive
 // from this file, so the world grows by editing data, not layout code.
@@ -322,4 +322,4 @@ export const entriesByRegion = new Map(
 );
 
 export const atlasDescription =
-  "The Atlas is a walkable world of the songs, films, books, poems, and ideas that shaped how Ibtasaam Amjad thinks — five regions, hidden relics, and a night that keeps its own secrets.";
+  "Safar is a walkable journey through the songs, films, books, poems, games, and ideas that shaped Ibtasaam Amjad — follow Pir-e-Iqbal from the Pond of Wisdom to the arcade of his gamer years.";

@@ -14,17 +14,12 @@ export function AtlasStatic() {
     <main className="min-h-dvh bg-[#0a120d] px-6 py-16 text-[#f2ecdd]">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-14">
         <header>
-          <p className="font-mono text-[10px] tracking-[0.3em] text-[#d8e8a8] uppercase">
-            Chapter 04 · The Atlas
-          </p>
-          <h1 className="mt-4 font-serif text-5xl leading-none tracking-tight sm:text-7xl">
-            The Atlas
-          </h1>
+          <h1 className="font-serif text-5xl leading-none tracking-tight sm:text-7xl">Safar</h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#a9b3a0]">
             {atlasDescription}
           </p>
           <p className="mt-4 font-mono text-[10px] leading-relaxed tracking-[0.16em] text-[#8f9a86] uppercase">
-            The walkable world needs a browser canvas. Here is everything it holds, written down.
+            The walk needs a browser canvas. Here is everything it holds, written down.
           </p>
         </header>
 
@@ -48,9 +43,9 @@ export function AtlasStatic() {
             <article className="rounded-xl border border-white/10 bg-[#0d1712] p-5">
               <h3 className="font-serif text-2xl leading-tight">{guideName}</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#c9cfc0]">
-                The keeper of the Atlas. He leads the walk from the pond to the room where it began
-                — 2011, a browser game, and a middle mouse button that did nothing — and through the
-                gate into the Gamer&apos;s Dimension.
+                Your guide. He leads the walk from the pond to the room where it began — 2011, a
+                browser game, and a middle mouse button that did nothing — and through the arcade
+                door into the games that raised a generation.
               </p>
             </article>
           </div>
@@ -61,17 +56,17 @@ export function AtlasStatic() {
             id="atlas-dimension"
             className="font-mono text-[10px] tracking-[0.24em] text-[#ff9ec9] uppercase"
           >
-            The Gamer&apos;s Dimension
+            The Arcade
           </h2>
           <ul className="mt-5 grid gap-4 sm:grid-cols-2">
             {arcadeStatues.map((statue) => (
               <li key={statue.id} className="rounded-xl border border-white/10 bg-[#0d1712] p-5">
                 <h3 className="font-serif text-xl leading-tight">{statue.game}</h3>
                 <p className="mt-1 font-mono text-[9px] tracking-[0.14em] text-[#8f9a86] uppercase">
-                  {statue.year} · {statue.reference ? "reference" : "quote"}
+                  {statue.year} · {statue.source}
                 </p>
                 <p className="mt-2 font-serif text-[15px] leading-relaxed text-[#c8b4ff] italic">
-                  {statue.reference ? statue.quote : `“${statue.quote}”`}
+                  “{statue.quote}”
                 </p>
               </li>
             ))}

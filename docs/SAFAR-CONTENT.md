@@ -1,6 +1,6 @@
-# Atlas content
+# Safar content
 
-The raw material for the `/atlas` chapter. This file is filled in **before** any map work, because regions are derived from the material, not invented ahead of it.
+The raw material for the `/safar` chapter. (`/atlas` permanently redirects here.) This file is filled in **before** any map work, because regions are derived from the material, not invented ahead of it.
 
 > **Status:** the first walkable iteration ships with starter entries in `src/content/atlas.ts` (clearly marked placeholders). Edit that file to add or replace influences — regions, landmarks, trails, and the index all derive from it. This document stays as the intake template for future dumps.
 
@@ -98,7 +98,7 @@ If the slice feels good to walk, everything after it is content entry and art, n
 
 ## Deep links and slugs
 
-Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-love`). `/atlas#in-the-mood-for-love` spawns beside that landmark with the entry open.
+Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-love`). `/safar#in-the-mood-for-love` spawns beside that landmark with the entry open.
 
 ## Expansion rules
 
@@ -109,7 +109,7 @@ Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-lov
 
 ## Story layer
 
-The Atlas also has a guided storyline. Its content is separate from the regions:
+Safar also has a guided storyline. Its content is separate from the regions:
 
 - `src/content/atlas-story.ts`:
   - `guideName` / `guideTitle` and `storyLines` — the guide's dialogue for the prologue, the 2011 memory, the dimension, and free-roam greetings.
@@ -120,7 +120,7 @@ The Atlas also has a guided storyline. Its content is separate from the regions:
 
 ### Quote rules
 
-Keep each inscription to one short line, attributed to the game, and set `reference: true` when it is a description rather than a quote. Avoid long passages, lyrics, or text that needs a content licence; the card is designed for a single engraved sentence.
+Every inscription is a short, famous in-game line (or, for a game with no dialogue, a famous in-game text or subtitle) attributed to the game and, where relevant, the character or source. Do not use descriptions of a game, long passages, lyrics, or text that needs a content licence. The current sources are listed on each plaque and in `src/content/atlas-story.ts`; the card is designed for one engraved line, up to the longest Watch Dogs and Call of Duty quotes.
 
 ### Extending the journey
 

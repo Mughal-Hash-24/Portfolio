@@ -61,35 +61,42 @@
 }
 
 .brand {
-  max-width: min(420px, 60vw);
+  position: relative;
+  padding-left: 16px;
 }
 
-.kicker {
+.brand::before {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgb(216 232 168 / 0.75);
+  background: rgb(216 232 168 / 0.14);
+  box-shadow: 0 0 12px rgb(216 232 168 / 0.3);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.wordmark {
   margin: 0;
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.title {
-  margin: 6px 0 0;
   font-family: var(--serif);
-  font-size: clamp(30px, 3.8vw, 46px);
+  font-size: 19px;
   font-weight: 400;
-  line-height: 0.96;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.7);
 }
 
-.tagline {
-  margin: 8px 0 0;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: rgb(242 236 221 / 0.66);
-  text-shadow: 0 1px 14px rgb(0 0 0 / 0.6);
+.location {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(216 232 168 / 0.7);
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.7);
 }
 
 .hudActions {
@@ -219,17 +226,44 @@
 
 .dialogue {
   position: absolute;
-  bottom: clamp(84px, 13vh, 120px);
+  bottom: clamp(24px, 5vh, 48px);
   left: 50%;
   z-index: 21;
-  width: min(540px, calc(100vw - 32px));
-  padding: 12px 16px;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 14px;
-  background: rgb(10 14 12 / 0.78);
+  width: min(760px, calc(100vw - 28px));
+  padding: 14px 20px 12px 18px;
+  border: 0;
+  border-left: 2px solid rgb(216 232 168 / 0.75);
+  border-radius: 0;
+  background: linear-gradient(90deg, rgb(6 10 8 / 0.93), rgb(6 10 8 / 0.72));
+  box-shadow: 0 18px 54px rgb(0 0 0 / 0.45);
   transform: translateX(-50%);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
   animation: promptIn 240ms ease both;
+}
+
+.dialogueSpeaker {
+  margin: 0;
+  font-family: var(--font-silkscreen, var(--mono));
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: rgb(216 232 168 / 0.9);
+}
+
+.dialogueLine {
+  margin: 7px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.48;
+  color: var(--paper);
+}
+
+.dialogueActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 9px;
 }
 
 .dialogueActions {
@@ -272,24 +306,6 @@
 
 .dialogueSkip:hover {
   color: rgb(242 236 221 / 0.6);
-}
-
-.dialogueSpeaker {
-  margin: 0;
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgb(216 232 168 / 0.75);
-}
-
-.dialogueLine {
-  margin: 5px 0 0;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 15px;
-  line-height: 1.45;
-  color: rgb(242 236 221 / 0.85);
 }
 
 .panel {
@@ -685,62 +701,141 @@
   position: absolute;
   inset: 0;
   z-index: 60;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: clamp(22px, 5.5vw, 84px);
   background:
-    radial-gradient(ellipse at 50% 40%, rgb(20 30 22 / 0.32), rgb(4 6 9 / 0.82) 78%),
-    rgb(4 6 9 / 0.55);
-  backdrop-filter: blur(3px);
+    linear-gradient(
+      90deg,
+      rgb(3 6 5 / 0.95) 0%,
+      rgb(3 6 5 / 0.82) 34%,
+      rgb(3 6 5 / 0.28) 66%,
+      rgb(3 6 5 / 0.02) 100%
+    ),
+    linear-gradient(0deg, rgb(3 6 5 / 0.72), rgb(3 6 5 / 0) 46%);
 }
 
-.introCard {
+.introPanel {
   width: min(560px, 100%);
-  padding: clamp(26px, 4vw, 40px);
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 20px;
-  background: rgb(8 11 10 / 0.82);
-  box-shadow: 0 40px 140px rgb(0 0 0 / 0.65);
-  animation: riseIn 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  text-align: center;
+  margin-bottom: clamp(14px, 4vh, 48px);
+  animation: riseIn 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.introKicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(216 232 168 / 0.62);
+}
+
+.introKicker span[lang="ur"] {
+  font-family: "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Geeza Pro", serif;
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgb(216 232 168 / 0.85);
 }
 
 .introTitle {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   font-family: var(--serif);
-  font-size: clamp(38px, 6vw, 58px);
+  font-size: clamp(62px, 10vw, 112px);
   font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
+  line-height: 0.82;
+  letter-spacing: -0.035em;
+  text-shadow: 0 3px 34px rgb(0 0 0 / 0.8);
 }
 
 .introLine {
-  margin: 14px auto 0;
-  max-width: 42ch;
+  max-width: 33ch;
+  margin: 24px 0 0;
   font-family: var(--serif);
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: clamp(16px, 1.7vw, 20px);
+  line-height: 1.45;
   color: rgb(242 236 221 / 0.72);
 }
 
 .introMeta {
-  margin: 12px auto 0;
-  max-width: 46ch;
+  margin: 10px 0 0;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8px;
   line-height: 1.7;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgb(242 236 221 / 0.4);
+  color: rgb(216 232 168 / 0.46);
+}
+
+.introMenu {
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 100%);
+  margin-top: clamp(24px, 4vh, 36px);
+}
+
+.introPrimary,
+.introSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 13px 1px;
+  border: 0;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+
+.introPrimary {
+  border-top: 1px solid rgb(216 232 168 / 0.5);
+  color: var(--paper);
+}
+
+.introPrimary span:first-child {
+  font-size: 12px;
+  letter-spacing: 0.24em;
+}
+
+.introPrimary span:last-child {
+  font-size: 18px;
+  color: var(--accent);
+  transition: transform 180ms ease;
+}
+
+.introPrimary:hover span:last-child {
+  transform: translateX(6px);
+}
+
+.introSecondary {
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  color: rgb(242 236 221 / 0.42);
+  transition: color 160ms ease;
+}
+
+.introSecondary span:last-child {
+  font-size: 12px;
+  color: rgb(216 232 168 / 0.55);
+}
+
+.introSecondary:hover {
+  color: var(--paper);
 }
 
 .introControls {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 20px 0 0;
+  gap: 10px 18px;
+  margin: 28px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -749,65 +844,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 999px;
+  padding: 0;
+  border: 0;
   font-family: var(--mono);
   font-size: 8px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgb(242 236 221 / 0.55);
+  color: rgb(242 236 221 / 0.34);
 }
 
 .introControls kbd {
   padding: 2px 5px;
-  border: 1px solid rgb(216 232 168 / 0.4);
-  border-radius: 4px;
-  color: var(--accent);
+  border: 1px solid rgb(216 232 168 / 0.26);
+  border-radius: 3px;
+  color: rgb(216 232 168 / 0.72);
   font-family: var(--mono);
   font-size: 8px;
-}
-
-.introButton {
-  margin-top: 24px;
-  height: 44px;
-  padding: 0 26px;
-  border: 1px solid rgb(216 232 168 / 0.6);
-  border-radius: 999px;
-  background: rgb(216 232 168 / 0.1);
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    transform 160ms ease;
-}
-
-.introButton:hover {
-  background: rgb(216 232 168 / 0.18);
-  transform: translateY(-1px);
-}
-
-.introListLink {
-  display: block;
-  margin: 16px auto 0;
-  border: 0;
-  background: transparent;
-  color: rgb(242 236 221 / 0.45);
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-
-.introListLink:hover {
-  color: var(--paper);
 }
 
 .hints {
@@ -939,42 +991,6 @@
   }
 }
 
-.statuePanel {
-  background:
-    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.015) 0 2px, transparent 2px 7px),
-    linear-gradient(180deg, rgb(24 23 28 / 0.96), rgb(12 11 16 / 0.96));
-}
-
-.statueQuote {
-  margin: 22px 0 0;
-  padding: 18px 16px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 0.03);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.08),
-    inset 0 -1px 0 rgb(0 0 0 / 0.4);
-  text-align: center;
-}
-
-.statueQuoteText {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 19px;
-  line-height: 1.5;
-  color: #efe7d2;
-  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
-}
-
-.statueAttribution {
-  margin: 10px 0 0;
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgb(255 255 255 / 0.4);
-}
-
 .missionBackdrop {
   position: absolute;
   inset: 0;
@@ -1104,6 +1120,213 @@
   color: var(--paper);
 }
 
+.plaqueLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 52;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 20px clamp(22px, 6vh, 56px);
+  background: radial-gradient(ellipse at 50% 82%, rgb(4 5 9 / 0.12), rgb(4 5 9 / 0.56));
+}
+
+.plaque {
+  position: relative;
+  width: min(680px, 100%);
+  padding: 26px 32px 20px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-top: 2px solid var(--game-accent);
+  background:
+    repeating-linear-gradient(128deg, rgb(255 255 255 / 0.016) 0 2px, transparent 2px 7px),
+    radial-gradient(ellipse at 50% -30%, rgb(255 255 255 / 0.06), transparent 55%),
+    linear-gradient(180deg, #201d23, #141216);
+  color: var(--paper);
+  clip-path: polygon(
+    14px 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    14px 100%,
+    0 calc(100% - 14px),
+    0 14px
+  );
+  filter: drop-shadow(0 26px 50px rgb(0 0 0 / 0.6));
+  animation: plaque-in 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.plaque::before {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  content: "";
+  pointer-events: none;
+  clip-path: polygon(
+    9px 0,
+    calc(100% - 9px) 0,
+    100% 9px,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    9px 100%,
+    0 calc(100% - 9px),
+    0 9px
+  );
+}
+
+.plaque::after {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 128px;
+  height: 3px;
+  background-image: radial-gradient(circle, var(--game-accent) 0 1px, transparent 1.4px);
+  background-size: 11px 3px;
+  content: "";
+  opacity: 0.7;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+@keyframes plaque-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plaqueRivet {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--game-accent);
+  box-shadow: 0 0 8px var(--game-accent);
+  opacity: 0.7;
+}
+
+.plaqueRivet[data-corner="tl"] {
+  top: 12px;
+  left: 12px;
+}
+
+.plaqueRivet[data-corner="tr"] {
+  top: 12px;
+  right: 12px;
+}
+
+.plaqueRivet[data-corner="bl"] {
+  bottom: 12px;
+  left: 12px;
+}
+
+.plaqueRivet[data-corner="br"] {
+  right: 12px;
+  bottom: 12px;
+}
+
+.plaqueHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-right: 28px;
+}
+
+.plaqueGame {
+  margin: 0;
+  font-family: var(--font-silkscreen, var(--mono));
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: #f4ead4;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.8);
+}
+
+.plaqueSource {
+  margin: 7px 0 0;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--game-accent);
+  opacity: 0.75;
+}
+
+.plaqueYear {
+  flex-shrink: 0;
+  padding-top: 2px;
+  font-family: var(--font-silkscreen, var(--mono));
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgb(242 236 221 / 0.42);
+}
+
+.plaqueQuote {
+  max-width: 90%;
+  margin: 20px 0 20px;
+  padding-left: 16px;
+  border-left: 2px solid color-mix(in srgb, var(--game-accent) 55%, transparent);
+  font-family: var(--serif);
+  font-size: clamp(21px, 2.4vw, 27px);
+  font-style: normal;
+  line-height: 1.42;
+  color: #f3ead3;
+  text-shadow:
+    0 1px 0 rgb(0 0 0 / 0.85),
+    0 -1px 0 rgb(255 255 255 / 0.03);
+}
+
+.plaqueFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.plaqueMark {
+  color: rgb(242 236 221 / 0.32);
+}
+
+.plaqueCloseHint {
+  color: rgb(242 236 221 / 0.32);
+}
+
+.plaqueClose {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.25);
+  color: rgb(242 236 221 / 0.55);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.plaqueClose:hover {
+  border-color: var(--game-accent);
+  color: var(--paper);
+}
+
 @media (max-width: 760px) {
   .hud {
     flex-wrap: wrap;
@@ -1124,6 +1347,23 @@
 
   .tagline {
     display: none;
+  }
+
+  .intro {
+    padding: 24px 20px;
+  }
+
+  .introTitle {
+    font-size: clamp(58px, 18vw, 78px);
+  }
+
+  .introLine {
+    max-width: 30ch;
+    margin-top: 18px;
+  }
+
+  .introMenu {
+    width: 100%;
   }
 
   .panel,
@@ -1157,6 +1397,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .introPanel,
+  .plaque,
+  .dialogue,
+  .prompt,
+  .missionCard,
+  .relicCard {
+    animation: none !important;
+  }
+
   .prompt,
   .dialogue,
   .panel,

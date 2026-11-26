@@ -21,7 +21,7 @@ import {
   drawPlayer,
   drawRelic,
   drawSignpost,
-  drawPortalSwirl,
+  drawArcadeDoorGlow,
   drawTrail,
   drawWaterGlints,
   hourMood,
@@ -30,8 +30,10 @@ import {
   paintLectern,
   paintTerrain,
 } from "./atlas-art";
+import type { SfxEvent, StepSurface } from "./atlas-sfx";
 import {
   TILE,
+  Tile,
   WORLD_H,
   WORLD_W,
   buildArcadeDimension,
@@ -72,6 +74,8 @@ export type AtlasCallbacks = {
   onStoryStage: (stage: StoryStage) => void;
   onStoryComplete: () => void;
   onScene: (scene: Scene) => void;
+  onStep: (surface: StepSurface) => void;
+  onSfx: (event: SfxEvent) => void;
 };
 
 type EngineOptions = {
@@ -124,6 +128,11 @@ export class AtlasEngine {
   private introSpoken = false;
   private nudgeTimer = 0;
   private guideHome = { x: 0, y: 0 };
+  private stepTimer = 0;
+  private shadowSprite: HTMLCanvasElement | null = null;
+  private doorGlowSprites: Partial<Record<"arcade" | "exit", HTMLCanvasElement>> = {};
+  private glowSprites = new Map<string, HTMLCanvasElement>();
+  private arcadeIdle: number | null = null;
   private player = { x: 0, y: 0, dir: 0, walk: 0, moving: false };
   private camera = { x: 0, y: 0 };
   private guideState = { x: 0, y: 0, targetX: 0, targetY: 0, walk: 0, moving: false };
@@ -191,6 +200,33 @@ export class AtlasEngine {
     if (options.reducedMotion) this.hour = 18.4;
     this.spawnParticles();
     this.bind();
+
+    const idle = (
+      window as Window & {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      }
+    ).requestIdleCallback;
+
+    if (idle) {
+      this.arcadeIdle = idle(
+        () => {
+          this.arcadeIdle = null;
+          this.prepareArcade();
+        },
+        { timeout: 2500 },
+      );
+    } else {
+      this.arcadeIdle = window.setTimeout(() => {
+        this.arcadeIdle = null;
+        this.prepareArcade();
+      }, 700);
+    }
+  }
+
+  private prepareArcade() {
+    if (this.destroyed || this.arcadeCanvas) return;
+
+    this.arcadeCanvas = paintArcade(this.arcade);
   }
 
   private get zoom() {
@@ -235,6 +271,18 @@ export class AtlasEngine {
   }
 
   private handleKeyDown = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement | null;
+
+    if (
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable ||
+        document.querySelector("dialog[open]"))
+    ) {
+      return;
+    }
+
     const key = event.key.toLowerCase();
 
     if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
@@ -251,7 +299,7 @@ export class AtlasEngine {
       return;
     }
 
-    if (key === "m") {
+    if (key === "j" || key === "m") {
       if (!this.inputEnabled) return;
       event.preventDefault();
       this.callbacks.onOpenIndex();
@@ -304,6 +352,16 @@ export class AtlasEngine {
     this.inputEnabled = enabled;
 
     if (!enabled) this.keys.clear();
+  }
+
+  setReducedMotion(enabled: boolean) {
+    this.options.reducedMotion = enabled;
+
+    if (!enabled) return;
+
+    this.hour = 18.4;
+    this.lastTimeReport = -1;
+    this.callbacks.onTime(this.hour);
   }
 
   startStory() {
@@ -402,11 +460,22 @@ export class AtlasEngine {
     this.guideFollowing = false;
     this.guideHome = { x: this.guideState.x, y: this.guideState.y };
     this.setStoryStage("memory");
-    this.queueStoryLines(storyLines.memory, () => {
-      this.portalActive = true;
-      this.setStoryStage("portal");
-      this.queueStoryLines(storyLines.portal);
-    });
+    this.queueStoryLines(storyLines.memory, () => this.beginGateWalk());
+  }
+
+  private beginGateWalk() {
+    this.setStoryStage("gate");
+    this.guideFollowing = true;
+    this.guideWaypoint = 1;
+    this.guideHome = { x: this.guideState.x, y: this.guideState.y };
+  }
+
+  private arriveAtGate() {
+    this.guideFollowing = false;
+    this.guideHome = { x: this.guideState.x, y: this.guideState.y };
+    this.portalActive = true;
+    this.setStoryStage("portal");
+    this.queueStoryLines(storyLines.portal);
   }
 
   enterArcade() {
@@ -422,6 +491,7 @@ export class AtlasEngine {
     this.guideHome = { ...this.arcade.guide };
     this.guideState.targetX = this.guideHome.x;
     this.guideState.targetY = this.guideHome.y;
+    this.callbacks.onSfx("gate");
     this.setStoryStage("arcade");
     this.queueStoryLines(storyLines.arcade);
     this.updateNearby();
@@ -441,6 +511,7 @@ export class AtlasEngine {
     this.guideState.y = spot.y + 8;
     this.guideHome = { x: this.guideState.x, y: this.guideState.y };
     this.portalActive = true;
+    this.callbacks.onSfx("gate");
     this.setStoryStage("done");
 
     if (!this.storyComplete) {
@@ -491,6 +562,7 @@ export class AtlasEngine {
 
         if (!entry) return;
         this.markFound("entry", entry.id);
+        this.callbacks.onSfx("relic");
         this.callbacks.onOpenEntry(entry);
         break;
       }
@@ -500,25 +572,32 @@ export class AtlasEngine {
 
         if (!relic) return;
         this.markFound("relic", relic.id);
+        this.callbacks.onSfx("relic");
         this.callbacks.onOpenRelic(relic);
         break;
       }
       case "campfire":
+        this.callbacks.onSfx("rest");
         this.rest();
         break;
       case "signpost":
+        this.callbacks.onSfx("door");
         this.callbacks.onOpenIndex();
         break;
       case "libraryDoor":
+        this.callbacks.onSfx("door");
         this.enterLibrary();
         break;
       case "libraryExit":
+        this.callbacks.onSfx("door");
         this.exitLibrary();
         break;
       case "missionStone":
+        this.callbacks.onSfx("mission");
         this.callbacks.onOpenMission();
         break;
       case "memoryStone":
+        this.callbacks.onSfx("inscription");
         this.callbacks.onOpenMemory();
         break;
       case "portal":
@@ -534,6 +613,7 @@ export class AtlasEngine {
 
         if (!spot) return;
         this.markFound("statue", spot.statue.id);
+        this.callbacks.onSfx("inscription");
         this.callbacks.onOpenStatue(spot.statue);
         break;
       }
@@ -735,7 +815,7 @@ export class AtlasEngine {
 
     if (this.portalActive) {
       consider(
-        { kind: "portal", label: "The Arcade Gate", hint: "Enter the Gamer's Dimension" },
+        { kind: "portal", label: "The Arcade", hint: "Step inside" },
         this.world.story.portal.x,
         this.world.story.portal.y + 10,
         50,
@@ -784,7 +864,7 @@ export class AtlasEngine {
           kind: "statue",
           statueId: spot.statue.id,
           label: spot.statue.game,
-          hint: "Read the inscription",
+          hint: "Read the plaque",
         };
         bestDistance = distance;
       }
@@ -796,7 +876,7 @@ export class AtlasEngine {
     );
 
     if (exitDistance < 46) {
-      return { kind: "arcadeExit", label: "The way home", hint: "Step back through the gate" };
+      return { kind: "arcadeExit", label: "The street door", hint: "Leave the arcade" };
     }
 
     return best;
@@ -854,13 +934,28 @@ export class AtlasEngine {
         : this.scene === "library"
           ? this.interior.colliders
           : this.arcade.colliders;
+    const startX = this.player.x;
+    const startY = this.player.y;
     const nextX = this.player.x + dx * step;
     const nextY = this.player.y + dy * step;
 
     if (!this.collides(nextX, this.player.y, colliders)) this.player.x = nextX;
     if (!this.collides(this.player.x, nextY, colliders)) this.player.y = nextY;
 
+    const travelled = Math.hypot(this.player.x - startX, this.player.y - startY);
+
     this.player.walk = (this.player.walk + dt * 2.4) % 1;
+
+    if (travelled > 0.05) {
+      this.stepTimer += dt;
+
+      if (this.stepTimer >= 0.33) {
+        this.stepTimer = 0;
+        this.callbacks.onStep(this.currentStepSurface());
+      }
+    } else {
+      this.stepTimer = 0;
+    }
   }
 
   private collides(x: number, y: number, colliders: Collider[]) {
@@ -895,6 +990,39 @@ export class AtlasEngine {
     }
 
     return false;
+  }
+
+  private currentStepSurface(): StepSurface {
+    if (this.scene === "arcade") return "arcade";
+    if (this.scene === "library") return "wood";
+
+    const pond = this.world.story.pond;
+    const dockX = pond.x + 2;
+
+    if (
+      Math.abs(this.player.x - dockX) < 18 &&
+      this.player.y > pond.y + pond.ry - 14 &&
+      this.player.y < pond.y + pond.ry + 30
+    ) {
+      return "wood";
+    }
+
+    const tx = Math.floor(this.player.x / TILE);
+    const ty = Math.floor(this.player.y / TILE);
+
+    if (tx < 0 || ty < 0 || tx >= WORLD_W || ty >= WORLD_H) return "grass";
+
+    switch (this.world.tiles[ty * WORLD_W + tx]) {
+      case Tile.Water:
+        return "water";
+      case Tile.Path:
+      case Tile.Shore:
+        return "path";
+      case Tile.Plaza:
+        return "stone";
+      default:
+        return "grass";
+    }
   }
 
   private updateGuide(dt: number) {
@@ -936,11 +1064,19 @@ export class AtlasEngine {
       return;
     }
 
-    if (this.scene === "world" && this.storyStage === "follow" && this.guideFollowing) {
-      const waypoint = this.world.story.guidePath[this.guideWaypoint];
+    if (
+      this.scene === "world" &&
+      (this.storyStage === "follow" || this.storyStage === "gate") &&
+      this.guideFollowing
+    ) {
+      const gateStage = this.storyStage === "gate";
+      const waypoint = (gateStage ? this.world.story.gatePath : this.world.story.guidePath)[
+        this.guideWaypoint
+      ];
 
       if (!waypoint) {
-        this.arriveAtShrine();
+        if (gateStage) this.arriveAtGate();
+        else this.arriveAtShrine();
         return;
       }
 
@@ -977,8 +1113,11 @@ export class AtlasEngine {
       if (distance < 6) {
         this.guideWaypoint += 1;
 
-        if (this.guideWaypoint >= this.world.story.guidePath.length) {
-          this.arriveAtShrine();
+        const path = gateStage ? this.world.story.gatePath : this.world.story.guidePath;
+
+        if (this.guideWaypoint >= path.length) {
+          if (gateStage) this.arriveAtGate();
+          else this.arriveAtShrine();
         }
       }
 
@@ -1221,6 +1360,73 @@ export class AtlasEngine {
     this.drawSceneTags(width, height, zoom, camX, camY);
   }
 
+  private getShadowSprite() {
+    if (this.shadowSprite) return this.shadowSprite;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 48;
+    canvas.height = 22;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(24, 11, 0, 24, 11, 22);
+      gradient.addColorStop(0, "rgba(3, 6, 7, 0.5)");
+      gradient.addColorStop(0.55, "rgba(3, 6, 7, 0.24)");
+      gradient.addColorStop(1, "rgba(3, 6, 7, 0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.ellipse(24, 11, 23, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    this.shadowSprite = canvas;
+
+    return canvas;
+  }
+
+  private drawActorShadow(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    ctx.drawImage(this.getShadowSprite(), x - 20, y - 6, 40, 18);
+  }
+
+  private getGlowSprite(color: string) {
+    const cached = this.glowSprites.get(color);
+
+    if (cached) return cached;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 63);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 128, 128);
+    }
+
+    this.glowSprites.set(color, canvas);
+
+    return canvas;
+  }
+
+  private getDoorGlow(variant: "arcade" | "exit") {
+    const cached = this.doorGlowSprites[variant];
+
+    if (cached) return cached;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) drawArcadeDoorGlow(ctx, 100, 100, 0.6, 1, variant);
+    this.doorGlowSprites[variant] = canvas;
+
+    return canvas;
+  }
+
   private drawDynamicWorld(ctx: CanvasRenderingContext2D) {
     drawCampfire(ctx, this.world.campfire.x, this.world.campfire.y, this.time);
     drawSignpost(ctx, this.world.signpost.x, this.world.signpost.y);
@@ -1239,6 +1445,8 @@ export class AtlasEngine {
       drawLandmark(ctx, landmark, region, this.time, this.found.has(landmark.entryId));
     }
 
+    this.drawActorShadow(ctx, this.guideState.x, this.guideState.y);
+    this.drawActorShadow(ctx, this.player.x, this.player.y);
     drawGuide(ctx, this.guideState.x, this.guideState.y, this.guideState.walk);
 
     for (const particle of this.particles) {
@@ -1266,14 +1474,8 @@ export class AtlasEngine {
 
   private drawGlows(ctx: CanvasRenderingContext2D, night: number) {
     const glow = (x: number, y: number, radius: number, color: string, strength: number) => {
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-      gradient.addColorStop(0, color);
-      gradient.addColorStop(1, "rgba(0,0,0,0)");
       ctx.globalAlpha = strength;
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.drawImage(this.getGlowSprite(color), x - radius, y - radius, radius * 2, radius * 2);
       ctx.globalAlpha = 1;
     };
 
@@ -1284,9 +1486,12 @@ export class AtlasEngine {
 
     glow(mouse.x, mouse.y - 7, 12, "rgba(255, 217, 138, 0.4)", 0.6);
 
-    if (this.portalActive) {
-      drawPortalSwirl(ctx, this.world.story.portal.x, this.world.story.portal.y + 2, this.time, 1);
-    }
+    const worldGlow = this.getDoorGlow("arcade");
+    ctx.save();
+    ctx.globalAlpha = this.portalActive ? 0.72 : 0.35;
+    ctx.globalCompositeOperation = "lighter";
+    ctx.drawImage(worldGlow, this.world.story.portal.x - 100, this.world.story.portal.y - 100);
+    ctx.restore();
 
     if (night < 0.05) return;
 
@@ -1320,7 +1525,7 @@ export class AtlasEngine {
       if (particle.kind !== "firefly" || particle.life <= 0) continue;
 
       const alpha = Math.min(1, particle.life / particle.maxLife);
-      glow(particle.x, particle.y, 9, `rgba(255, 236, 150, ${0.5 * alpha})`, night * 0.8);
+      glow(particle.x, particle.y, 9, "rgba(255, 236, 150, 0.5)", night * 0.8 * alpha);
     }
   }
 
@@ -1432,7 +1637,11 @@ export class AtlasEngine {
     const { ctx } = this;
     const arcade = this.arcade;
 
-    if (!this.arcadeCanvas) this.arcadeCanvas = paintArcade(arcade);
+    if (!this.arcadeCanvas) this.prepareArcade();
+
+    const arcadeCanvas = this.arcadeCanvas;
+
+    if (!arcadeCanvas) return;
 
     const worldWidth = arcade.w * TILE;
     const worldHeight = arcade.h * TILE;
@@ -1447,7 +1656,7 @@ export class AtlasEngine {
     ctx.save();
     ctx.scale(zoom, zoom);
     ctx.translate(-camX, -camY);
-    ctx.drawImage(this.arcadeCanvas, 0, 0);
+    ctx.drawImage(arcadeCanvas, 0, 0);
 
     if (!this.options.reducedMotion) {
       for (let index = 0; index < 44; index += 1) {
@@ -1467,38 +1676,24 @@ export class AtlasEngine {
       ctx.globalAlpha = 1;
     }
 
+    ctx.save();
+    ctx.globalAlpha = 0.13;
+    ctx.translate(0, (this.player.y + 1) * 2);
+    ctx.scale(1, -1);
+    drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
+    drawGuide(ctx, this.guideState.x, this.guideState.y, this.guideState.walk);
+    ctx.restore();
+
+    this.drawActorShadow(ctx, this.guideState.x, this.guideState.y);
+    this.drawActorShadow(ctx, this.player.x, this.player.y);
     drawGuide(ctx, this.guideState.x, this.guideState.y, this.guideState.walk);
     drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
 
+    const exitGlow = this.getDoorGlow("exit");
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    drawPortalSwirl(ctx, arcade.portal.x, arcade.portal.y - 2, this.time, 1);
-
-    for (const spot of arcade.statues) {
-      const found = this.found.has(spot.statue.id);
-      const radius = found ? 30 : 22;
-      const gradient = ctx.createRadialGradient(spot.x, spot.y - 6, 0, spot.x, spot.y - 6, radius);
-      gradient.addColorStop(0, found ? "rgba(255, 207, 107, 0.28)" : "rgba(185, 166, 255, 0.14)");
-      gradient.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(spot.x, spot.y - 6, radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const monumentGlow = ctx.createRadialGradient(
-      arcade.monument.x,
-      arcade.monument.y - 40,
-      0,
-      arcade.monument.x,
-      arcade.monument.y - 40,
-      90,
-    );
-    monumentGlow.addColorStop(0, "rgba(255, 122, 184, 0.2)");
-    monumentGlow.addColorStop(0.5, "rgba(86, 224, 255, 0.08)");
-    monumentGlow.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = monumentGlow;
-    ctx.fillRect(arcade.monument.x - 90, arcade.monument.y - 130, 180, 180);
+    ctx.globalAlpha = 0.7;
+    ctx.drawImage(exitGlow, arcade.portal.x - 100, arcade.portal.y - 100);
     ctx.restore();
     ctx.restore();
 
@@ -1546,6 +1741,7 @@ export class AtlasEngine {
       this.time,
       this.found.has(interior.relic.relic.id),
     );
+    this.drawActorShadow(ctx, this.player.x, this.player.y);
     drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
     ctx.restore();
 
@@ -1641,6 +1837,15 @@ export class AtlasEngine {
     this.destroyed = true;
     this.clearStoryTimer();
     this.stop();
+
+    if (this.arcadeIdle !== null) {
+      const cancel = (window as Window & { cancelIdleCallback?: (handle: number) => void })
+        .cancelIdleCallback;
+
+      if (cancel) cancel(this.arcadeIdle);
+      else window.clearTimeout(this.arcadeIdle);
+      this.arcadeIdle = null;
+    }
     window.removeEventListener("keydown", this.handleKeyDown);
     window.removeEventListener("keyup", this.handleKeyUp);
     document.removeEventListener("visibilitychange", this.handleVisibility);
