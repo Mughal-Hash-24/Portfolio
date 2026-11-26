@@ -99,6 +99,7 @@ type Particle = {
 
 type Scene = "world" | "library" | "arcade";
 
+const MAX_DPR = 1.5;
 const PLAYER_SPEED = 104;
 const PLAYER_RADIUS = 5;
 const DAY_SECONDS = 720;
@@ -311,7 +312,7 @@ export class AtlasEngine {
   };
 
   private resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
 
@@ -1296,7 +1297,7 @@ export class AtlasEngine {
 
   private render() {
     const { ctx, canvas } = this;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     const zoom = this.zoom;
@@ -1356,7 +1357,7 @@ export class AtlasEngine {
     ctx.globalCompositeOperation = "source-over";
     ctx.restore();
 
-    this.drawScreenEffects(width, height, mood.night);
+    this.drawScreenEffects(width, height);
     this.drawSceneTags(width, height, zoom, camX, camY);
   }
 
@@ -1697,19 +1698,6 @@ export class AtlasEngine {
     ctx.restore();
     ctx.restore();
 
-    const vignette = ctx.createRadialGradient(
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.32,
-      width * 0.5,
-      height * 0.52,
-      Math.max(width, height) * 0.78,
-    );
-    vignette.addColorStop(0, "rgba(0,0,0,0)");
-    vignette.addColorStop(1, "rgba(3, 3, 10, 0.62)");
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, width, height);
-
     this.drawSceneTags(width, height, zoom, camX, camY);
   }
 
@@ -1745,20 +1733,6 @@ export class AtlasEngine {
     drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
     ctx.restore();
 
-    const mood = hourMood(this.hour);
-    const gradient = ctx.createRadialGradient(
-      width * 0.5,
-      height * 0.45,
-      Math.min(width, height) * 0.2,
-      width * 0.5,
-      height * 0.5,
-      Math.max(width, height) * 0.75,
-    );
-    gradient.addColorStop(0, "rgba(255, 200, 120, 0.08)");
-    gradient.addColorStop(1, `rgba(8, 6, 12, ${0.55 + mood.night * 0.2})`);
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-
     ctx.save();
     ctx.scale(zoom, zoom);
     ctx.translate(-camX, -camY);
@@ -1781,26 +1755,8 @@ export class AtlasEngine {
     ctx.restore();
   }
 
-  private drawScreenEffects(width: number, height: number, night: number) {
+  private drawScreenEffects(width: number, height: number) {
     const { ctx } = this;
-    const vignette = ctx.createRadialGradient(
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.35,
-      width * 0.5,
-      height * 0.52,
-      Math.max(width, height) * 0.78,
-    );
-    vignette.addColorStop(0, "rgba(0,0,0,0)");
-    vignette.addColorStop(1, `rgba(4, 6, 14, ${0.3 + night * 0.3})`);
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, width, height);
-
-    const top = ctx.createLinearGradient(0, 0, 0, height * 0.18);
-    top.addColorStop(0, "rgba(3, 5, 12, 0.4)");
-    top.addColorStop(1, "rgba(3, 5, 12, 0)");
-    ctx.fillStyle = top;
-    ctx.fillRect(0, 0, width, height * 0.18);
 
     if (this.restFade > 0) {
       ctx.fillStyle = "rgba(4, 4, 10, 1)";

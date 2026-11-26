@@ -544,6 +544,12 @@ export function AtlasExperience() {
       <div className={styles.stage} ref={stageRef} aria-hidden="true">
         <canvas ref={canvasRef} />
       </div>
+      <div
+        className={styles.screenFx}
+        data-scene={scene}
+        data-night={night ? "true" : "false"}
+        aria-hidden="true"
+      />
 
       <div className={styles.srOnly} role="status" aria-live="polite">
         {nearby ? `${nearby.label}. ${nearby.hint}.` : ""}
