@@ -1,12 +1,18 @@
 import {
   atlasRegions,
   entryById,
-  guideLines,
   relicById,
   regionById,
   type AtlasEntry,
   type AtlasRelic,
 } from "@/content/atlas";
+import {
+  guideName,
+  guideTitle,
+  storyLines,
+  type ArcadeStatue,
+  type StoryStage,
+} from "@/content/atlas-story";
 import {
   createWaterGlints,
   drawCampfire,
@@ -15,9 +21,11 @@ import {
   drawPlayer,
   drawRelic,
   drawSignpost,
+  drawPortalSwirl,
   drawTrail,
   drawWaterGlints,
   hourMood,
+  paintArcade,
   paintInterior,
   paintLectern,
   paintTerrain,
@@ -26,9 +34,11 @@ import {
   TILE,
   WORLD_H,
   WORLD_W,
+  buildArcadeDimension,
   buildLibraryInterior,
   buildWorld,
   isSolidTile,
+  type ArcadeWorld,
   type Collider,
   type Interior,
   type World,
@@ -41,22 +51,34 @@ export type Nearby =
   | { kind: "signpost"; label: string; hint: string }
   | { kind: "libraryDoor"; label: string; hint: string }
   | { kind: "libraryExit"; label: string; hint: string }
-  | { kind: "lectern"; label: string; hint: string; relicId: string };
+  | { kind: "lectern"; label: string; hint: string; relicId: string }
+  | { kind: "missionStone"; label: string; hint: string }
+  | { kind: "memoryStone"; label: string; hint: string }
+  | { kind: "portal"; label: string; hint: string }
+  | { kind: "arcadeExit"; label: string; hint: string }
+  | { kind: "statue"; label: string; hint: string; statueId: string };
 
 export type AtlasCallbacks = {
   onNearby: (nearby: Nearby | null) => void;
   onOpenEntry: (entry: AtlasEntry) => void;
   onOpenRelic: (relic: AtlasRelic) => void;
   onOpenIndex: () => void;
+  onOpenMission: () => void;
+  onOpenMemory: () => void;
+  onOpenStatue: (statue: ArcadeStatue) => void;
   onTime: (hour: number) => void;
-  onFound: (kind: "entry" | "relic", id: string) => void;
+  onFound: (kind: "entry" | "relic" | "statue", id: string) => void;
   onGuide: (line: string | null) => void;
+  onStoryStage: (stage: StoryStage) => void;
+  onStoryComplete: () => void;
+  onScene: (scene: Scene) => void;
 };
 
 type EngineOptions = {
   reducedMotion: boolean;
   found: Set<string>;
   initialHour?: number;
+  storyComplete?: boolean;
 };
 
 type Particle = {
@@ -71,7 +93,7 @@ type Particle = {
   phase: number;
 };
 
-type Scene = "world" | "library";
+type Scene = "world" | "library" | "arcade";
 
 const PLAYER_SPEED = 104;
 const PLAYER_RADIUS = 5;
@@ -86,9 +108,22 @@ export class AtlasEngine {
   private world: World;
   private interior: Interior;
   private interiorCanvas: HTMLCanvasElement | null = null;
+  private arcade: ArcadeWorld;
+  private arcadeCanvas: HTMLCanvasElement | null = null;
   private terrain: HTMLCanvasElement;
   private glints: ReturnType<typeof createWaterGlints>;
   private scene: Scene = "world";
+  private storyStage: StoryStage = "pond";
+  private storyComplete = false;
+  private portalActive = false;
+  private storyQueue: string[] = [];
+  private storyTimer: number | null = null;
+  private storyOnDone: (() => void) | null = null;
+  private guideFollowing = false;
+  private guideWaypoint = 1;
+  private introSpoken = false;
+  private nudgeTimer = 0;
+  private guideHome = { x: 0, y: 0 };
   private player = { x: 0, y: 0, dir: 0, walk: 0, moving: false };
   private camera = { x: 0, y: 0 };
   private guideState = { x: 0, y: 0, targetX: 0, targetY: 0, walk: 0, moving: false };
@@ -128,12 +163,13 @@ export class AtlasEngine {
     this.found = options.found;
     this.world = buildWorld();
     this.interior = buildLibraryInterior();
+    this.arcade = buildArcadeDimension();
     this.terrain = paintTerrain(this.world);
     this.glints = createWaterGlints(this.world);
     this.player = {
       x: this.world.spawn.x,
       y: this.world.spawn.y,
-      dir: 0,
+      dir: 3,
       walk: 0,
       moving: false,
     };
@@ -145,8 +181,13 @@ export class AtlasEngine {
       walk: 0,
       moving: false,
     };
+    this.guideHome = { x: this.world.guide.x, y: this.world.guide.y };
+    this.storyComplete = options.storyComplete ?? false;
+    this.storyStage = this.storyComplete ? "done" : "pond";
+    this.portalActive = this.storyComplete;
     this.camera = { x: this.player.x, y: this.player.y };
     this.hour = options.initialHour ?? (new Date().getHours() + new Date().getMinutes() / 60) % 24;
+
     if (options.reducedMotion) this.hour = 18.4;
     this.spawnParticles();
     this.bind();
@@ -255,6 +296,175 @@ export class AtlasEngine {
   begin() {
     this.inputEnabled = true;
     this.callbacks.onTime(this.hour);
+    this.callbacks.onStoryStage(this.storyStage);
+    this.callbacks.onScene(this.scene);
+  }
+
+  setInputEnabled(enabled: boolean) {
+    this.inputEnabled = enabled;
+
+    if (!enabled) this.keys.clear();
+  }
+
+  startStory() {
+    if (this.storyComplete) {
+      this.setStoryStage("done");
+      this.portalActive = true;
+      return;
+    }
+
+    if (this.storyStage !== "pond") return;
+
+    this.setStoryStage("introduce");
+    this.introSpoken = false;
+  }
+
+  enableFreeRoam() {
+    this.setStoryStage("done");
+    this.portalActive = true;
+    this.guideHome = { x: this.world.guide.x, y: this.world.guide.y };
+    this.guideState.x = this.world.guide.x;
+    this.guideState.y = this.world.guide.y;
+  }
+
+  advanceDialogue() {
+    if (this.storyTimer === null && this.storyQueue.length === 0) return;
+    this.clearStoryTimer();
+    this.nextStoryLine();
+  }
+
+  skipStory() {
+    this.clearStoryTimer();
+    this.storyQueue = [];
+    this.storyOnDone = null;
+    this.callbacks.onGuide(null);
+    this.portalActive = true;
+    this.setStoryStage("done");
+
+    if (!this.storyComplete) {
+      this.storyComplete = true;
+      this.callbacks.onStoryComplete();
+    }
+
+    this.guideHome = { x: this.player.x - 30, y: this.player.y + 10 };
+    this.guideState.targetX = this.guideHome.x;
+    this.guideState.targetY = this.guideHome.y;
+  }
+
+  private setStoryStage(stage: StoryStage) {
+    this.storyStage = stage;
+    this.callbacks.onStoryStage(stage);
+  }
+
+  private clearStoryTimer() {
+    if (this.storyTimer !== null) {
+      window.clearTimeout(this.storyTimer);
+      this.storyTimer = null;
+    }
+  }
+
+  private queueStoryLines(lines: readonly string[], onDone?: () => void) {
+    this.clearStoryTimer();
+    this.storyQueue = [...lines];
+    this.storyOnDone = onDone ?? null;
+    this.guideVisible = true;
+    this.nextStoryLine();
+  }
+
+  private nextStoryLine() {
+    this.clearStoryTimer();
+    const line = this.storyQueue.shift();
+
+    if (line === undefined) {
+      const done = this.storyOnDone;
+      this.storyOnDone = null;
+      this.callbacks.onGuide(null);
+      done?.();
+      return;
+    }
+
+    this.callbacks.onGuide(line);
+    const duration = Math.min(7200, 2800 + line.length * 24);
+    this.storyTimer = window.setTimeout(() => {
+      this.storyTimer = null;
+      this.nextStoryLine();
+    }, duration);
+  }
+
+  private startFollow() {
+    this.guideFollowing = true;
+    this.guideWaypoint = 1;
+    this.setStoryStage("follow");
+    this.queueStoryLines(storyLines.followStart);
+  }
+
+  private arriveAtShrine() {
+    this.guideFollowing = false;
+    this.guideHome = { x: this.guideState.x, y: this.guideState.y };
+    this.setStoryStage("memory");
+    this.queueStoryLines(storyLines.memory, () => {
+      this.portalActive = true;
+      this.setStoryStage("portal");
+      this.queueStoryLines(storyLines.portal);
+    });
+  }
+
+  enterArcade() {
+    this.scene = "arcade";
+    this.callbacks.onScene("arcade");
+    this.player.x = this.arcade.spawn.x;
+    this.player.y = this.arcade.spawn.y;
+    this.player.dir = 3;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.guideState.x = this.arcade.guide.x;
+    this.guideState.y = this.arcade.guide.y;
+    this.guideHome = { ...this.arcade.guide };
+    this.guideState.targetX = this.guideHome.x;
+    this.guideState.targetY = this.guideHome.y;
+    this.setStoryStage("arcade");
+    this.queueStoryLines(storyLines.arcade);
+    this.updateNearby();
+  }
+
+  exitArcade() {
+    this.scene = "world";
+    this.callbacks.onScene("world");
+    const portal = this.world.story.portal;
+    const spot = this.freeSpotNear(portal.x, portal.y + 46);
+    this.player.x = spot.x;
+    this.player.y = spot.y;
+    this.player.dir = 0;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.guideState.x = spot.x - 28;
+    this.guideState.y = spot.y + 8;
+    this.guideHome = { x: this.guideState.x, y: this.guideState.y };
+    this.portalActive = true;
+    this.setStoryStage("done");
+
+    if (!this.storyComplete) {
+      this.storyComplete = true;
+      this.callbacks.onStoryComplete();
+    }
+
+    this.queueStoryLines(storyLines.returnWorld);
+    this.updateNearby();
+  }
+
+  focusStatue(statueId: string) {
+    const spot = this.arcade.statues.find((candidate) => candidate.statue.id === statueId);
+
+    if (!spot) return;
+    this.scene = "arcade";
+    this.callbacks.onScene("arcade");
+    const free = this.freeSpotNear(spot.x, spot.y + 30, this.arcade.colliders);
+    this.player.x = free.x;
+    this.player.y = free.y;
+    this.player.dir = 3;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.updateNearby();
   }
 
   pause() {
@@ -305,6 +515,28 @@ export class AtlasEngine {
       case "libraryExit":
         this.exitLibrary();
         break;
+      case "missionStone":
+        this.callbacks.onOpenMission();
+        break;
+      case "memoryStone":
+        this.callbacks.onOpenMemory();
+        break;
+      case "portal":
+        this.enterArcade();
+        break;
+      case "arcadeExit":
+        this.exitArcade();
+        break;
+      case "statue": {
+        const spot = this.arcade.statues.find(
+          (candidate) => candidate.statue.id === nearby.statueId,
+        );
+
+        if (!spot) return;
+        this.markFound("statue", spot.statue.id);
+        this.callbacks.onOpenStatue(spot.statue);
+        break;
+      }
     }
   }
 
@@ -313,6 +545,7 @@ export class AtlasEngine {
 
     if (!landmark) return;
     this.scene = "world";
+    this.callbacks.onScene("world");
     const spot = this.freeSpotNear(landmark.x, landmark.y);
     this.player.x = spot.x;
     this.player.y = spot.y;
@@ -322,7 +555,7 @@ export class AtlasEngine {
     this.updateNearby();
   }
 
-  private freeSpotNear(x: number, y: number) {
+  private freeSpotNear(x: number, y: number, colliders: Collider[] = this.world.colliders) {
     const offsets: Array<[number, number]> = [
       [0, 36],
       [22, 32],
@@ -341,7 +574,7 @@ export class AtlasEngine {
     ];
 
     for (const [offsetX, offsetY] of offsets) {
-      if (!this.collides(x + offsetX, y + offsetY, this.world.colliders)) {
+      if (!this.collides(x + offsetX, y + offsetY, colliders)) {
         return { x: x + offsetX, y: y + offsetY };
       }
     }
@@ -349,7 +582,7 @@ export class AtlasEngine {
     return { x, y: y + 36 };
   }
 
-  private markFound(kind: "entry" | "relic", id: string) {
+  private markFound(kind: "entry" | "relic" | "statue", id: string) {
     this.found.add(id);
     this.callbacks.onFound(kind, id);
   }
@@ -362,6 +595,7 @@ export class AtlasEngine {
 
   private enterLibrary() {
     this.scene = "library";
+    this.callbacks.onScene("library");
     this.player.x = this.interior.spawn.x;
     this.player.y = this.interior.spawn.y;
     this.player.dir = 3;
@@ -376,6 +610,7 @@ export class AtlasEngine {
     if (!library) return;
 
     this.scene = "world";
+    this.callbacks.onScene("world");
     this.player.x = library.center.x * TILE + TILE / 2 - 32;
     this.player.y = library.center.y * TILE + TILE / 2 + 44;
     this.player.dir = 0;
@@ -485,6 +720,28 @@ export class AtlasEngine {
       );
     }
 
+    consider(
+      { kind: "missionStone", label: "The Inscription", hint: "Read your mission" },
+      this.world.story.missionStone.x,
+      this.world.story.missionStone.y + 12,
+      40,
+    );
+    consider(
+      { kind: "memoryStone", label: "The Middle Button", hint: "Remember 2011" },
+      this.world.story.shrine.mouse.x,
+      this.world.story.shrine.mouse.y,
+      42,
+    );
+
+    if (this.portalActive) {
+      consider(
+        { kind: "portal", label: "The Arcade Gate", hint: "Enter the Gamer's Dimension" },
+        this.world.story.portal.x,
+        this.world.story.portal.y + 10,
+        50,
+      );
+    }
+
     return best;
   }
 
@@ -515,10 +772,45 @@ export class AtlasEngine {
     return null;
   }
 
+  private nearbyForArcade(): Nearby | null {
+    let best: Nearby | null = null;
+    let bestDistance = 46;
+
+    for (const spot of this.arcade.statues) {
+      const distance = Math.hypot(this.player.x - spot.x, this.player.y - spot.y);
+
+      if (distance < bestDistance) {
+        best = {
+          kind: "statue",
+          statueId: spot.statue.id,
+          label: spot.statue.game,
+          hint: "Read the inscription",
+        };
+        bestDistance = distance;
+      }
+    }
+
+    const exitDistance = Math.hypot(
+      this.player.x - this.arcade.exit.x,
+      this.player.y - (this.arcade.exit.y + 10),
+    );
+
+    if (exitDistance < 46) {
+      return { kind: "arcadeExit", label: "The way home", hint: "Step back through the gate" };
+    }
+
+    return best;
+  }
+
   private updateNearby() {
-    const nearby = this.scene === "world" ? this.nearbyForWorld() : this.nearbyForLibrary();
+    const nearby =
+      this.scene === "world"
+        ? this.nearbyForWorld()
+        : this.scene === "library"
+          ? this.nearbyForLibrary()
+          : this.nearbyForArcade();
     const key = nearby
-      ? `${nearby.kind}:${"entryId" in nearby ? nearby.entryId : ""}${"relicId" in nearby ? nearby.relicId : ""}`
+      ? `${nearby.kind}:${"entryId" in nearby ? nearby.entryId : ""}${"relicId" in nearby ? nearby.relicId : ""}${"statueId" in nearby ? nearby.statueId : ""}`
       : "";
 
     if (key !== this.nearbyKey) {
@@ -556,7 +848,12 @@ export class AtlasEngine {
     }
 
     const step = PLAYER_SPEED * dt;
-    const colliders = this.scene === "world" ? this.world.colliders : this.interior.colliders;
+    const colliders =
+      this.scene === "world"
+        ? this.world.colliders
+        : this.scene === "library"
+          ? this.interior.colliders
+          : this.arcade.colliders;
     const nextX = this.player.x + dx * step;
     const nextY = this.player.y + dy * step;
 
@@ -603,21 +900,107 @@ export class AtlasEngine {
   private updateGuide(dt: number) {
     const guide = this.guideState;
     const playerDistance = Math.hypot(this.player.x - guide.x, this.player.y - guide.y);
-    const nearPlayer = playerDistance < 110;
+
+    if (this.scene === "world" && this.storyStage === "introduce" && !this.introSpoken) {
+      const targetX = this.player.x - 30;
+      const targetY = this.player.y + 14;
+      const dx = targetX - guide.x;
+      const dy = targetY - guide.y;
+      const distance = Math.hypot(dx, dy);
+
+      guide.moving = distance > 2;
+
+      if (guide.moving) {
+        const step = Math.min(distance, 78 * dt);
+        guide.x += (dx / distance) * step;
+        guide.y += (dy / distance) * step;
+        guide.walk = (guide.walk + dt * 1.8) % 1;
+      }
+
+      if (playerDistance < 58) {
+        this.introSpoken = true;
+        guide.targetX = guide.x;
+        guide.targetY = guide.y;
+        this.guideHome = { x: guide.x, y: guide.y };
+        this.queueStoryLines(storyLines.intro, () => this.startFollow());
+      }
+
+      return;
+    }
+
+    if (this.scene === "world" && this.storyStage === "introduce") {
+      return;
+    }
+
+    if (this.scene === "world" && (this.storyStage === "memory" || this.storyStage === "portal")) {
+      return;
+    }
+
+    if (this.scene === "world" && this.storyStage === "follow" && this.guideFollowing) {
+      const waypoint = this.world.story.guidePath[this.guideWaypoint];
+
+      if (!waypoint) {
+        this.arriveAtShrine();
+        return;
+      }
+
+      if (playerDistance > 150) {
+        this.nudgeTimer -= dt;
+
+        if (this.nudgeTimer <= 0) {
+          this.nudgeTimer = 8;
+          this.callbacks.onGuide(
+            storyLines.followNudge[Math.floor(Math.random() * storyLines.followNudge.length)],
+          );
+          window.setTimeout(() => {
+            if (this.storyStage === "follow") this.callbacks.onGuide(null);
+          }, 2600);
+        }
+
+        guide.moving = false;
+        return;
+      }
+
+      const dx = waypoint.x - guide.x;
+      const dy = waypoint.y - guide.y;
+      const distance = Math.hypot(dx, dy);
+
+      guide.moving = distance > 2;
+
+      if (guide.moving) {
+        const step = Math.min(distance, 62 * dt);
+        guide.x += (dx / distance) * step;
+        guide.y += (dy / distance) * step;
+        guide.walk = (guide.walk + dt * 1.6) % 1;
+      }
+
+      if (distance < 6) {
+        this.guideWaypoint += 1;
+
+        if (this.guideWaypoint >= this.world.story.guidePath.length) {
+          this.arriveAtShrine();
+        }
+      }
+
+      return;
+    }
+
+    // Free-roam: drift around his home, turn toward the player when close.
+    const nearPlayer = playerDistance < 120;
 
     if (nearPlayer) {
       const angle = Math.atan2(this.player.y - guide.y, this.player.x - guide.x);
-      guide.targetX = this.world.guide.x - Math.cos(angle) * 26;
-      guide.targetY = this.world.guide.y - Math.sin(angle) * 20;
+      guide.targetX = this.guideHome.x - Math.cos(angle) * 26;
+      guide.targetY = this.guideHome.y - Math.sin(angle) * 20;
     }
 
     this.guideTimer -= dt;
 
     if (this.guideTimer <= 0 && !nearPlayer) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = 8 + Math.random() * 34;
-      guide.targetX = this.world.guide.x + Math.cos(angle) * radius;
-      guide.targetY = this.world.guide.y + Math.sin(angle) * radius * 0.7;
+      const radius = 8 + Math.random() * 30;
+      guide.targetX = this.guideHome.x + Math.cos(angle) * radius;
+      guide.targetY = this.guideHome.y + Math.sin(angle) * radius * 0.7;
       this.guideTimer = 4 + Math.random() * 5;
     }
 
@@ -634,20 +1017,22 @@ export class AtlasEngine {
       guide.walk = (guide.walk + dt * 1.6) % 1;
     }
 
-    const shouldShow = this.scene === "world" && playerDistance < 96;
+    if (this.storyStage !== "done" || this.storyTimer !== null || this.storyQueue.length > 0) {
+      return;
+    }
 
-    if (shouldShow && !this.guideVisible) {
+    if (playerDistance < 96 && !this.guideVisible) {
       this.guideVisible = true;
-      this.callbacks.onGuide(guideLines[this.guideIndex % guideLines.length]);
+      this.callbacks.onGuide(storyLines.freeRoam[this.guideIndex % storyLines.freeRoam.length]);
       this.guideIndex += 1;
-    } else if (!shouldShow && this.guideVisible) {
+    } else if (playerDistance > 150 && this.guideVisible) {
       this.guideVisible = false;
       this.callbacks.onGuide(null);
     }
   }
 
   private updateParticles(dt: number) {
-    if (this.options.reducedMotion) return;
+    if (this.options.reducedMotion || this.scene !== "world") return;
 
     const region = this.nearestRegion();
     const ambientKind: Particle["kind"] =
@@ -721,7 +1106,7 @@ export class AtlasEngine {
 
     if (this.inputEnabled) {
       this.movePlayer(dt);
-      if (this.scene === "world") this.updateGuide(dt);
+      if (this.scene !== "library") this.updateGuide(dt);
     }
 
     if (!this.options.reducedMotion) {
@@ -757,7 +1142,7 @@ export class AtlasEngine {
 
   private updateCamera(dt: number) {
     const targetX = this.player.x;
-    const targetY = this.player.y;
+    const targetY = this.player.y - (this.scene === "arcade" ? 40 : 0);
 
     if (this.options.reducedMotion) {
       this.camera.x = targetX;
@@ -782,7 +1167,16 @@ export class AtlasEngine {
     ctx.clearRect(0, 0, width, height);
 
     if (this.scene === "library") {
-      this.renderLibrary(width, height, this.interiorZoom(width, height));
+      this.renderLibrary(
+        width,
+        height,
+        this.coverZoom(this.interior.w, this.interior.h, width, height),
+      );
+      return;
+    }
+
+    if (this.scene === "arcade") {
+      this.renderArcade(width, height, this.coverZoom(this.arcade.w, this.arcade.h, width, height));
       return;
     }
 
@@ -824,6 +1218,7 @@ export class AtlasEngine {
     ctx.restore();
 
     this.drawScreenEffects(width, height, mood.night);
+    this.drawSceneTags(width, height, zoom, camX, camY);
   }
 
   private drawDynamicWorld(ctx: CanvasRenderingContext2D) {
@@ -870,8 +1265,6 @@ export class AtlasEngine {
   }
 
   private drawGlows(ctx: CanvasRenderingContext2D, night: number) {
-    if (night < 0.05) return;
-
     const glow = (x: number, y: number, radius: number, color: string, strength: number) => {
       const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
       gradient.addColorStop(0, color);
@@ -883,6 +1276,19 @@ export class AtlasEngine {
       ctx.fill();
       ctx.globalAlpha = 1;
     };
+
+    const stone = this.world.story.missionStone;
+
+    glow(stone.x, stone.y - 22, 20, "rgba(255, 217, 138, 0.35)", 0.7);
+    const mouse = this.world.story.shrine.mouse;
+
+    glow(mouse.x, mouse.y - 7, 12, "rgba(255, 217, 138, 0.4)", 0.6);
+
+    if (this.portalActive) {
+      drawPortalSwirl(ctx, this.world.story.portal.x, this.world.story.portal.y + 2, this.time, 1);
+    }
+
+    if (night < 0.05) return;
 
     glow(this.world.campfire.x, this.world.campfire.y, 90, "rgba(255, 154, 61, 0.45)", night);
     glow(this.world.campfire.x, this.world.campfire.y, 34, "rgba(255, 217, 138, 0.55)", night);
@@ -918,12 +1324,198 @@ export class AtlasEngine {
     }
   }
 
-  private interiorZoom(width: number, height: number) {
-    const roomW = this.interior.w * TILE;
-    const roomH = this.interior.h * TILE;
+  private coverZoom(w: number, h: number, width: number, height: number) {
+    const roomW = w * TILE;
+    const roomH = h * TILE;
     const zoom = Math.max(width / roomW, height / roomH) * 0.94;
 
     return Math.max(1.85, Math.min(4.2, zoom));
+  }
+
+  private drawTag(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    title: string,
+    subtitle: string | null,
+    accent: string,
+  ) {
+    ctx.save();
+    ctx.font = '600 9px "Geist Mono", ui-monospace, monospace';
+    const titleWidth = ctx.measureText(title).width;
+    ctx.font = '500 7px "Geist Mono", ui-monospace, monospace';
+    const subtitleWidth = subtitle ? ctx.measureText(subtitle).width : 0;
+    const width = Math.max(titleWidth, subtitleWidth) + 18;
+    const height = subtitle ? 30 : 20;
+    const clampedX = Math.max(width / 2 + 4, Math.min(ctx.canvas.clientWidth - width / 2 - 4, x));
+    const left = clampedX - width / 2;
+    const top = y - height;
+
+    ctx.fillStyle = "rgba(8, 10, 15, 0.82)";
+    ctx.beginPath();
+    ctx.roundRect(left, top, width, height, 6);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.roundRect(left + 5, top + 3, width - 10, 1.4, 1);
+    ctx.fill();
+
+    ctx.fillStyle = "#f2ecdd";
+    ctx.font = '600 9px "Geist Mono", ui-monospace, monospace';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(title, clampedX, top + (subtitle ? 12 : 11));
+
+    if (subtitle) {
+      ctx.fillStyle = "rgba(242, 236, 221, 0.52)";
+      ctx.font = '500 7px "Geist Mono", ui-monospace, monospace';
+      ctx.fillText(subtitle, clampedX, top + 22);
+    }
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.restore();
+  }
+
+  private drawSceneTags(width: number, height: number, zoom: number, camX: number, camY: number) {
+    const ctx = this.ctx;
+    const guide = this.guideState;
+    const guideDistance = Math.hypot(this.player.x - guide.x, this.player.y - guide.y);
+    const gx = (guide.x - camX) * zoom;
+    const gy = (guide.y - camY) * zoom;
+
+    if (guideDistance < 280 && gx > -90 && gx < width + 90 && gy > -50 && gy < height + 90) {
+      this.drawTag(ctx, gx, gy - 22, guideName, guideTitle, "#d8e8a8");
+    }
+
+    if (this.scene !== "arcade") return;
+
+    let nearest: { x: number; y: number; game: string; year: number; paint: string } | null = null;
+    let best = 150;
+
+    for (const spot of this.arcade.statues) {
+      const distance = Math.hypot(this.player.x - spot.x, this.player.y - spot.y);
+
+      if (distance < best) {
+        best = distance;
+        nearest = {
+          x: spot.x,
+          y: spot.y,
+          game: spot.statue.game,
+          year: spot.statue.year,
+          paint: spot.statue.paint,
+        };
+      }
+    }
+
+    if (nearest) {
+      const sx = (nearest.x - camX) * zoom;
+      const sy = (nearest.y - camY) * zoom;
+
+      if (sx > -120 && sx < width + 120 && sy > -60 && sy < height + 120) {
+        this.drawTag(
+          ctx,
+          sx,
+          sy - 60,
+          nearest.game,
+          `${nearest.year} · stone inscription`,
+          nearest.paint,
+        );
+      }
+    }
+  }
+
+  private renderArcade(width: number, height: number, zoom: number) {
+    const { ctx } = this;
+    const arcade = this.arcade;
+
+    if (!this.arcadeCanvas) this.arcadeCanvas = paintArcade(arcade);
+
+    const worldWidth = arcade.w * TILE;
+    const worldHeight = arcade.h * TILE;
+    const viewWidth = width / zoom;
+    const viewHeight = height / zoom;
+    const camX = Math.max(0, Math.min(worldWidth - viewWidth, this.camera.x - viewWidth / 2));
+    const camY = Math.max(0, Math.min(worldHeight - viewHeight, this.camera.y - viewHeight / 2));
+
+    ctx.fillStyle = "#07060f";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.scale(zoom, zoom);
+    ctx.translate(-camX, -camY);
+    ctx.drawImage(this.arcadeCanvas, 0, 0);
+
+    if (!this.options.reducedMotion) {
+      for (let index = 0; index < 44; index += 1) {
+        const phase = index * 1.7;
+        const x = arcade.floor.x + Math.sin(this.time * 0.26 + phase) * (arcade.floor.rx * 0.82);
+        const y =
+          arcade.floor.y +
+          arcade.floor.ry -
+          ((this.time * 13 + index * 41) % (arcade.floor.ry * 2));
+        const alpha = 0.18 + 0.28 * (0.5 + 0.5 * Math.sin(this.time * 1.4 + phase));
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = index % 3 === 0 ? "#b9a6ff" : "#ffd166";
+        ctx.fillRect(x, y, 1.6, 1.6);
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
+    drawGuide(ctx, this.guideState.x, this.guideState.y, this.guideState.walk);
+    drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    drawPortalSwirl(ctx, arcade.portal.x, arcade.portal.y - 2, this.time, 1);
+
+    for (const spot of arcade.statues) {
+      const found = this.found.has(spot.statue.id);
+      const radius = found ? 30 : 22;
+      const gradient = ctx.createRadialGradient(spot.x, spot.y - 6, 0, spot.x, spot.y - 6, radius);
+      gradient.addColorStop(0, found ? "rgba(255, 207, 107, 0.28)" : "rgba(185, 166, 255, 0.14)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(spot.x, spot.y - 6, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const monumentGlow = ctx.createRadialGradient(
+      arcade.monument.x,
+      arcade.monument.y - 40,
+      0,
+      arcade.monument.x,
+      arcade.monument.y - 40,
+      90,
+    );
+    monumentGlow.addColorStop(0, "rgba(255, 122, 184, 0.2)");
+    monumentGlow.addColorStop(0.5, "rgba(86, 224, 255, 0.08)");
+    monumentGlow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = monumentGlow;
+    ctx.fillRect(arcade.monument.x - 90, arcade.monument.y - 130, 180, 180);
+    ctx.restore();
+    ctx.restore();
+
+    const vignette = ctx.createRadialGradient(
+      width * 0.5,
+      height * 0.52,
+      Math.min(width, height) * 0.32,
+      width * 0.5,
+      height * 0.52,
+      Math.max(width, height) * 0.78,
+    );
+    vignette.addColorStop(0, "rgba(0,0,0,0)");
+    vignette.addColorStop(1, "rgba(3, 3, 10, 0.62)");
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+
+    this.drawSceneTags(width, height, zoom, camX, camY);
   }
 
   private renderLibrary(width: number, height: number, zoom: number) {
@@ -1047,6 +1639,7 @@ export class AtlasEngine {
 
   destroy() {
     this.destroyed = true;
+    this.clearStoryTimer();
     this.stop();
     window.removeEventListener("keydown", this.handleKeyDown);
     window.removeEventListener("keyup", this.handleKeyUp);

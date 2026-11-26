@@ -7,6 +7,7 @@ import {
   entriesByRegion,
   libraryRelic,
 } from "@/content/atlas";
+import { arcadeStatues, guideName, missionStatement } from "@/content/atlas-story";
 
 export function AtlasStatic() {
   return (
@@ -26,6 +27,56 @@ export function AtlasStatic() {
             The walkable world needs a browser canvas. Here is everything it holds, written down.
           </p>
         </header>
+
+        <section aria-labelledby="atlas-story">
+          <h2
+            id="atlas-story"
+            className="font-mono text-[10px] tracking-[0.24em] text-[#d9b06a] uppercase"
+          >
+            The journey
+          </h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <article className="rounded-xl border border-white/10 bg-[#0d1712] p-5">
+              <h3 className="font-serif text-2xl leading-tight">The Pond of Wisdom</h3>
+              <p className="mt-2 font-serif text-[15px] leading-relaxed text-[#efe7d2]">
+                “{missionStatement.quote}”
+              </p>
+              <p className="mt-1 font-mono text-[8px] tracking-[0.14em] text-[#d9b06a]/70 uppercase">
+                {missionStatement.attribution}
+              </p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-[#0d1712] p-5">
+              <h3 className="font-serif text-2xl leading-tight">{guideName}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#c9cfc0]">
+                The keeper of the Atlas. He leads the walk from the pond to the room where it began
+                — 2011, a browser game, and a middle mouse button that did nothing — and through the
+                gate into the Gamer&apos;s Dimension.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="atlas-dimension">
+          <h2
+            id="atlas-dimension"
+            className="font-mono text-[10px] tracking-[0.24em] text-[#ff9ec9] uppercase"
+          >
+            The Gamer&apos;s Dimension
+          </h2>
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+            {arcadeStatues.map((statue) => (
+              <li key={statue.id} className="rounded-xl border border-white/10 bg-[#0d1712] p-5">
+                <h3 className="font-serif text-xl leading-tight">{statue.game}</h3>
+                <p className="mt-1 font-mono text-[9px] tracking-[0.14em] text-[#8f9a86] uppercase">
+                  {statue.year} · {statue.reference ? "reference" : "quote"}
+                </p>
+                <p className="mt-2 font-serif text-[15px] leading-relaxed text-[#c8b4ff] italic">
+                  {statue.reference ? statue.quote : `“${statue.quote}”`}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {atlasRegions.map((region) => {
           const entries = entriesByRegion.get(region.id) ?? [];

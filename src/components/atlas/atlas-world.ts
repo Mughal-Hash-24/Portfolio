@@ -8,6 +8,13 @@ import {
   type AtlasRegionId,
   type AtlasRelic,
 } from "@/content/atlas";
+import {
+  arcadeDimension,
+  arcadeProps,
+  arcadeStatues,
+  storyWorld,
+  type ArcadeStatue,
+} from "@/content/atlas-story";
 
 export const TILE = worldConfig.tileSize;
 export const WORLD_W = worldConfig.tilesW;
@@ -82,6 +89,38 @@ export type Trail = {
   color: string;
 };
 
+export type StoryWorld = {
+  pond: { x: number; y: number; rx: number; ry: number };
+  missionStone: { x: number; y: number };
+  shrine: {
+    anchor: { x: number; y: number };
+    monitor: { x: number; y: number };
+    mouse: { x: number; y: number };
+    plaque: { x: number; y: number };
+  };
+  portal: { x: number; y: number };
+  guidePath: Array<{ x: number; y: number }>;
+};
+
+export type ArcadeStatueSpot = {
+  statue: ArcadeStatue;
+  x: number;
+  y: number;
+};
+
+export type ArcadeWorld = {
+  w: number;
+  h: number;
+  floor: { x: number; y: number; rx: number; ry: number };
+  statues: ArcadeStatueSpot[];
+  monument: { x: number; y: number };
+  portal: { x: number; y: number };
+  spawn: { x: number; y: number };
+  exit: { x: number; y: number };
+  guide: { x: number; y: number };
+  colliders: Collider[];
+};
+
 export type World = {
   tiles: Uint8Array;
   trees: Tree[];
@@ -99,6 +138,7 @@ export type World = {
   signpost: { x: number; y: number };
   guide: { x: number; y: number };
   lake: { x: number; y: number; rx: number; ry: number };
+  story: StoryWorld;
 };
 
 export type Interior = {
@@ -248,6 +288,20 @@ export function buildWorld(): World {
     }
   }
 
+  // Pond of Wisdom.
+  const pond = storyWorld.pond;
+
+  for (let ty = 0; ty < WORLD_H; ty += 1) {
+    for (let tx = 0; tx < WORLD_W; tx += 1) {
+      const dx = (tx - pond.x) / pond.rx;
+      const dy = (ty - pond.y) / pond.ry;
+      const distance = dx * dx + dy * dy;
+
+      if (distance < 1) setTile(tiles, tx, ty, Tile.Water);
+      else if (distance < 1.42) setTile(tiles, tx, ty, Tile.Shore);
+    }
+  }
+
   // Spawn plaza.
   paintDisc(tiles, 75, 57, 3.1, Tile.Plaza, [Tile.Grass]);
 
@@ -261,6 +315,20 @@ export function buildWorld(): World {
 
   paintPath(tiles, regionPoint(atlasRegions[3]), { x: 75, y: 86 }, random);
   paintPath(tiles, { x: 75, y: 86 }, regionPoint(atlasRegions[2]), random);
+
+  // The story path: spawn, then Pond of Wisdom to the 2011 shrine.
+  paintPath(tiles, { x: storyWorld.spawn.x, y: storyWorld.spawn.y }, { x: 75, y: 57 }, random);
+  paintPath(tiles, { x: storyWorld.spawn.x, y: storyWorld.spawn.y }, storyWorld.path[0], random);
+  for (let index = 1; index < storyWorld.path.length; index += 1) {
+    paintPath(tiles, storyWorld.path[index - 1], storyWorld.path[index], random, 1.15);
+  }
+
+  // Shrine clearing and the gate approach.
+  paintDisc(tiles, storyWorld.shrine.anchor.x, storyWorld.shrine.anchor.y, 4.4, Tile.Path, [
+    Tile.Grass,
+    Tile.Forest,
+  ]);
+  paintPath(tiles, storyWorld.path[storyWorld.path.length - 1], storyWorld.portal, random, 1.1);
 
   // Region plazas (the poem garden keeps its grass).
   const plazas: World["plazas"] = [];
@@ -396,10 +464,24 @@ export function buildWorld(): World {
 
   const campfire = tileCenter(worldConfig.campfireTile.x, worldConfig.campfireTile.y);
   const signpost = tileCenter(worldConfig.signpostTile.x, worldConfig.signpostTile.y);
-  const guide = tileCenter(worldConfig.guideTile.x, worldConfig.guideTile.y);
 
   colliders.push({ ...campfire, r: 9 });
   colliders.push({ ...signpost, r: 5 });
+
+  const missionStone = tileCenter(storyWorld.missionStone.x, storyWorld.missionStone.y);
+  const shrine = {
+    monitor: tileCenter(storyWorld.shrine.monitor.x, storyWorld.shrine.monitor.y),
+    mouse: tileCenter(storyWorld.shrine.mouse.x, storyWorld.shrine.mouse.y),
+    plaque: tileCenter(storyWorld.shrine.plaque.x, storyWorld.shrine.plaque.y),
+    anchor: tileCenter(storyWorld.shrine.anchor.x, storyWorld.shrine.anchor.y),
+  };
+  const portal = tileCenter(storyWorld.portal.x, storyWorld.portal.y);
+
+  colliders.push({ ...missionStone, r: 8 });
+  colliders.push({ x: shrine.monitor.x, y: shrine.monitor.y, w: 5.4 * TILE, h: 3.6 * TILE });
+  colliders.push({ ...shrine.mouse, r: 9 });
+  colliders.push({ x: portal.x - 22, y: portal.y, r: 7 });
+  colliders.push({ x: portal.x + 22, y: portal.y, r: 7 });
 
   // Trees: a dense border, region groves, and meadow clusters.
   const trees: Tree[] = [];
@@ -435,6 +517,12 @@ export function buildWorld(): World {
 
     for (const landmark of landmarks) {
       if (Math.hypot(landmark.x - worldX, landmark.y - worldY) < 36) return false;
+    }
+
+    const reserved = [missionStone, shrine.monitor, shrine.mouse, shrine.anchor, portal];
+
+    for (const spot of reserved) {
+      if (Math.hypot(spot.x - worldX, spot.y - worldY) < 58) return false;
     }
 
     const size = 13 + random() * 13;
@@ -588,6 +676,10 @@ export function buildWorld(): World {
     [71.6, 57],
     [78.4, 57],
     [75, 60.4],
+    [66.2, 55.2],
+    [72.4, 58.4],
+    [62.2, 60.6],
+    [59.4, 63.6],
     [26.5, 40],
     [33.5, 40],
     [114.6, 40],
@@ -615,11 +707,77 @@ export function buildWorld(): World {
     trails,
     plazas,
     structures: atlasRegions,
-    spawn: tileCenter(worldConfig.spawnTile.x, worldConfig.spawnTile.y),
+    spawn: tileCenter(storyWorld.spawn.x, storyWorld.spawn.y),
     campfire,
     signpost,
-    guide,
+    guide: tileCenter(storyWorld.guide.x, storyWorld.guide.y),
     lake,
+    story: {
+      pond: { ...tileCenter(pond.x, pond.y), rx: pond.rx * TILE, ry: pond.ry * TILE },
+      missionStone,
+      shrine: {
+        anchor: shrine.anchor,
+        monitor: shrine.monitor,
+        mouse: shrine.mouse,
+        plaque: shrine.plaque,
+      },
+      portal,
+      guidePath: storyWorld.guidePath.map((point) => tileCenter(point.x, point.y)),
+    },
+  };
+}
+
+export function buildArcadeDimension(): ArcadeWorld {
+  const config = arcadeDimension;
+  const center = { x: config.center.x * TILE, y: config.center.y * TILE };
+  const statues: ArcadeStatueSpot[] = arcadeStatues.map((statue, index) => {
+    const angle = ((120 + (index / (arcadeStatues.length - 1)) * 300) * Math.PI) / 180;
+
+    return {
+      statue,
+      x: center.x + Math.cos(angle) * config.ringX * TILE,
+      y: center.y + Math.sin(angle) * config.ringY * TILE,
+    };
+  });
+
+  const colliders: Collider[] = statues.map((spot) => ({
+    x: spot.x,
+    y: spot.y,
+    r: 15,
+  }));
+
+  colliders.push({ x: center.x, y: center.y, r: 2.5 * TILE });
+
+  for (const prop of arcadeProps) {
+    if (!["blocks", "bowling", "crate", "palm"].includes(prop.kind)) continue;
+
+    colliders.push({
+      x: prop.x * TILE,
+      y: prop.y * TILE,
+      r: prop.kind === "bowling" ? 7 : 10,
+    });
+  }
+
+  const portal = { x: config.exit.x * TILE, y: config.exit.y * TILE };
+  colliders.push({ x: portal.x - 24, y: portal.y, r: 7 });
+  colliders.push({ x: portal.x + 24, y: portal.y, r: 7 });
+
+  return {
+    w: config.w,
+    h: config.h,
+    floor: {
+      x: center.x,
+      y: center.y,
+      rx: config.radiusX * TILE,
+      ry: config.radiusY * TILE,
+    },
+    statues,
+    monument: center,
+    portal,
+    spawn: { x: config.spawn.x * TILE, y: config.spawn.y * TILE },
+    exit: portal,
+    guide: { x: config.guide.x * TILE, y: config.guide.y * TILE },
+    colliders,
   };
 }
 

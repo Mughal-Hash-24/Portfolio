@@ -222,15 +222,56 @@
   bottom: clamp(84px, 13vh, 120px);
   left: 50%;
   z-index: 21;
-  width: min(520px, calc(100vw - 32px));
+  width: min(540px, calc(100vw - 32px));
   padding: 12px 16px;
   border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 14px;
-  background: rgb(10 14 12 / 0.72);
+  background: rgb(10 14 12 / 0.78);
   transform: translateX(-50%);
   backdrop-filter: blur(10px);
-  pointer-events: none;
   animation: promptIn 240ms ease both;
+}
+
+.dialogueActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 9px;
+}
+
+.dialogueContinue {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(216 232 168 / 0.8);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dialogueContinue:hover {
+  color: var(--paper);
+}
+
+.dialogueSkip {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(242 236 221 / 0.32);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.dialogueSkip:hover {
+  color: rgb(242 236 221 / 0.6);
 }
 
 .dialogueSpeaker {
@@ -896,6 +937,171 @@
   to {
     opacity: 1;
   }
+}
+
+.statuePanel {
+  background:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.015) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, rgb(24 23 28 / 0.96), rgb(12 11 16 / 0.96));
+}
+
+.statueQuote {
+  margin: 22px 0 0;
+  padding: 18px 16px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.03);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    inset 0 -1px 0 rgb(0 0 0 / 0.4);
+  text-align: center;
+}
+
+.statueQuoteText {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.5;
+  color: #efe7d2;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+}
+
+.statueAttribution {
+  margin: 10px 0 0;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.4);
+}
+
+.missionBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(4 6 10 / 0.7);
+  backdrop-filter: blur(7px);
+  animation: fadeIn 260ms ease both;
+}
+
+.missionCard {
+  width: min(480px, 100%);
+  padding: 34px 30px 26px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-top: 2px solid rgb(217 176 106 / 0.8);
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(120deg, rgb(255 255 255 / 0.015) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, #26232a, #191720);
+  box-shadow:
+    0 40px 120px rgb(0 0 0 / 0.65),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  text-align: center;
+  animation: riseIn 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.missionKicker {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgb(217 176 106 / 0.85);
+}
+
+.missionTitle {
+  margin: 10px 0 0;
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.missionQuote {
+  margin: 22px 0 0;
+}
+
+.missionQuote p {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.55;
+  color: #efe7d2;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+}
+
+.missionQuote .missionAttribution {
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(217 176 106 / 0.7);
+}
+
+.missionNote {
+  max-width: 38ch;
+  margin: 16px auto 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.7;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(242 236 221 / 0.4);
+}
+
+.memoryLine {
+  max-width: 36ch;
+  margin: 18px auto 0;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.55;
+  color: #efe7d2;
+}
+
+.missionButton {
+  height: 40px;
+  margin-top: 22px;
+  padding: 0 22px;
+  border: 1px solid rgb(217 176 106 / 0.55);
+  border-radius: 999px;
+  background: rgb(217 176 106 / 0.1);
+  color: rgb(240 226 190 / 0.9);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.missionButton:hover {
+  background: rgb(217 176 106 / 0.18);
+}
+
+.indexFoot p {
+  margin: 0;
+}
+
+.indexMission {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(216 232 168 / 0.75);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.indexMission:hover {
+  color: var(--paper);
 }
 
 @media (max-width: 760px) {

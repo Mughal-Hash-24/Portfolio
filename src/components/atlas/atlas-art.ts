@@ -1,9 +1,12 @@
 import { atlasRegions, type AtlasRegion, type AtlasRegionId } from "@/content/atlas";
+import { arcadeProps } from "@/content/atlas-story";
 import {
   TILE,
   Tile,
   WORLD_H,
   WORLD_W,
+  type ArcadeStatueSpot,
+  type ArcadeWorld,
   type Interior,
   type Landmark,
   type Trail,
@@ -25,6 +28,25 @@ function hash(x: number, y: number) {
   let value = Math.imul(x, 374761393) + Math.imul(y, 668265263);
   value = Math.imul(value ^ (value >>> 13), 1274126177);
   return ((value ^ (value >>> 16)) >>> 0) / 4294967296;
+}
+
+function hashStringSafe(seed: string) {
+  let value = 2166136261;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    value ^= seed.charCodeAt(index);
+    value = Math.imul(value, 16777619);
+  }
+
+  let state = value >>> 0;
+
+  return () => {
+    state |= 0;
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 function pick<T>(items: T[], value: number) {
@@ -614,6 +636,1028 @@ function paintStructure(ctx: Ctx, region: AtlasRegion) {
   }
 }
 
+function paintPond(ctx: Ctx, world: World) {
+  const pond = world.story.pond;
+
+  // Depth ring and a soft highlight inside the water.
+  ctx.strokeStyle = "rgba(22, 54, 66, 0.45)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(pond.x, pond.y, pond.rx - 5, pond.ry - 4, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ellipse(ctx, pond.x - 7, pond.y - 6, pond.rx * 0.55, pond.ry * 0.4, "rgba(214, 241, 247, 0.07)");
+
+  // Irregular stone rim.
+  for (let index = 0; index < 30; index += 1) {
+    const angle = (index / 30) * Math.PI * 2;
+    const x = pond.x + Math.cos(angle) * (pond.rx + 8);
+    const y = pond.y + Math.sin(angle) * (pond.ry + 7);
+    const width = 6 + (index % 3) * 1.6;
+
+    ellipse(ctx, x, y, width, width * 0.62, "rgba(0, 0, 0, 0.24)");
+    ctx.fillStyle = index % 2 === 0 ? "#8f887a" : "#7c7568";
+    ctx.beginPath();
+    ctx.ellipse(x, y - 1, width, width * 0.56, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ellipse(ctx, x - width * 0.25, y - width * 0.3, width * 0.42, width * 0.18, "#a49c8b");
+  }
+
+  // A small wooden dock on the south shore.
+  const dockX = pond.x + 2;
+  const dockTop = pond.y + pond.ry - 8;
+
+  rect(ctx, dockX + 7, dockTop + 22, 3, 12, "#5d3f25");
+  rect(ctx, dockX - 16, dockTop + 22, 3, 12, "#5d3f25");
+
+  for (let index = 0; index < 6; index += 1) {
+    rect(ctx, dockX - 17, dockTop + index * 5.4, 34, 4.2, index % 2 === 0 ? "#8a6136" : "#7c562f");
+    rect(ctx, dockX - 17, dockTop + index * 5.4, 34, 1, "#a8794a");
+  }
+
+  for (const side of [-1, 1]) {
+    rect(ctx, dockX + side * 16, dockTop - 2, 2.4, 34, "#5d3f25");
+    circle(ctx, dockX + side * 16 + 1.2, dockTop - 3, 2.2, "#8f887a");
+  }
+
+  // Lilies and flowers.
+  for (const [lx, ly, flower] of [
+    [-2.2, -0.9, true],
+    [1.4, 0.9, true],
+    [0.4, -1.4, false],
+    [-1.1, 1.3, false],
+    [2.3, -0.2, false],
+    [-2.6, 0.4, false],
+  ] as Array<[number, number, boolean]>) {
+    const x = pond.x + lx * pond.ry;
+    const y = pond.y + ly * pond.ry;
+
+    ellipse(ctx, x, y, 5.8, 3.4, "#4f7a45");
+    rect(ctx, x - 1.2, y - 0.5, 2.4, 1, "#3d6338");
+
+    if (flower) {
+      circle(ctx, x + 1.6, y - 1.8, 1.9, "#ffc2da");
+      circle(ctx, x + 1.6, y - 1.8, 0.8, "#ffe8f1");
+    }
+  }
+
+  // Two koi flashes.
+  ctx.globalAlpha = 0.75;
+  ellipse(ctx, pond.x + 12, pond.y + 6, 4.4, 1.6, "#e88a4a");
+  ellipse(ctx, pond.x - 15, pond.y - 8, 3.8, 1.3, "#f2e6c9");
+  ctx.globalAlpha = 1;
+
+  // Cattails and reeds along the rim, away from the dock.
+  for (let index = 0; index < 16; index += 1) {
+    const angle = (index / 16) * Math.PI * 2 + 0.28;
+
+    if (Math.sin(angle) > 0.72) continue;
+
+    const x = pond.x + Math.cos(angle) * (pond.rx + 5);
+    const y = pond.y + Math.sin(angle) * (pond.ry + 4);
+    const height = 8 + (index % 4) * 2.4;
+
+    ctx.strokeStyle = "#5f7a43";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 2);
+    ctx.quadraticCurveTo(x + 1, y - height * 0.6, x + 2, y - height);
+    ctx.stroke();
+
+    if (index % 3 === 0) {
+      rect(ctx, x + 1, y - height - 3, 2.2, 4.4, "#7a4a2c");
+    }
+  }
+}
+
+function paintMissionStone(ctx: Ctx, x: number, y: number) {
+  ellipse(ctx, x + 1, y + 9, 14, 5, "rgba(0,0,0,0.28)");
+  rect(ctx, x - 12, y + 2, 24, 7, "#6e665a");
+  rect(ctx, x - 12, y + 2, 24, 1.8, "#8a8172");
+
+  ctx.fillStyle = "#8f8676";
+  ctx.beginPath();
+  ctx.moveTo(x - 10, y + 4);
+  ctx.lineTo(x - 11, y - 30);
+  ctx.quadraticCurveTo(x, y - 38, x + 11, y - 30);
+  ctx.lineTo(x + 10, y + 4);
+  ctx.closePath();
+  ctx.fill();
+  rect(ctx, x - 8, y - 28, 16, 32, "#a59b89");
+  rect(ctx, x - 8, y - 28, 16, 2.2, "#b8ad99");
+
+  // Lotus carving.
+  circle(ctx, x, y - 21, 2.2, "#d9b06a");
+  for (const [ox, oy] of [
+    [-4.4, -1.4],
+    [4.4, -1.4],
+    [-2.6, -4],
+    [2.6, -4],
+    [0, -5.4],
+  ] as Array<[number, number]>) {
+    ellipse(ctx, x + ox, y - 21 + oy, 2.6, 1.4, "#c8a05c");
+  }
+
+  for (let index = 0; index < 4; index += 1) {
+    rect(ctx, x - 4.6, y - 12 + index * 3.6, index % 2 === 0 ? 9.2 : 6.4, 0.9, "#d9b06a");
+  }
+
+  circle(ctx, x, y - 34, 1.8, "#ffd98a");
+}
+
+function paintShrine(ctx: Ctx, world: World) {
+  const { monitor, mouse, plaque } = world.story.shrine;
+
+  // Plinth and stone keyboard.
+  rect(ctx, monitor.x - 44, monitor.y + 20, 88, 12, "#6e665a");
+  rect(ctx, monitor.x - 44, monitor.y + 20, 88, 2, "#8a8172");
+  rect(ctx, monitor.x - 30, monitor.y + 34, 60, 12, "#7a7264");
+  rect(ctx, monitor.x - 30, monitor.y + 34, 60, 2, "#948b7a");
+
+  for (let row = 0; row < 2; row += 1) {
+    for (let col = 0; col < 8; col += 1) {
+      rect(ctx, monitor.x - 26 + col * 6.6, monitor.y + 37 + row * 4.4, 4.6, 2.8, "#5f584c");
+    }
+  }
+
+  // CRT body with a browser window.
+  ctx.fillStyle = "#5a564e";
+  ctx.beginPath();
+  ctx.roundRect(monitor.x - 40, monitor.y - 44, 80, 66, 5);
+  ctx.fill();
+  rect(ctx, monitor.x - 40, monitor.y - 44, 80, 3, "#7a7468");
+  rect(ctx, monitor.x - 40, monitor.y - 44, 3, 66, "#6f6a5f");
+  rect(ctx, monitor.x - 36, monitor.y - 40, 72, 56, "#23222a");
+
+  // Screen: sky, dune, and the little uphill cart.
+  rect(ctx, monitor.x - 32, monitor.y - 36, 64, 34, "#7ec8e8");
+  rect(ctx, monitor.x - 32, monitor.y - 22, 64, 20, "#e0a34a");
+  ctx.fillStyle = "#f2c56b";
+  ctx.beginPath();
+  ctx.moveTo(monitor.x - 32, monitor.y - 10);
+  ctx.quadraticCurveTo(monitor.x, monitor.y - 28, monitor.x + 32, monitor.y - 6);
+  ctx.lineTo(monitor.x + 32, monitor.y - 2);
+  ctx.lineTo(monitor.x - 32, monitor.y - 2);
+  ctx.closePath();
+  ctx.fill();
+  rect(ctx, monitor.x - 10, monitor.y - 22, 18, 7, "#c96b4a");
+  rect(ctx, monitor.x - 7, monitor.y - 25, 12, 5, "#e8d8b8");
+  circle(ctx, monitor.x - 8, monitor.y - 15, 2.4, "#3b2a22");
+  circle(ctx, monitor.x + 6, monitor.y - 15, 2.4, "#3b2a22");
+  rect(ctx, monitor.x - 26, monitor.y - 33, 20, 1.6, "#f0f6fa");
+  rect(ctx, monitor.x - 26, monitor.y - 30, 12, 1.2, "#dcebf2");
+
+  // Browser chrome with three dots and an address line.
+  rect(ctx, monitor.x - 36, monitor.y - 40, 72, 6, "#3a3844");
+  circle(ctx, monitor.x - 32, monitor.y - 37, 1.2, "#e85d5d");
+  circle(ctx, monitor.x - 28, monitor.y - 37, 1.2, "#ffd166");
+  circle(ctx, monitor.x - 24, monitor.y - 37, 1.2, "#7cc36a");
+  rect(ctx, monitor.x - 18, monitor.y - 38, 34, 2.2, "#23222a");
+  rect(ctx, monitor.x - 16, monitor.y - 37.4, 18, 1, "#9aa4b0");
+
+  // Stone mouse with a gold middle button, and a carved cursor beside it.
+  ellipse(ctx, mouse.x + 1, mouse.y + 5, 13, 4.4, "rgba(0,0,0,0.25)");
+  ctx.fillStyle = "#a49c8b";
+  ctx.beginPath();
+  ctx.roundRect(mouse.x - 6, mouse.y - 14, 12, 18, 5);
+  ctx.fill();
+  rect(ctx, mouse.x - 5.2, mouse.y - 13, 2, 14, "rgba(255,255,255,0.14)");
+  rect(ctx, mouse.x + 4.4, mouse.y - 12, 1.6, 13, "rgba(0,0,0,0.12)");
+  rect(ctx, mouse.x - 6, mouse.y - 7.4, 12, 0.9, "#6e665a");
+  rect(ctx, mouse.x - 1.6, mouse.y - 10, 3.2, 4.4, "#d9b06a");
+  rect(ctx, mouse.x - 0.8, mouse.y - 9.2, 1.6, 2.8, "#fff1c9");
+  circle(ctx, mouse.x, mouse.y - 15, 1.2, "#6e665a");
+
+  ctx.strokeStyle = "#6e665a";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(mouse.x, mouse.y - 15);
+  ctx.quadraticCurveTo(mouse.x + 12, mouse.y - 27, monitor.x + 30, monitor.y + 22);
+  ctx.stroke();
+
+  // Carved cursor arrow on the ground, pointing at the mouse.
+  const cursorX = mouse.x - 17;
+  const cursorY = mouse.y + 1;
+
+  ctx.fillStyle = "#b3aa98";
+  ctx.beginPath();
+  ctx.moveTo(cursorX, cursorY - 6);
+  ctx.lineTo(cursorX + 8, cursorY + 5);
+  ctx.lineTo(cursorX + 4.6, cursorY + 5);
+  ctx.lineTo(cursorX + 6.6, cursorY + 10);
+  ctx.lineTo(cursorX + 4, cursorY + 11);
+  ctx.lineTo(cursorX + 2, cursorY + 6);
+  ctx.lineTo(cursorX - 0.6, cursorY + 8.6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "#6e665a";
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // Plaque: 2011.
+  ellipse(ctx, plaque.x + 1, plaque.y + 5, 12, 4, "rgba(0,0,0,0.24)");
+  rect(ctx, plaque.x - 13, plaque.y - 4, 26, 10, "#5f584c");
+  rect(ctx, plaque.x - 13, plaque.y - 4, 26, 1.6, "#7a7264");
+  ctx.fillStyle = "#e8d9a8";
+  ctx.font = '600 8px "Geist Mono", ui-monospace, monospace';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("2011", plaque.x, plaque.y + 1.4);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+
+  // Ramp rails.
+  for (const [rx, ry] of [
+    [58.2, 65.4],
+    [59.2, 64.4],
+  ]) {
+    const x = rx * TILE;
+    const y = ry * TILE;
+
+    rect(ctx, x - 1, y - 14, 2, 16, "#6d4b2f");
+    circle(ctx, x, y - 15, 2, "#8f887a");
+  }
+}
+
+function paintPortalArch(ctx: Ctx, x: number, y: number) {
+  ellipse(ctx, x, y + 24, 30, 9, "rgba(0,0,0,0.3)");
+
+  for (const side of [-1, 1]) {
+    const px = x + side * 22;
+
+    ctx.fillStyle = "#6e665a";
+    ctx.beginPath();
+    ctx.roundRect(px - 6, y - 26, 12, 52, 4);
+    ctx.fill();
+    rect(ctx, px - 6, y - 26, 3, 52, "#847b6d");
+    rect(ctx, px - 3.4, y - 16, 1.6, 5, "#b9a6ff");
+    rect(ctx, px + 1.4, y + 2, 1.6, 4, "#b9a6ff");
+  }
+
+  ctx.strokeStyle = "#6e665a";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.arc(x, y - 26, 22, Math.PI, 0);
+  ctx.stroke();
+  ctx.strokeStyle = "#847b6d";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y - 26, 18.6, Math.PI, 0);
+  ctx.stroke();
+
+  ellipse(ctx, x, y + 2, 17, 24, "#161022");
+  ellipse(ctx, x, y + 2, 13, 19, "#241636");
+  circle(ctx, x, y + 2, 2.2, "#b9a6ff");
+}
+
+function drawMotif(ctx: Ctx, spot: ArcadeStatueSpot) {
+  const { x, y } = spot;
+  const paint = spot.statue.paint;
+  const cx = x;
+  const cy = y - 32;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.lineCap = "round";
+
+  switch (spot.statue.motif) {
+    case "lowrider":
+      rect(ctx, -12, -2, 24, 6, paint);
+      rect(ctx, -7, -7, 14, 6, paint);
+      rect(ctx, -7, -7, 14, 2, "#e8f2d8");
+      circle(ctx, -7, 5, 3, "#2b2620");
+      circle(ctx, 7, 5, 3, "#2b2620");
+      circle(ctx, -7, 5, 1.2, "#b8b2a6");
+      circle(ctx, 7, 5, 1.2, "#b8b2a6");
+      rect(ctx, -14, -1, 3, 1.4, "#d9b06a");
+      break;
+    case "skyline":
+      rect(ctx, -12, -8, 6, 16, "#4a4652");
+      rect(ctx, -4, -16, 7, 24, "#56515f");
+      rect(ctx, 5, -12, 7, 20, "#423e4a");
+      for (let index = 0; index < 8; index += 1) {
+        rect(ctx, -11 + (index % 2) * 3, -6 + Math.floor(index / 2) * 4, 1.4, 1.8, paint);
+        rect(ctx, -3 + (index % 2) * 3, -14 + Math.floor(index / 2) * 4, 1.4, 1.8, paint);
+        rect(ctx, 6 + (index % 2) * 3, -10 + Math.floor(index / 2) * 4, 1.4, 1.8, paint);
+      }
+      break;
+    case "palm":
+      ctx.strokeStyle = "#6d4b2f";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-1, 10);
+      ctx.quadraticCurveTo(-4, 0, 0, -12);
+      ctx.stroke();
+      ctx.strokeStyle = paint;
+      ctx.lineWidth = 1.6;
+
+      for (const [fx, fy] of [
+        [-12, -12],
+        [-6, -17],
+        [2, -18],
+        [9, -13],
+        [11, -6],
+      ] as Array<[number, number]>) {
+        ctx.beginPath();
+        ctx.moveTo(0, -12);
+        ctx.quadraticCurveTo(fx * 0.5, fy - 3, fx, fy);
+        ctx.stroke();
+      }
+
+      circle(ctx, 9, -14, 3.4, "#ffd166");
+      break;
+    case "bowling": {
+      rect(ctx, -6, -14, 7, 4, "#e8dcc0");
+      circle(ctx, -2.5, -9, 3.2, "#efe6d2");
+      rect(ctx, -5.4, -6, 5.8, 12, "#efe6d2");
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.fillRect(-5.4, 0, 5.8, 6);
+      circle(ctx, -2.5, -12, 0.8, paint);
+      circle(ctx, -1, -12, 0.8, paint);
+      circle(ctx, 7, 6, 6, paint);
+      circle(ctx, 5, 4, 0.9, "#2b1d1d");
+      circle(ctx, 8, 3.4, 0.9, "#2b1d1d");
+      circle(ctx, 9, 6, 0.9, "#2b1d1d");
+      break;
+    }
+    case "helicopter":
+      ellipse(ctx, 0, 0, 9, 5, paint);
+      rect(ctx, 8, -1.4, 9, 2.4, paint);
+      rect(ctx, -2, -7, 2, 4, "#5f584c");
+      ctx.strokeStyle = "#cfd6e6";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-13, -8);
+      ctx.lineTo(13, -8);
+      ctx.stroke();
+      rect(ctx, -7, 5, 2, 4, "#4a4652");
+      rect(ctx, 5, 5, 2, 4, "#4a4652");
+      circle(ctx, -4, -1, 1.4, "#2b2620");
+      break;
+    case "hood":
+      ctx.fillStyle = paint;
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.quadraticCurveTo(-13, -6, -10, 10);
+      ctx.lineTo(10, 10);
+      ctx.quadraticCurveTo(13, -6, 0, -14);
+      ctx.fill();
+      ctx.fillStyle = "#2b2620";
+      ctx.beginPath();
+      ctx.ellipse(0, -1, 5.4, 6.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      rect(ctx, -10, 4, 20, 2, "#b03a3a");
+      break;
+    case "signal":
+      rect(ctx, -6, -4, 12, 18, "#2b2633");
+      rect(ctx, -4.5, -2, 9, 13, "#56a8cf");
+
+      for (const radius of [4, 7, 10]) {
+        ctx.strokeStyle = paint;
+        ctx.globalAlpha = 0.95 - radius * 0.05;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, -6, radius, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      break;
+    case "block":
+      poly(
+        ctx,
+        [
+          [-10, -6],
+          [0, -12],
+          [10, -6],
+          [0, 0],
+        ],
+        "#7cc36a",
+      );
+      poly(
+        ctx,
+        [
+          [-10, -6],
+          [0, 0],
+          [0, 10],
+          [-10, 4],
+        ],
+        "#8a6a48",
+      );
+      poly(
+        ctx,
+        [
+          [10, -6],
+          [0, 0],
+          [0, 10],
+          [10, 4],
+        ],
+        "#6f543a",
+      );
+      ctx.strokeStyle = paint;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-2, 3);
+      ctx.lineTo(8, -10);
+      ctx.stroke();
+      rect(ctx, 6.4, -13, 5, 3, "#8f887a");
+      break;
+    case "crewmate":
+      ctx.fillStyle = paint;
+      ctx.beginPath();
+      ctx.roundRect(-7, -12, 12, 20, 6);
+      ctx.fill();
+      rect(ctx, -9, -4, 4, 9, paint);
+      rect(ctx, -5, 8, 3.4, 5, paint);
+      rect(ctx, 1, 8, 3.4, 5, paint);
+      rect(ctx, -1, -9, 7, 5.6, "#cfe8f2");
+      rect(ctx, -1, -9, 5, 4.2, "#9fd8ff");
+      break;
+    case "dragon":
+      circle(ctx, 0, -2, 12, "rgba(30, 26, 20, 0.5)");
+      ctx.strokeStyle = paint;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -2, 10.5, 0, Math.PI * 2);
+      ctx.stroke();
+      poly(
+        ctx,
+        [
+          [-8, 2],
+          [-3, -6],
+          [0, -1],
+          [4, -9],
+          [8, 2],
+          [2, 0],
+          [0, 6],
+          [-3, 0],
+        ],
+        paint,
+      );
+      circle(ctx, 4.6, -6.4, 0.8, "#2b1d1d");
+      break;
+    case "soldier":
+      rect(ctx, -9, 2, 18, 9, paint);
+      circle(ctx, 0, -4, 5, "#c9a37a");
+      circle(ctx, 0, -6, 6, "#4a5140");
+      rect(ctx, -6, -6, 12, 2.2, "#3a4034");
+      ctx.strokeStyle = "#2b2620";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-9, 8);
+      ctx.lineTo(9, -4);
+      ctx.stroke();
+      rect(ctx, -11, 3, 4, 2, "#2b2620");
+      break;
+    case "scope":
+      ctx.strokeStyle = paint;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-14, 0);
+      ctx.lineTo(14, 0);
+      ctx.moveTo(0, -14);
+      ctx.lineTo(0, 14);
+      ctx.stroke();
+      circle(ctx, 0, 0, 1.6, paint);
+      circle(ctx, 0, 0, 5.6, "rgba(0,0,0,0)");
+      ctx.beginPath();
+      ctx.arc(0, 0, 5.6, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    case "fist":
+      rect(ctx, -8, -6, 15, 14, paint);
+      rect(ctx, -10, 3, 4, 5, paint);
+      rect(ctx, -8, -10, 4, 5, paint);
+      rect(ctx, -3, -12, 4, 6, paint);
+      rect(ctx, 2, -10, 4, 5, paint);
+      rect(ctx, -8, -6, 15, 2, "rgba(255,255,255,0.18)");
+      rect(ctx, -5, -1, 9, 1.4, "#2b2620");
+      break;
+    case "ball":
+      circle(ctx, 0, 0, 11, paint);
+      circle(ctx, 0, 0, 11, "rgba(0,0,0,0)");
+      ctx.strokeStyle = "#2b2620";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 11, 0, Math.PI * 2);
+      ctx.stroke();
+
+      for (const [px, py] of [
+        [0, -5],
+        [-6, 1],
+        [6, 1],
+      ] as Array<[number, number]>) {
+        circle(ctx, px, py, 3.4, "#2b2620");
+      }
+      break;
+    case "cricket":
+      ctx.save();
+      ctx.rotate(-0.5);
+      rect(ctx, -3, -14, 6, 18, paint);
+      rect(ctx, -1.4, 4, 2.8, 9, "#2b2620");
+      rect(ctx, -3, -14, 2, 18, "rgba(255,255,255,0.15)");
+      ctx.restore();
+      circle(ctx, 6, 8, 4.4, "#b03a3a");
+      ctx.strokeStyle = "#e8d9a8";
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.arc(6, 8, 4.4, 0.5, 2.6);
+      ctx.stroke();
+      break;
+    case "belt":
+      rect(ctx, -14, -2, 28, 7, "#5a4630");
+      rect(ctx, -8, -6, 16, 14, paint);
+      circle(ctx, 0, 1, 6.4, "#e8d9a8");
+      circle(ctx, 0, 1, 3.6, paint);
+      rect(ctx, -14, -2, 4, 7, "#3d2f22");
+      rect(ctx, 10, -2, 4, 7, "#3d2f22");
+      break;
+    case "island":
+      ellipse(ctx, 0, 6, 13, 4.4, paint);
+      ellipse(ctx, 0, 4.6, 9, 3, "#8a6a48");
+      ctx.strokeStyle = "#6d4b2f";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(0, 4);
+      ctx.quadraticCurveTo(-3, -4, 1, -10);
+      ctx.stroke();
+      ctx.strokeStyle = paint;
+      ctx.lineWidth = 1.4;
+
+      for (const [fx, fy] of [
+        [-8, -10],
+        [-3, -13],
+        [3, -13],
+        [8, -9],
+      ] as Array<[number, number]>) {
+        ctx.beginPath();
+        ctx.moveTo(1, -10);
+        ctx.lineTo(fx, fy);
+        ctx.stroke();
+      }
+
+      circle(ctx, 9, -12, 2.8, "#ffd166");
+      break;
+  }
+
+  ctx.restore();
+}
+
+function drawArcadeStatue(ctx: Ctx, spot: ArcadeStatueSpot) {
+  const { x, y } = spot;
+  const stone = spot.statue.stone;
+
+  let seed = 0;
+  for (let index = 0; index < spot.statue.id.length; index += 1) {
+    seed = (seed * 31 + spot.statue.id.charCodeAt(index)) % 997;
+  }
+
+  const halfWidth = 10 + (seed % 3);
+  const slabTop = -44 - (seed % 9);
+  const chip = 2 + (seed % 4);
+
+  ellipse(ctx, x + 2, y + 7, 18, 6.4, "rgba(0,0,0,0.4)");
+  ellipse(ctx, x, y, 17, 6.6, "#4a443b");
+  ellipse(ctx, x, y - 1, 14.4, 5.4, "#6e665a");
+  ellipse(ctx, x, y - 2, 11, 3.8, "#847b6d");
+
+  for (let index = 0; index < 6; index += 1) {
+    const angle = (index / 6) * Math.PI * 2;
+    rect(
+      ctx,
+      x + Math.cos(angle) * 8 - 0.8,
+      y - 1 + Math.sin(angle) * 3.4,
+      1.6,
+      1.6,
+      spot.statue.paint,
+    );
+  }
+
+  ctx.fillStyle = stone;
+  ctx.beginPath();
+  ctx.moveTo(x - halfWidth, y - 6);
+  ctx.lineTo(x - halfWidth + 1, y + slabTop + 8);
+  ctx.lineTo(x - halfWidth + 3 + chip, y + slabTop);
+  ctx.lineTo(x + 2, y + slabTop - 2 - (seed % 3));
+  ctx.lineTo(x + halfWidth - 1 - chip, y + slabTop + 4);
+  ctx.lineTo(x + halfWidth, y - 40);
+  ctx.lineTo(x + halfWidth, y - 6);
+  ctx.closePath();
+  ctx.fill();
+  rect(ctx, x - halfWidth, y + slabTop + 8, 4, -slabTop - 14, "rgba(255,255,255,0.08)");
+  rect(ctx, x + halfWidth - 5, y - 40, 5, 34, "rgba(0,0,0,0.16)");
+
+  ctx.fillStyle = "rgba(20, 18, 22, 0.35)";
+  ctx.beginPath();
+  ctx.roundRect(x - 9, y - 48, 18, 34, 3);
+  ctx.fill();
+
+  drawMotif(ctx, spot);
+
+  ctx.fillStyle = "rgba(240, 232, 214, 0.55)";
+  ctx.font = '600 4.6px "Geist Mono", ui-monospace, monospace';
+  ctx.textAlign = "center";
+  ctx.fillText(String(spot.statue.year), x, y - 9);
+  ctx.textAlign = "left";
+}
+
+function drawJoystickMonument(ctx: Ctx, x: number, y: number) {
+  ellipse(ctx, x + 2, y + 10, 40, 14, "rgba(0,0,0,0.4)");
+  ellipse(ctx, x, y, 36, 13, "#4a443b");
+  ellipse(ctx, x, y - 2, 31, 10.6, "#6e665a");
+
+  for (let index = 0; index < 12; index += 1) {
+    const angle = (index / 12) * Math.PI * 2;
+    rect(
+      ctx,
+      x + Math.cos(angle) * 23 - 0.9,
+      y - 2 + Math.sin(angle) * 8,
+      1.8,
+      1.8,
+      index % 2 === 0 ? "#56e0ff" : "#b9a6ff",
+    );
+  }
+
+  rect(ctx, x - 5, y - 40, 10, 38, "#5d564b");
+  rect(ctx, x - 5, y - 40, 3, 38, "#7a7264");
+  circle(ctx, x, y - 46, 14, "#8f887a");
+  circle(ctx, x - 3, y - 50, 10, "#b03a3a");
+  circle(ctx, x - 6, y - 53, 3.4, "#e87474");
+  circle(ctx, x, y - 46, 14, "rgba(0,0,0,0)");
+  ctx.strokeStyle = "#3a332d";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(x, y - 46, 14, 0, Math.PI * 2);
+  ctx.stroke();
+
+  circle(ctx, x - 18, y + 4, 3.4, "#b03a3a");
+  circle(ctx, x - 18.8, y + 3.2, 1.2, "#e87474");
+  circle(ctx, x + 18, y + 4, 3.4, "#2b2633");
+  circle(ctx, x + 17.2, y + 3.2, 1.2, "#4a4652");
+}
+
+function paintArcadeVoid(ctx: Ctx, arcade: ArcadeWorld) {
+  const width = arcade.w * TILE;
+  const height = arcade.h * TILE;
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, "#07060f");
+  gradient.addColorStop(0.55, "#0c0920");
+  gradient.addColorStop(1, "#0a0716");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  const random = hashStringSafe("arcade-void");
+
+  for (let index = 0; index < 260; index += 1) {
+    const x = random() * width;
+    const y = random() * height;
+    const size = 0.6 + random() * 1.6;
+    const palette = ["#e8f2ff", "#b9c8ff", "#ffd9a0", "#9fd8ff"];
+    ctx.globalAlpha = 0.25 + random() * 0.65;
+    ctx.fillStyle = palette[Math.floor(random() * palette.length)];
+    ctx.fillRect(x, y, size, size);
+  }
+
+  ctx.globalAlpha = 1;
+
+  for (const [x, y, radius, color] of [
+    [width * 0.22, height * 0.28, 180, "rgba(120, 80, 240, 0.14)"],
+    [width * 0.8, height * 0.68, 200, "rgba(46, 199, 192, 0.1)"],
+    [width * 0.55, height * 0.18, 150, "rgba(255, 122, 184, 0.08)"],
+  ] as Array<[number, number, number, string]>) {
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    glow.addColorStop(0, color);
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+  }
+
+  // Floating stones at the edge of the dimension.
+  for (let index = 0; index < 16; index += 1) {
+    const angle = (index / 16) * Math.PI * 2 + 0.3;
+    const x = arcade.floor.x + Math.cos(angle) * (arcade.floor.rx + 40 + random() * 40);
+    const y = arcade.floor.y + Math.sin(angle) * (arcade.floor.ry + 26 + random() * 30);
+    const size = 4 + random() * 8;
+
+    ctx.fillStyle = "#2a2638";
+    ctx.beginPath();
+    ctx.roundRect(x - size / 2, y - size / 3, size, size * 0.66, 2);
+    ctx.fill();
+    rect(ctx, x - size / 2, y - size / 3, size * 0.4, 1, "rgba(255,255,255,0.12)");
+  }
+}
+
+function paintArcadeFloor(ctx: Ctx, arcade: ArcadeWorld) {
+  const { x, y, rx, ry } = arcade.floor;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.clip();
+  rect(ctx, x - rx, y - ry, rx * 2, ry * 2, "#15112a");
+
+  for (let gx = x - rx; gx <= x + rx; gx += TILE) {
+    const strong = Math.round((gx - x) / TILE) % 4 === 0;
+    rect(
+      ctx,
+      gx,
+      y - ry,
+      1,
+      ry * 2,
+      strong ? "rgba(120, 220, 255, 0.2)" : "rgba(120, 110, 255, 0.1)",
+    );
+  }
+
+  for (let gy = y - ry; gy <= y + ry; gy += TILE) {
+    const strong = Math.round((gy - y) / TILE) % 4 === 0;
+    rect(
+      ctx,
+      x - rx,
+      gy,
+      rx * 2,
+      1,
+      strong ? "rgba(120, 220, 255, 0.2)" : "rgba(120, 110, 255, 0.1)",
+    );
+  }
+
+  for (let ring = 1; ring <= 5; ring += 1) {
+    ctx.strokeStyle = `rgba(185, 166, 255, ${0.14 - ring * 0.018})`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(x, y, (rx / 5) * ring, (ry / 5) * ring, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  ctx.strokeStyle = "rgba(86, 224, 255, 0.55)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(86, 224, 255, 0.14)";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx + 5, ry + 4, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Central dais.
+  circle(ctx, x, y, 3.4 * TILE, "#1d1733");
+  circle(ctx, x, y, 3.4 * TILE, "rgba(0,0,0,0)");
+  ctx.strokeStyle = "rgba(185, 166, 255, 0.35)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, 3.2 * TILE, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(86, 224, 255, 0.2)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(x, y, 2.2 * TILE, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function paintArcadePortal(ctx: Ctx, x: number, y: number) {
+  ellipse(ctx, x, y + 22, 34, 10, "rgba(0,0,0,0.4)");
+
+  for (const side of [-1, 1]) {
+    const px = x + side * 24;
+
+    ctx.fillStyle = "#4a443b";
+    ctx.beginPath();
+    ctx.roundRect(px - 7, y - 30, 14, 54, 4);
+    ctx.fill();
+    rect(ctx, px - 7, y - 30, 4, 54, "#6e665a");
+    rect(ctx, px - 2, y - 18, 2, 6, "#56e0ff");
+    rect(ctx, px + 1, y + 4, 2, 5, "#b9a6ff");
+  }
+
+  ctx.strokeStyle = "#4a443b";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(x, y - 30, 24, Math.PI, 0);
+  ctx.stroke();
+  ctx.strokeStyle = "#6e665a";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y - 30, 20, Math.PI, 0);
+  ctx.stroke();
+
+  ellipse(ctx, x, y - 2, 19, 28, "#0a0714");
+  ellipse(ctx, x, y - 2, 14, 22, "#120b22");
+  circle(ctx, x, y - 2, 2.4, "#b9a6ff");
+}
+
+function paintArcadeProps(ctx: Ctx) {
+  for (const prop of arcadeProps) {
+    const x = prop.x * TILE;
+    const y = prop.y * TILE;
+
+    switch (prop.kind) {
+      case "blocks":
+        for (let index = 0; index < 3; index += 1) {
+          const bx = x + (index - 1) * 13;
+          const by = y - index * 2;
+          poly(
+            ctx,
+            [
+              [bx - 6, by - 8],
+              [bx, by - 12],
+              [bx + 6, by - 8],
+              [bx, by - 4],
+            ],
+            "#7cc36a",
+          );
+          poly(
+            ctx,
+            [
+              [bx - 6, by - 8],
+              [bx, by - 4],
+              [bx, by + 2],
+              [bx - 6, by - 2],
+            ],
+            "#8a6a48",
+          );
+          poly(
+            ctx,
+            [
+              [bx + 6, by - 8],
+              [bx, by - 4],
+              [bx, by + 2],
+              [bx + 6, by - 2],
+            ],
+            "#6f543a",
+          );
+        }
+        break;
+      case "bowling":
+        ellipse(ctx, x + 1, y + 4, 11, 3.6, "rgba(0,0,0,0.3)");
+        ctx.fillStyle = "#efe6d2";
+        ctx.beginPath();
+        ctx.roundRect(x - 4, y - 14, 7, 16, 3);
+        ctx.fill();
+        circle(ctx, x - 0.5, y - 16, 3.2, "#efe6d2");
+        circle(ctx, x - 1.6, y - 17, 0.8, "#b03a3a");
+        circle(ctx, x + 0.8, y - 17, 0.8, "#b03a3a");
+        circle(ctx, x + 9, y + 1, 5.4, "#b03a3a");
+        circle(ctx, x + 7.4, y - 1, 0.8, "#2b1d1d");
+        circle(ctx, x + 10.4, y - 1, 0.8, "#2b1d1d");
+        circle(ctx, x + 8.8, y + 2.4, 0.8, "#2b1d1d");
+        break;
+      case "crate":
+        ellipse(ctx, x + 1, y + 4, 13, 4, "rgba(0,0,0,0.3)");
+        rect(ctx, x - 11, y - 8, 22, 12, "#5c6647");
+        rect(ctx, x - 11, y - 8, 22, 2, "#74805b");
+        rect(ctx, x - 11, y - 1, 22, 1.4, "#414a33");
+        rect(ctx, x - 12, y - 9, 3, 14, "#3a4230");
+        rect(ctx, x + 9, y - 9, 3, 14, "#3a4230");
+        rect(ctx, x - 3, y - 11, 6, 2, "#9aa46a");
+        break;
+      case "football":
+        ellipse(ctx, x + 1, y + 4, 9, 3, "rgba(0,0,0,0.3)");
+        circle(ctx, x, y, 7, "#e8f2f2");
+        ctx.strokeStyle = "#2b2620";
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.stroke();
+        for (const [px, py] of [
+          [0, -3.4],
+          [-4, 0.8],
+          [4, 0.8],
+        ] as Array<[number, number]>) {
+          circle(ctx, x + px, y + py, 2.2, "#2b2620");
+        }
+        break;
+      case "cricket":
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-0.42);
+        rect(ctx, -3, -13, 6, 18, "#d9a066");
+        rect(ctx, -1.4, 5, 2.8, 8, "#2b2620");
+        ctx.restore();
+        circle(ctx, x + 8, y + 5, 3.6, "#b03a3a");
+        ctx.strokeStyle = "#e8d9a8";
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.arc(x + 8, y + 5, 3.6, 0.5, 2.6);
+        ctx.stroke();
+        break;
+      case "palm":
+        ellipse(ctx, x, y + 2, 12, 4.4, "#4a443b");
+        ellipse(ctx, x, y, 10, 3.6, "#6e665a");
+        ctx.strokeStyle = "#6d4b2f";
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(x, y - 2);
+        ctx.quadraticCurveTo(x - 4, y - 16, x + 1, y - 26);
+        ctx.stroke();
+        ctx.strokeStyle = "#ff7ab8";
+        ctx.lineWidth = 1.8;
+
+        for (const [fx, fy] of [
+          [-12, -26],
+          [-5, -32],
+          [4, -32],
+          [11, -26],
+          [13, -18],
+        ] as Array<[number, number]>) {
+          ctx.beginPath();
+          ctx.moveTo(x + 1, y - 26);
+          ctx.quadraticCurveTo(x + fx * 0.5, y + fy - 2, x + fx, y + fy);
+          ctx.stroke();
+        }
+
+        break;
+      case "dragon":
+        circle(ctx, x, y, 17, "rgba(20, 16, 30, 0.5)");
+        ctx.strokeStyle = "#ffcf33";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255, 207, 51, 0.45)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.stroke();
+        poly(
+          ctx,
+          [
+            [x - 8, y + 2],
+            [x - 3, y - 6],
+            [x, y - 1],
+            [x + 4, y - 9],
+            [x + 8, y + 2],
+            [x + 2, y],
+            [x, y + 6],
+            [x - 3, y],
+          ],
+          "#ffcf33",
+        );
+        circle(ctx, x + 4.6, y - 6.4, 0.8, "#2b1d1d");
+        break;
+      case "tokens":
+        for (let index = 0; index < 9; index += 1) {
+          const angle = index * 2.4;
+          const tx = x + Math.cos(angle) * (6 + index * 1.8);
+          const ty = y + Math.sin(angle) * (3 + index * 0.9);
+
+          ellipse(ctx, tx, ty, 3.4, 1.4, "rgba(0,0,0,0.28)");
+          ellipse(ctx, tx, ty - 0.6, 3, 1.2, "#d9b06a");
+          ellipse(ctx, tx, ty - 0.8, 2, 0.7, "#ffd98a");
+        }
+        break;
+    }
+  }
+}
+
+export function paintArcade(arcade: ArcadeWorld): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = arcade.w * TILE;
+  canvas.height = arcade.h * TILE;
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) return canvas;
+
+  paintArcadeVoid(ctx, arcade);
+  paintArcadeFloor(ctx, arcade);
+  paintArcadeProps(ctx);
+
+  for (const spot of arcade.statues) {
+    drawArcadeStatue(ctx, spot);
+  }
+
+  drawJoystickMonument(ctx, arcade.monument.x, arcade.monument.y);
+  paintArcadePortal(ctx, arcade.portal.x, arcade.portal.y);
+
+  return canvas;
+}
+
+export function drawPortalSwirl(ctx: Ctx, x: number, y: number, time: number, strength = 1) {
+  const pulse = 0.75 + Math.sin(time * 2.2) * 0.25;
+
+  for (let ring = 0; ring < 3; ring += 1) {
+    const radius = 10 + ring * 4.6;
+    const rotation = time * (0.8 + ring * 0.35) * (ring % 2 === 0 ? 1 : -1);
+    const alpha = (0.5 - ring * 0.1) * pulse * strength;
+
+    ctx.strokeStyle =
+      ring % 2 === 0 ? `rgba(185, 166, 255, ${alpha})` : `rgba(86, 224, 255, ${alpha})`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(x, y, radius * 0.68, radius, rotation, 0, Math.PI * 1.55);
+    ctx.stroke();
+  }
+
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, 26);
+  glow.addColorStop(0, `rgba(185, 166, 255, ${0.25 * strength})`);
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - 26, y - 26, 52, 52);
+}
+
 export function paintTerrain(world: World): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = WORLD_W * TILE;
@@ -629,6 +1673,11 @@ export function paintTerrain(world: World): HTMLCanvasElement {
   for (const lantern of world.lanterns) {
     paintLantern(ctx, lantern.x, lantern.y);
   }
+
+  paintPond(ctx, world);
+  paintMissionStone(ctx, world.story.missionStone.x, world.story.missionStone.y);
+  paintShrine(ctx, world);
+  paintPortalArch(ctx, world.story.portal.x, world.story.portal.y);
 
   for (const region of atlasRegions) {
     paintStructure(ctx, region);
