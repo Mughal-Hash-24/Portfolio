@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake Recreation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+</style>
+<script src="/arcade-runtime/pythons.js" data-python="cpython3.12" type="module" id="__main__" data-os="gui" data-ume_block="0" async defer>#<!--
+import asyncio
+import base64
+import os
+import pathlib
+import sys
+import tempfile
+
+# The runtime only treats this script as the program entry point when
+# sys.argv[0] names it; otherwise that has to come from the page URL hash.
+# The loader leaves a blank placeholder at [0], so replace it in place.
+if not sys.argv or not sys.argv[0]:
+    if sys.argv:
+        sys.argv[0] = "main.py"
+    else:
+        sys.argv.append("main.py")
+
+ASSETS = {
+    "README.md": (
+        "IyBTbmFrZQpBIHlvdW5nIG1lLCBmdWVsZWQgYnkgY3JlYXRpdml0eSBhbmQgbG92ZSBmb3IgZ2FtaW5nLCBkZWNpZGVzIHRvIHRha2Ugb24gaGlzIHRoaXJk"
+        "IGdhbWUgZGV2ZWxvcG1lbnQgcHJvamVjdCBpLmUuICJTbmFrZSIgaW4gcHl0aG9uIHB5Z2FtZS4gQ2FsbCBpdCBlZmZpY2llbnQgdGltZSBtYW5hZ2VtZW50"
+        "IG9yIG15IGhhdGUgZm9yIHBpeGVsIGFydCBhdCB0aGF0IHRpbWUsIGJ1dCBJIGRlY2lkZWQgdG8gc2tpcCBwaXhlbCBhcnQgZW50aXJlbHkgZm9yIHRoaXMg"
+        "Z2FtZSwgd2hpY2ggSSBzaG91bGRuJ3QgaGF2ZSB3aGVuIEkgbG9vayBiYWNrIGF0IGl0LgoKIyBJbnNpZ2h0cwpBIDE5NzYgY2xhc3NpYywgYXJjYWRlIGdh"
+        "bWUgd2hlcmUgdGhlIHBsYXllciBjb250cm9scyBhIGxpbmUgYW5kIG1hbmV1dmVycyBpdCB0byB0byBhdm9pZCB0aGUgYm91bmRyaWVzLiBUaGUgY2F0Y2gg"
+        "aXMgdGhhdCB3aGVuIHlvdSBlYXQgYSBmcnVpdCB0aGUgbGluZSB5b3UgY29udHJvbCBncm93cy4gVGhlIGdhbWUgZW5kcyB3aGVuIHRoZSBmaWxscyB0aGUg"
+        "ZW50aXJlIGF2YWlsYWJsZSBzcGFjZSBvbiB0aGUgc2NyZWVuLiAiU25ha2UiIHdhcyBpbml0aWFsbHkgcG9wdWxhciwgYnV0IHRoaXMgcG9wdWxhcml0eSB3"
+        "YXMgc2t5IHJvY2tldGVkIHdoZW4gaXQgd2FzIGludHJvZHVjZWQgaW4gdGhlIG1vYmlsZSBwaG9uZSAiTm9raWEgMzMxMCIuCi0gKipDcmVhdGVkIEJ5Oioq"
+        "IElidGFzYWFtIEFtamFkCi0gKipMYW5ndWFnZToqKiBQeXRob24gfCBQeWdhbWUKLSAqKkNyZWF0ZWQgaW46KiogQXVndXN0IDIwMjMKCiAgLS0tCgojIEJh"
+        "Y2tncm91bmQKV2l0aCBpbml0aWFsIHN1Y2NlcyBpbiAiQmVhbiBjb2xsZWN0b3IiIGFuZCAiU2F2ZSB0aGUgYmFsbCIuIEkgc2V0IG91dCBvbiBhIHRyZWFj"
+        "aGVyb3VzIGpvdXJuZXkgd2hlcmUgSSBoYWQgdG8gcmVjcmVhdGUgdGhlIGdhbWUgIlNuYWtlIi4gSXQgd2FzIGEgc3RydWdnbGUgaW5pdGlhbGx5IGFzIEkg"
+        "anVzdCBjb3VsZG4ndCB3cmFwIG15IGhlYWQgYXJvdW5kIHRoZSBsb2dpYyBvZiB0dXJuaW5nIHRoZSBzbmFrZS4gQUxzbywgdGhlIGdyb3dpbmcgb2YgdGhl"
+        "IHNuYWtlIHdhcyBhIHN0cnVnZ2xlIGFzIHdlbGwuIERlc3BpdGUgYWxsIHRoZSB0aGUgZGlmZmljdWx0aWVzLCBJIHdhcyBhYmxlIHRvIHB1c2ggdGhyb3Vn"
+        "aCBhbmQgZGV2ZWxvcCB0aGUgZ2FtZSBzdWNjZXNzZnVsbHkuCgotLS0KCiMgRmVhdHVyZXMKLSAqKk1vdmVtZW50OioqIFRoZSBnYW1lIGZlYXR1cmVzIHNt"
+        "b290aCBtb3ZlbWVudHMgb2YgdGhlIHNuYWtlIHdpdGggbWluaW1hbCB2aXN1YWwgZ2xpdGNoZXMuCi0gKipSTkc6KiogVGhlIGdhbWUgc3Bhd25zIGluIGZy"
+        "dWl0IGF0IHJhbmRvbSBwb3NpdGlvbnMgd2hlbiB0aGUgcHJldmlvdXMgb25lIGlzIGVhdGVuIHVwLgotICoqR3Jvd2luZyBNZWNoYW5pc206KiogQXMgc29v"
+        "biBhcyB0aGUgc25ha2UgZWF0cyBhIGZydWl0LCBpdHMgc2l6ZSBncm93cy4KLSAqKkNvbGxpc2lvbjoqKiBUaGlzIGdhbWUgbGV2ZXJhZ2VzIHRoZSBidWls"
+        "dCBpbiBzcHJpdGUgY29sbGlzaW9uIG9mIHB5Z2FtZSwgd2hpY2ggaXMgYmFzZWQgb24gQXhpcyBBbGlnbmVkIEJvdW5kaW5nIEJveCBDb2xsaXNpb24uCi0g"
+        "KipObyBQaXhlbCBBcnQ6KiogVGhpcyBnYW1lIHJlbGllcyBvbiBiYXNpYyBjb2xvcmluZyBhbmQgc2hhcGVzIHdpdGggbm8gcGl4ZWwgYXJ0IG9yIHNwcml0"
+        "ZXMgYXMgSSB3YXMgbGF6eSBiYWNrIHRoZW4uCgotLS0KCiMgSG93IHRvIFJ1bj8KYGBgYmFzaAojIFN0ZXAgMTogTWFrZSBzdXJlIFB5dGhvbiAoMy43Kykg"
+        "aXMgaW5zdGFsbGVkCnB5dGhvbiAtLXZlcnNpb24KCiMgU3RlcCAyOiBJbnN0YWxsIHB5Z2FtZSBpZiBub3QgYWxyZWFkeSBpbnN0YWxsZWQKcGlwIGluc3Rh"
+        "bGwgcHlnYW1lCgojIFN0ZXAgMzogUnVuIHRoZSBnYW1lCnB5dGhvbiBzbmFrZS5weQpgYGAKCi0tLQoKIyBMZXNzb25zIExlYXJuZWQgCi0gU2ltcGxpY2l0"
+        "eSBpcyBkZWNlcHRpdmUg4oCUIGV2ZW4gY2xhc3NpYyBnYW1lcyBsaWtlIFNuYWtlIHJlcXVpcmUgY2FyZWZ1bCBsb2dpYy4KLSBBdm9pZGluZyBwaXhlbCBh"
+        "cnQgc2F2ZWQgdGltZSwgYnV0IGl0IGxpbWl0ZWQgdmlzdWFsIHBvbGlzaC4KLSBCcmVha2luZyBwcm9ibGVtcyBpbnRvIHNtYWxsIGNodW5rcyBpcyBrZXkg"
+        "dG8gb3ZlcmNvbWluZyBsb2dpYyBibG9ja3MuCgotLS0KCiMgRmluYWwgVGhvdWdodHMKVGhpcyBwcm9qZWN0IHdhcyBtb3JlIHRoYW4ganVzdCBhIGdhbWUg"
+        "4oCUIGl0IHdhcyBhIHRlc3Qgb2YgcGVyc2lzdGVuY2UsIGxvZ2ljLCBhbmQgY3JlYXRpdml0eS4KVGhlIHJlc3VsdCBtYXkgYmUgbWluaW1hbGlzdCwgYnV0"
+        "IGl0IGNhcnJpZXMgdGhlIGxlc3NvbnMgb2YgYSBmdWxsLWZsZWRnZWQgam91cm5leS4KCi0tLQoKIyBGdXR1cmUgaW1wcm92ZW1lbnRzCi0gU25ha2Ugc29t"
+        "ZXRpbWVzIHNwYXducyBuZWFyIHdhbGwgZWRnZXMsIG1ha2luZyBpbml0aWFsIGdhbWVwbGF5IHRyaWNreQotIE5vIHBhdXNlL3Jlc3VtZSBmdW5jdGlvbmFs"
+        "aXR5IHlldAoKLS0tCgoqKklidGFzYWFtIE11Z2hhbCB8IEFwcmlsIDIwMjUqKgo="
+    ),
+}
+# Helper modules are shipped base64-encoded. Writing them as Python string
+# literals breaks on modules that contain quotes, triple quotes, or backslash
+# escapes, which is exactly what a real dependency looks like.
+MODULES = {}
+
+
+def prepare_filesystem():
+    workdir = pathlib.Path(tempfile.mkdtemp(prefix="arcade-"))
+    os.chdir(workdir)
+
+    for name, payload in ASSETS.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(payload))
+
+    for name, source in MODULES.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(source))
+
+    # Helper packages live beside the entry point, so make them importable.
+    if str(workdir) not in sys.path:
+        sys.path.insert(0, str(workdir))
+
+
+prepare_filesystem()
+
+import asyncio
+import pygame, random
+
+def Foods():
+    food_x = random.randint(100, 700)
+    food_y = random.randint(100, 500)
+    food = pygame.Rect(food_x, food_y, 25, 25)
+    foods.append(food)
+
+def score_screen(text, color, x, y):
+    screen_text = font.render(text, True, color)
+    window.blit(screen_text, [x, y])
+
+def draw_snake(window, color, snk_list, size):
+    for x, y in snk_list:
+        pygame.draw.rect(window, (0, 155, 0), [x, y, size, size])
+
+def restart_game():
+    global snake_x, snake_y, moving_left, moving_right, moving_up, moving_down, snk_list, snk_length, score, game_over, foods
+    snake_x = 150
+    snake_y = 150
+    snk_length = 1
+    score = 0
+    moving_left = False
+    moving_right = True
+    moving_up = False
+    moving_down = False
+    snk_list = []
+    foods = []
+    Foods()
+    game_over = False
+
+async def main():
+    global bg, bg_color, clock, event, font, foods, game_over, head, moving_down, moving_left, moving_right, moving_up, running, score, size, snack, snak_vel, snake, snake_x, snake_y, snk_length, snk_list, win_res, window
+    pygame.init()
+    clock = pygame.time.Clock()
+    win_res = (800, 600)
+    window = pygame.display.set_mode(win_res)
+    snake_x = 150
+    snake_y = 150
+    size = 25
+    snak_vel = 3
+    score = 0
+    moving_left = False
+    moving_right = True
+    moving_up = False
+    moving_down = False
+    bg_color = (150, 220, 255)
+    foods = []
+    font = pygame.font.SysFont('Arial', 45)
+    Foods()
+    snk_list = []
+    snk_length = 1
+    restart_game()
+    running = True
+    while running:
+        await asyncio.sleep(0)
+        if game_over:
+            window.fill(bg_color)
+            score_screen('Game Over! Press Enter to restart', (0, 0, 0), 120, win_res[1] / 2 - 30)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        restart_game()
+        else:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP and (not moving_down):
+                        moving_up = True
+                        moving_down = False
+                        moving_left = False
+                        moving_right = False
+                    if event.key == pygame.K_DOWN and (not moving_up):
+                        moving_up = False
+                        moving_down = True
+                        moving_left = False
+                        moving_right = False
+                    if event.key == pygame.K_RIGHT and (not moving_left):
+                        moving_up = False
+                        moving_down = False
+                        moving_left = False
+                        moving_right = True
+                    if event.key == pygame.K_LEFT and (not moving_right):
+                        moving_up = False
+                        moving_down = False
+                        moving_left = True
+                        moving_right = False
+            bg = pygame.draw.rect(window, bg_color, [0, 0, 800, 600])
+            snake = pygame.draw.rect(window, (0, 155, 0), [snake_x, snake_y, size, size])
+            if moving_down:
+                snake_y += snak_vel
+            elif moving_left:
+                snake_x -= snak_vel
+            elif moving_right:
+                snake_x += snak_vel
+            elif moving_up:
+                snake_y -= snak_vel
+            for snack in foods.copy():
+                if snake.colliderect(snack):
+                    foods.remove(snack)
+                    Foods()
+                    score += 10
+                    snk_length += 10
+            score_screen('Score: ' + str(score), (0, 0, 0), 5, 5)
+            for snack in foods:
+                pygame.draw.rect(window, (255, 0, 0), snack)
+            head = []
+            head.append(snake_x)
+            head.append(snake_y)
+            snk_list.append(head)
+            if len(snk_list) > snk_length:
+                del snk_list[0]
+            draw_snake(window, (0, 155, 0), snk_list, size)
+            if snake_x < 0 or snake_x > win_res[0]:
+                game_over = True
+            if snake_y < 0 or snake_y > win_res[1]:
+                game_over = True
+            if head in snk_list[:-1]:
+                game_over = True
+        pygame.display.update()
+        clock.tick(60)
+    pygame.quit()
+
+try:
+    asyncio.run(main())
+except SystemExit:
+    pass
+except BaseException:
+    # A portable game can still fail on a platform detail (a missing
+    # codec, a font). Surface it in the page instead of a black screen.
+    import traceback
+    info = traceback.format_exc()
+    traceback.print_exc()
+    try:
+        from js import document
+        box = document.createElement('pre')
+        box.style.cssText = (
+            'position:fixed;inset:0;margin:0;padding:16px;z-index:99;'
+            'background:black;color:#ff8080;font:11px monospace;'
+            'white-space:pre-wrap;overflow:auto'
+        )
+        box.textContent = info
+        document.body.appendChild(box)
+    except BaseException:
+        pass
+
+
+# -->
+</script>
+<script>
+  // pygbag creates the canvas without a tabindex, so it can never take focus and
+  // keyboard events land on the body instead of the game. Make it focusable and
+  // focus it on any interaction, which is also what unlocks browser audio.
+  (function () {
+    function wire() {
+      var canvas = document.getElementById("canvas");
+      if (!canvas) return false;
+      if (!canvas.hasAttribute("tabindex")) canvas.setAttribute("tabindex", "0");
+      if (canvas.dataset.arcadeFocus) return true;
+      canvas.dataset.arcadeFocus = "1";
+      ["pointerdown", "click", "keydown"].forEach(function (type) {
+        canvas.addEventListener(type, function () { canvas.focus(); });
+      });
+      return true;
+    }
+    if (!wire()) {
+      var tries = 0;
+      var timer = setInterval(function () {
+        if (wire() || ++tries > 200) clearInterval(timer);
+      }, 100);
+    }
+  })();
+</script>
+</head>
+<body></body>
+</html>

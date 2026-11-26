@@ -13,7 +13,8 @@
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "verify:safar": "node --experimental-strip-types --no-warnings scripts/verify-safar.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.103",

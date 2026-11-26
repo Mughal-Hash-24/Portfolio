@@ -1,6 +1,8 @@
-# Atlas content
+# Safar content
 
-The raw material for the `/atlas` chapter. This file is filled in **before** any map work, because regions are derived from the material, not invented ahead of it.
+The raw material for the `/safar` chapter. (`/atlas` permanently redirects here.) This file is filled in **before** any map work, because regions are derived from the material, not invented ahead of it.
+
+> **Status:** the first walkable iteration ships with starter entries in `src/content/atlas.ts` (clearly marked placeholders). Edit that file to add or replace influences — regions, landmarks, trails, and the index all derive from it. This document stays as the intake template for future dumps.
 
 ## How to add an entry
 
@@ -96,7 +98,7 @@ If the slice feels good to walk, everything after it is content entry and art, n
 
 ## Deep links and slugs
 
-Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-love`). `/atlas#in-the-mood-for-love` spawns beside that landmark with the entry open.
+Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-love`). `/safar#in-the-mood-for-love` spawns beside that landmark with the entry open.
 
 ## Expansion rules
 
@@ -104,3 +106,25 @@ Every entry gets a slug: lowercase kebab-case of the title (`in-the-mood-for-lov
 - A new interior is appended room data referenced by an entry.
 - Trails are derived from `connections` and must point both ways.
 - Any `night` entry needs a reachable rest point (campfire or bed) so nobody has to wait for the clock.
+
+## Story layer
+
+Safar also has a guided storyline. Its content is separate from the regions:
+
+- `src/content/atlas-story.ts`:
+  - `guideName` / `guideTitle` and `storyLines` — the guide's dialogue for the prologue, the 2011 memory, the dimension, and free-roam greetings.
+  - `missionStatement` — the quote on the Pond of Wisdom. The current line is a placeholder; replace `quote` and `attribution` when the final statement is ready.
+  - `storyWorld` — the pond, inscription stone, 2011 shrine, gate, and the guide's walking path on the tile plane.
+  - `arcadeStatues` — the seventeen stone inscriptions. Each has `game`, `year`, `quote`, an optional `reference: true` for lines that describe the game rather than quote it, a `motif` that the art renderer swaps in, and a `paint` accent.
+  - `arcadeProps` / `arcadeDimension` — the dimension's game props, decor, spawn, and exit.
+
+### Quote rules
+
+Every inscription is a short, famous in-game line (or, for a game with no dialogue, a famous in-game text or subtitle) attributed to the game and, where relevant, the character or source. Do not use descriptions of a game, long passages, lyrics, or text that needs a content licence. The current sources are listed on each plaque and in `src/content/atlas-story.ts`; the card is designed for one engraved line, up to the longest Watch Dogs and Call of Duty quotes.
+
+### Extending the journey
+
+- Add a statue by appending to `arcadeStatues`; the ring layout and plinth distribution are derived from the list length.
+- A new motif needs a case in `drawMotif` in `atlas-art.ts`.
+- Story beats live in the engine's stage machine; content belongs in `storyLines`. Do not put dialogue strings in the engine.
+- The story is persisted under `atlas:story:v1`. Clear that key to replay the prologue.

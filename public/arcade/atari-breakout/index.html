@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atari Breakout Recreation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+</style>
+<script src="/arcade-runtime/pythons.js" data-python="cpython3.12" type="module" id="__main__" data-os="gui" data-ume_block="0" async defer>#<!--
+import asyncio
+import base64
+import os
+import pathlib
+import sys
+import tempfile
+
+# The runtime only treats this script as the program entry point when
+# sys.argv[0] names it; otherwise that has to come from the page URL hash.
+# The loader leaves a blank placeholder at [0], so replace it in place.
+if not sys.argv or not sys.argv[0]:
+    if sys.argv:
+        sys.argv[0] = "main.py"
+    else:
+        sys.argv.append("main.py")
+
+ASSETS = {
+    "README.md": (
+        "IyBBdGFyaS1CcmVha291dA=="
+    ),
+}
+# Helper modules are shipped base64-encoded. Writing them as Python string
+# literals breaks on modules that contain quotes, triple quotes, or backslash
+# escapes, which is exactly what a real dependency looks like.
+MODULES = {}
+
+
+def prepare_filesystem():
+    workdir = pathlib.Path(tempfile.mkdtemp(prefix="arcade-"))
+    os.chdir(workdir)
+
+    for name, payload in ASSETS.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(payload))
+
+    for name, source in MODULES.items():
+        target = pathlib.Path(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(source))
+
+    # Helper packages live beside the entry point, so make them importable.
+    if str(workdir) not in sys.path:
+        sys.path.insert(0, str(workdir))
+
+
+prepare_filesystem()
+
+import asyncio
+import pygame, random, math
+
+class Pad(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((200, 25))
+        self.image.fill((60, 60, 60))
+        self.rect = self.image.get_rect()
+        self.rect.x = 500
+        self.rect.y = 565
+        self.vel = 10
+
+    def move_left(self):
+        self.rect.x -= self.vel
+
+    def move_right(self):
+        self.rect.x += self.vel
+
+class Ball(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (0, 0, 0), (10, 10), 10)
+        self.rect = self.image.get_rect()
+        self.rect.center = (win_res[0] / 2, win_res[1] / 2)
+        self.vel = 4
+        self.angle = math.pi / 3
+
+    def update(self):
+        self.rect.x += self.vel * math.cos(self.angle)
+        self.rect.y -= self.vel * math.sin(self.angle)
+        if self.rect.x <= 0 or self.rect.x >= win_res[0] - 20:
+            self.angle = math.pi - self.angle
+        if self.rect.y <= 0:
+            self.angle = -self.angle
+        if self.rect.y >= win_res[1] - 20:
+            self.rect.center = (win_res[0] / 2, win_res[1] / 2)
+            self.angle = math.pi / 3
+
+def generate_level():
+    rows = 6
+    columns = 10
+    for i in range(rows):
+        row = []
+        for j in range(columns):
+            row.append(random.randint(0, 2))
+        matrix.append(row)
+    return matrix
+
+class Map(pygame.sprite.Sprite):
+
+    def __init__(self, matrix, colors, start_x, start_y):
+        super().__init__()
+        self.image = pygame.Surface((1200, 280))
+        self.rect = self.image.get_rect()
+        self.matrix = matrix
+        self.colors = colors
+        self.start_x = start_x
+        self.start_y = start_y
+
+    def generate_map(self):
+        rects = []
+        for y in self.matrix:
+            self.start_x = 30
+            for x in y:
+                rect = pygame.Rect(self.start_x, self.start_y, 100, 50)
+                rects.append((rect, self.colors[x]))
+                self.start_x += 115
+            self.start_y += 65
+        return rects
+
+async def game_loop():
+    pad = Pad()
+    ball = Ball()
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(pad)
+    all_sprites.add(ball)
+    generate_level()
+    tiles = Map(matrix, colors, 30, 10)
+    rects = tiles.generate_map()
+    running = True
+    while running:
+        await asyncio.sleep(0)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and pad.rect.x > 0:
+            pad.move_left()
+        elif keys[pygame.K_RIGHT] and pad.rect.x < win_res[0] - 200:
+            pad.move_right()
+        if ball.rect.x >= pad.rect.x and ball.rect.x <= pad.rect.x + 200:
+            if ball.rect.y + 20 >= pad.rect.y:
+                dist = (ball.rect.centerx - pad.rect.centerx) / 100
+                max_angle = 45
+                angle = max_angle * dist
+                angle_radians = math.radians(angle)
+                if dist > 0:
+                    ball.angle = -ball.angle - angle_radians
+                if dist < 0:
+                    ball.angle = -ball.angle - angle_radians
+        for rect, color in rects.copy():
+            if ball.rect.colliderect(rect):
+                rects.remove((rect, color))
+                ball.angle = -ball.angle
+        window.fill(bg_color)
+        ball.update()
+        all_sprites.draw(window)
+        for rect, color in rects:
+            pygame.draw.rect(window, color, rect)
+        all_sprites.update()
+        pygame.display.update()
+        clock.tick(60)
+    pygame.quit()
+
+async def main():
+    global bg_color, blue, clock, colors, green, matrix, red, win_res, window
+    pygame.init()
+    clock = pygame.time.Clock()
+    win_res = (800, 600)
+    red = (255, 114, 118)
+    blue = (5, 195, 221)
+    green = (0, 168, 107)
+    colors = [red, blue, green]
+    window = pygame.display.set_mode(win_res)
+    bg_color = (240, 240, 240)
+    matrix = []
+    await game_loop()
+
+try:
+    asyncio.run(main())
+except SystemExit:
+    pass
+except BaseException:
+    # A portable game can still fail on a platform detail (a missing
+    # codec, a font). Surface it in the page instead of a black screen.
+    import traceback
+    info = traceback.format_exc()
+    traceback.print_exc()
+    try:
+        from js import document
+        box = document.createElement('pre')
+        box.style.cssText = (
+            'position:fixed;inset:0;margin:0;padding:16px;z-index:99;'
+            'background:black;color:#ff8080;font:11px monospace;'
+            'white-space:pre-wrap;overflow:auto'
+        )
+        box.textContent = info
+        document.body.appendChild(box)
+    except BaseException:
+        pass
+
+
+# -->
+</script>
+<script>
+  // pygbag creates the canvas without a tabindex, so it can never take focus and
+  // keyboard events land on the body instead of the game. Make it focusable and
+  // focus it on any interaction, which is also what unlocks browser audio.
+  (function () {
+    function wire() {
+      var canvas = document.getElementById("canvas");
+      if (!canvas) return false;
+      if (!canvas.hasAttribute("tabindex")) canvas.setAttribute("tabindex", "0");
+      if (canvas.dataset.arcadeFocus) return true;
+      canvas.dataset.arcadeFocus = "1";
+      ["pointerdown", "click", "keydown"].forEach(function (type) {
+        canvas.addEventListener(type, function () { canvas.focus(); });
+      });
+      return true;
+    }
+    if (!wire()) {
+      var tries = 0;
+      var timer = setInterval(function () {
+        if (wire() || ++tries > 200) clearInterval(timer);
+      }, 100);
+    }
+  })();
+</script>
+</head>
+<body></body>
+</html>

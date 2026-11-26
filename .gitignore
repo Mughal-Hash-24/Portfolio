@@ -55,3 +55,12 @@ public/panoramas/_dev/
 
 # development-only audio derivatives (Mojang assets, never commit)
 public/audio/_dev/
+
+# local game sources for the WASM arcade (built artifacts live in public/arcade)
+/games/
+
+# pre-compressed arcade siblings (generated for local perf testing)
+public/arcade/**/*.br
+public/arcade/**/*.gz
+public/arcade-runtime/**/*.br
+public/arcade-runtime/**/*.gz

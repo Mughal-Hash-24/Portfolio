@@ -1,0 +1,423 @@
+/* ---------- drawer ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  place-items: center;
+  gap: clamp(0.6rem, 1.4vw, 1.1rem);
+  padding: clamp(0.8rem, 2vw, 1.6rem);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.overlay[data-entered="true"] {
+  opacity: 1;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: rgb(4 5 9 / 62%);
+  backdrop-filter: blur(18px) saturate(0.7);
+  -webkit-backdrop-filter: blur(18px) saturate(0.7);
+}
+
+/* ---------- rail ---------- */
+
+.rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.5rem, 1.6vw, 1.4rem);
+  width: min(100%, 58rem);
+  max-height: 100%;
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: clamp(2.4rem, 4vw, 3rem);
+  height: clamp(2.4rem, 4vw, 3rem);
+  border: 1px solid #37314d;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #e6dcf4;
+  font-size: 1.4rem;
+  line-height: 1;
+  background: rgb(24 21 36 / 85%);
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 120ms ease;
+}
+
+.arrow:hover,
+.arrow:focus-visible {
+  border-color: #ff4fa3;
+  color: #ffd7ea;
+  transform: scale(1.05);
+}
+
+/* ---------- cassette ---------- */
+
+.cassette {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1.9 / 1;
+  border-radius: 0.5rem 0.5rem 0.4rem 0.4rem;
+  /* the moulded plastic body */
+  background: linear-gradient(180deg, #262130 0%, #1a1622 46%, #221d2c 100%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 9%) inset,
+    0 -1px 0 rgb(0 0 0 / 55%) inset,
+    0 0 0 1px rgb(0 0 0 / 70%),
+    0 26px 50px -20px rgb(0 0 0 / 80%);
+  animation: cassette-in 300ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+@keyframes cassette-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cassette {
+    animation: none;
+  }
+}
+
+/* moulding detail */
+
+.shell {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.shellTop {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 16%;
+  background: linear-gradient(180deg, rgb(255 255 255 / 5%), transparent);
+}
+
+.shellBottom {
+  position: absolute;
+  inset: auto 0 0;
+  height: 30%;
+  background: linear-gradient(0deg, rgb(0 0 0 / 32%), transparent);
+}
+
+.screw {
+  position: absolute;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #4b4359, #14111c);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 60%);
+}
+
+.screw[data-pos="tl"] {
+  top: 3.5%;
+  left: 1.4%;
+}
+.screw[data-pos="tr"] {
+  top: 3.5%;
+  right: 1.4%;
+}
+.screw[data-pos="bl"] {
+  bottom: 3.5%;
+  left: 1.4%;
+}
+.screw[data-pos="br"] {
+  bottom: 3.5%;
+  right: 1.4%;
+}
+
+/* spools sit in the lower third, as on a real tape */
+
+.spools {
+  position: absolute;
+  inset: auto 0 4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12%;
+  height: 22%;
+  pointer-events: none;
+}
+
+.spool {
+  width: clamp(1.5rem, 4vw, 2.4rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%, #0c0a12 0 26%, #3a3348 27% 34%, #15121d 35% 100%);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 70%),
+    0 0 0 4px rgb(255 255 255 / 3%) inset;
+}
+
+.tapeWindow {
+  width: 34%;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0d0b13, #1b1725);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 5%),
+    0 2px 8px rgb(0 0 0 / 70%) inset;
+}
+
+/* ---------- printed label ---------- */
+
+.label {
+  position: absolute;
+  inset: 6% 4% 26%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.25rem, 0.7vw, 0.5rem);
+  padding: clamp(0.55rem, 1.4vw, 1rem) clamp(0.7rem, 1.8vw, 1.3rem);
+  border-radius: 0.2rem;
+  background: linear-gradient(180deg, #f7efdd 0%, #efe4cd 62%, #e6d9bf 100%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 60%) inset,
+    0 -1px 0 rgb(0 0 0 / 12%) inset,
+    0 6px 14px -6px rgb(0 0 0 / 70%);
+  color: #2a2118;
+}
+
+/* faint print registration marks, like a real label sheet */
+.label::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, rgb(120 96 64 / 8%) 1px, transparent 1px),
+    linear-gradient(180deg, rgb(120 96 64 / 6%) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mix-blend-mode: multiply;
+}
+
+.labelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-family: var(--font-geist-mono);
+  font-size: clamp(0.42rem, 0.86vw, 0.56rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a6448;
+}
+
+.labelIndex {
+  letter-spacing: 0.1em;
+  color: #9a8060;
+}
+
+.labelArt {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgb(58 44 30 / 55%);
+  border-radius: 0.12rem;
+  background: #0b0a10;
+}
+
+.labelArt img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* a slight desaturation so the print reads as ink, not a live screen */
+  filter: saturate(1.05) contrast(1.03);
+}
+
+.labelWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(247 239 221 / 12%), transparent 40%, rgb(40 30 20 / 22%));
+}
+
+.labelFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.labelTitle {
+  font-family: var(--font-silkscreen);
+  font-size: clamp(0.72rem, 1.7vw, 1.15rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #241a12;
+  line-height: 1.25;
+}
+
+.labelTagline {
+  color: #6d563a;
+  font-size: clamp(0.5rem, 1vw, 0.66rem);
+  line-height: 1.45;
+}
+
+.labelMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid rgb(120 96 64 / 26%);
+  padding-top: 0.28rem;
+  font-family: var(--font-geist-mono);
+  font-size: clamp(0.4rem, 0.8vw, 0.52rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #85704f;
+}
+
+.labelControls {
+  color: #5f4a31;
+}
+
+/* ---------- label text needs more room than the tape body ---------- */
+
+.labelTagline,
+.labelMeta {
+  display: none;
+}
+
+.labelFoot {
+  gap: 0.2rem;
+}
+
+.labelTagline {
+  display: block;
+}
+
+@media (min-width: 46rem) {
+  .labelMeta {
+    display: flex;
+  }
+}
+
+/* ---------- position strip ---------- */
+
+.strip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  background: rgb(16 14 24 / 80%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 5%);
+}
+
+.tick {
+  width: 0.36rem;
+  height: 0.9rem;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  background: #3a3350;
+  transition:
+    background-color 140ms ease,
+    height 140ms ease;
+}
+
+.tick:hover {
+  background: #6a5f88;
+}
+
+.tick[data-active="true"] {
+  height: 1.15rem;
+  background: #ff4fa3;
+  box-shadow: 0 0 10px rgb(255 79 163 / 70%);
+}
+
+/* ---------- actions ---------- */
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.load,
+.source,
+.close {
+  border: 1px solid #37314d;
+  background: rgb(24 21 36 / 85%);
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  font-family: var(--font-geist-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ddd6ee;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.load {
+  border-color: #ff4fa3;
+  background: linear-gradient(180deg, #ff5fae, #d63a84);
+  color: #1a0f18;
+  box-shadow: 0 0 22px -6px rgb(255 79 163 / 70%);
+}
+
+.load:hover,
+.load:focus-visible {
+  filter: brightness(1.08);
+}
+
+.source:hover,
+.source:focus-visible,
+.close:hover,
+.close:focus-visible {
+  border-color: #ff4fa3;
+  color: #ffd7ea;
+}
+
+/* landscape phones need the label to shrink before the art disappears */
+
+@media (max-height: 34rem) {
+  .cassette {
+    aspect-ratio: 2.1 / 1;
+  }
+
+  .label {
+    inset: 5% 4% 6%;
+  }
+
+  .spools {
+    display: none;
+  }
+}

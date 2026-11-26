@@ -1,0 +1,193 @@
+{
+  "passed": 17,
+  "results": [
+    {
+      "fits": true,
+      "game": "GTA: San Andreas",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cAh shit, here we go again.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "CARL JOHNSON",
+      "title": "GTA: SAN ANDREAS",
+      "year": "2004"
+    },
+    {
+      "fits": true,
+      "game": "GTA III",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cLiberty City. The worst place in America.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "OPENING PROLOGUE",
+      "title": "GTA III",
+      "year": "2001"
+    },
+    {
+      "fits": true,
+      "game": "GTA: Vice City",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cRemember the name! Tommy Vercetti!\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "TOMMY VERCETTI",
+      "title": "GTA: VICE CITY",
+      "year": "2002"
+    },
+    {
+      "fits": true,
+      "game": "GTA IV",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cCousin! Let's go bowling!\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "ROMAN BELLIC",
+      "title": "GTA IV",
+      "year": "2008"
+    },
+    {
+      "fits": true,
+      "game": "GTA V",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cYou forget a thousand things every day, pal. Make sure this is one of 'em.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "MICHAEL DE SANTA",
+      "title": "GTA V",
+      "year": "2013"
+    },
+    {
+      "fits": true,
+      "game": "Assassin's Creed",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cNothing is true; everything is permitted.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "THE CREED",
+      "title": "ASSASSIN'S CREED",
+      "year": "2007"
+    },
+    {
+      "fits": true,
+      "game": "Watch Dogs",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cEverything is connected. And I'll use that to expose, to protect, and, if necessary, to punish.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "AIDEN PEARCE",
+      "title": "WATCH DOGS",
+      "year": "2014"
+    },
+    {
+      "fits": true,
+      "game": "Minecraft",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cand the universe said I love you\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "THE END POEM",
+      "title": "MINECRAFT",
+      "year": "2011"
+    },
+    {
+      "fits": true,
+      "game": "Among Us",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cI do not want to alarm you, but there is an Impostor among us.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "RED",
+      "title": "AMONG US",
+      "year": "2018"
+    },
+    {
+      "fits": true,
+      "game": "Mortal Kombat",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cFinish him!\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "THE ANNOUNCER",
+      "title": "MORTAL KOMBAT",
+      "year": "1992"
+    },
+    {
+      "fits": true,
+      "game": "Call of Duty",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cFifty thousand people used to live in this city. Now it's a ghost town.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "CAPTAIN MACMILLAN",
+      "title": "CALL OF DUTY",
+      "year": "2003"
+    },
+    {
+      "fits": true,
+      "game": "Project I.G.I.",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cI'm going in.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "THE GAME'S OWN SUBTITLE",
+      "title": "PROJECT I.G.I.",
+      "year": "2000"
+    },
+    {
+      "fits": true,
+      "game": "Tekken",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cGet ready for the next battle.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "THE ANNOUNCER",
+      "title": "TEKKEN",
+      "year": "1994"
+    },
+    {
+      "fits": true,
+      "game": "FIFA",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cThis is the beautiful game.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "FIFA 06 INTRODUCTION",
+      "title": "FIFA",
+      "year": "1993"
+    },
+    {
+      "fits": true,
+      "game": "Cricket 07",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cTerrible running by the batsmen.\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "RICHIE BENAUD",
+      "title": "CRICKET 07",
+      "year": "2006"
+    },
+    {
+      "fits": true,
+      "game": "WWE 2K15",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cThe champ is here!\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "JOHN CENA",
+      "title": "WWE 2K15",
+      "year": "2014"
+    },
+    {
+      "fits": true,
+      "game": "Far Cry 3",
+      "gameFont": "Silkscreen, \"Silkscreen Fallback\"",
+      "ok": true,
+      "quote": "\u201cDid I ever tell you the definition of insanity?\u201d",
+      "quoteFont": "\"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, serif",
+      "source": "VAAS MONTENEGRO",
+      "title": "FAR CRY 3",
+      "year": "2012"
+    }
+  ],
+  "total": 17
+}
