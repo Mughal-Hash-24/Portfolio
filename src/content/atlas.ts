@@ -302,21 +302,12 @@ export const libraryRelic: AtlasRelic = {
   hint: "Inside the Long Library.",
 };
 
-export const guideLines: string[] = [
-  "Welcome to the Atlas. Every path here leads to something that shaped me.",
-  "Walk anywhere — nothing is locked, some things are only hidden.",
-  "The index is in the top right if you would rather read than wander.",
-  "Night changes things. Rest at the fire if you want to see what the dark keeps.",
-];
-
 export const worldConfig = {
   tileSize: 16,
   tilesW: 150,
   tilesH: 104,
-  spawnTile: { x: 75, y: 57 },
   campfireTile: { x: 81, y: 58 },
   signpostTile: { x: 77, y: 56 },
-  guideTile: { x: 70, y: 53 },
   lake: { x: 75, y: 94, rx: 16, ry: 5.5 },
 } as const;
 
