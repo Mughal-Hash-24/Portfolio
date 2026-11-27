@@ -5,11 +5,92 @@ PASS  guide is Pir-e-Iqbal — Pir-e-Iqbal
 PASS  guide alias is Bireqbal — Bireqbal
 PASS  guide introductions name both Pir-e-Iqbal and Bireqbal
 PASS  2011 memory names Uphill Rush and the middle mouse button
-PASS  arcade welcome starts at 2011 with San Andreas and the following games
+PASS  arcade welcome announces the seventeen-world memory tour
 PASS  story contains a follow stage and a gate stage
 PASS  seventeen monuments — 17
-PASS  arcade props — 8
-PASS  custom arcade dimension
+PASS  arcade hub props — 8
+PASS  the arcade is a 96 x 64 island — 96 x 64
+PASS  the island has a 17-zone memory promenade — 17
+PASS  the promenade orders all six left, five top and six right zones
+PASS  zone order matches the collection — gta-san-andreas → gta-iii → gta-vice-city → gta-iv → gta-v → assassins-creed → watch-dogs → minecraft → among-us → mortal-kombat → call-of-duty → igi → tekken → fifa → cricket-07 → wwe-2k15 → far-cry-3
+PASS  the tour visits the seventeen zones in order
+PASS  the tour opens with 2011, San Andreas and the middle mouse button
+PASS  seventeen buildings — 17
+PASS  every zone has a building and room
+PASS  buildings follow the collection order
+PASS  building exists: Grove Street House
+PASS  building name: Grove Street House — Grove Street House
+PASS  room name: Johnson Living Room — Johnson Living Room
+PASS  building facade sign: Grove Street House — GROVE ST.
+PASS  building exists: Luigi's Club
+PASS  building name: Luigi's Club — Luigi's Club
+PASS  room name: Luigi's Back Room — Luigi's Back Room
+PASS  building facade sign: Luigi's Club — LUIGI'S
+PASS  building exists: The Malibu Club
+PASS  building name: The Malibu Club — The Malibu Club
+PASS  room name: The Malibu Floor — The Malibu Floor
+PASS  building facade sign: The Malibu Club — MALIBU
+PASS  building exists: Roman's Cab Depot
+PASS  building name: Roman's Cab Depot — Roman's Cab Depot
+PASS  room name: The Cab Office — The Cab Office
+PASS  building facade sign: Roman's Cab Depot — ROMAN'S CAB
+PASS  building exists: Michael's Mansion
+PASS  building name: Michael's Mansion — Michael's Mansion
+PASS  room name: De Santa Living Room — De Santa Living Room
+PASS  building facade sign: Michael's Mansion — DE SANTA
+PASS  building exists: Villa Auditore
+PASS  building name: Villa Auditore — Villa Auditore
+PASS  room name: The Auditore Study — The Auditore Study
+PASS  building facade sign: Villa Auditore — VILLA AUDITORE
+PASS  building exists: Blume Data Center
+PASS  building name: Blume Data Center — Blume Data Center
+PASS  room name: The ctOS Server Hall — The ctOS Server Hall
+PASS  building facade sign: Blume Data Center — BLUME
+PASS  building exists: Village House
+PASS  building name: Village House — Village House
+PASS  room name: The Block House — The Block House
+PASS  building facade sign: Village House — VILLAGE
+PASS  building exists: The Skeld
+PASS  building name: The Skeld — The Skeld
+PASS  room name: The Skeld Cafeteria — The Skeld Cafeteria
+PASS  building facade sign: The Skeld — THE SKELD
+PASS  building exists: Wu Shi Academy
+PASS  building name: Wu Shi Academy — Wu Shi Academy
+PASS  room name: The Dragon Temple — The Dragon Temple
+PASS  building facade sign: Wu Shi Academy — WU SHI
+PASS  building exists: Pripyat Apartment
+PASS  building name: Pripyat Apartment — Pripyat Apartment
+PASS  room name: The Ruined Apartment — The Ruined Apartment
+PASS  building facade sign: Pripyat Apartment — PRIPYAT
+PASS  building exists: Radar Bunker
+PASS  building name: Radar Bunker — Radar Bunker
+PASS  room name: The Command Bunker — The Command Bunker
+PASS  building facade sign: Radar Bunker — RADAR
+PASS  building exists: Mishima Dojo
+PASS  building name: Mishima Dojo — Mishima Dojo
+PASS  room name: Hon-Maru Dojo — Hon-Maru Dojo
+PASS  building facade sign: Mishima Dojo — MISHIMA
+PASS  building exists: The Stadium
+PASS  building name: The Stadium — The Stadium
+PASS  room name: The Locker Room — The Locker Room
+PASS  building facade sign: The Stadium — FIFA
+PASS  building exists: The Pavilion
+PASS  building name: The Pavilion — The Pavilion
+PASS  room name: The Long Room — The Long Room
+PASS  building facade sign: The Pavilion — PAVILION
+PASS  building exists: The Arena
+PASS  building name: The Arena — The Arena
+PASS  room name: The Champions' Room — The Champions' Room
+PASS  building facade sign: The Arena — WWE
+PASS  building exists: Vaas's Camp
+PASS  building name: Vaas's Camp — Vaas's Camp
+PASS  room name: The Pirate Hut — The Pirate Hut
+PASS  building facade sign: Vaas's Camp — VAAS
+PASS  the welcome tells the player every building is open
+PASS  the tour intro speaks of seventeen buildings — Stay close. Seventeen buildings, in the order they found you. We begin at the lowrider.
+PASS  the tour outro keeps the doors open — That was the avenue. Every one of these worlds left something behind, and every door is still open. The street door will take you back.
+PASS  the tour has an intro and an outro
+PASS  arcade island has blocks, a promenade, cliffs and a hub
 PASS  monument exists: GTA: San Andreas
 PASS  game name: GTA: San Andreas — GTA: San Andreas
 PASS  release year: GTA: San Andreas — 2004
@@ -183,6 +264,109 @@ PASS  precomputed art provides drawArcadeDoorGlow
 PASS  precomputed art provides paintCastShadows
 PASS  precomputed art provides paintPondFinish
 PASS  precomputed art provides paintArcadeShafts
+PASS  precomputed island art provides export function paintArcadeDimension
+PASS  precomputed island art provides paintVoid
+PASS  precomputed island art provides paintIsland
+PASS  precomputed island art provides paintPromenade
+PASS  precomputed island art provides paintGarden
+PASS  precomputed island art provides paintHub
+PASS  precomputed island art provides paintZone
+PASS  precomputed island art provides paintZoneSign
+PASS  precomputed island art provides paintZoneLights
+PASS  precomputed island art provides paintAtmosphere
+PASS  precomputed island art provides paintGameBuilding
+PASS  building art provides export function paintGameBuilding
+PASS  building art provides paintFacade
+PASS  building art provides paintNeon
+PASS  building art provides paintPalm
+PASS  building art provides paintStadium
+PASS  building art provides paintPavilion
+PASS  building art provides paintMishima
+PASS  building art provides paintWweArena
+PASS  building art provides paintVaasCamp
+PASS  building art provides paintPripyat
+PASS  building art provides paintRadarBunker
+PASS  building art provides paintSkeld
+PASS  building art provides case "gta-san-andreas"
+PASS  building art provides case "gta-iii"
+PASS  building art provides case "gta-vice-city"
+PASS  building art provides case "gta-iv"
+PASS  building art provides case "gta-v"
+PASS  building art provides case "assassins-creed"
+PASS  building art provides case "watch-dogs"
+PASS  building art provides case "minecraft"
+PASS  building art provides case "among-us"
+PASS  building art provides case "mortal-kombat"
+PASS  building art provides case "call-of-duty"
+PASS  building art provides case "igi"
+PASS  building art provides case "tekken"
+PASS  building art provides case "fifa"
+PASS  building art provides case "cricket-07"
+PASS  building art provides case "wwe-2k15"
+PASS  building art provides case "far-cry-3"
+PASS  interior art provides export function paintArcadeRoom
+PASS  interior art provides paintQuoteWall
+PASS  interior art provides paintDiorama
+PASS  interior art provides paintDoor
+PASS  interior art provides drawArcadeScene
+PASS  interior art provides wrapQuote
+PASS  interior art provides case "gta-san-andreas"
+PASS  interior art provides case "gta-iii"
+PASS  interior art provides case "gta-vice-city"
+PASS  interior art provides case "gta-iv"
+PASS  interior art provides case "gta-v"
+PASS  interior art provides case "assassins-creed"
+PASS  interior art provides case "watch-dogs"
+PASS  interior art provides case "minecraft"
+PASS  interior art provides case "among-us"
+PASS  interior art provides case "mortal-kombat"
+PASS  interior art provides case "call-of-duty"
+PASS  interior art provides case "igi"
+PASS  interior art provides case "tekken"
+PASS  interior art provides case "fifa"
+PASS  interior art provides case "cricket-07"
+PASS  interior art provides case "wwe-2k15"
+PASS  interior art provides case "far-cry-3"
+PASS  room world provides buildArcadeRoom
+PASS  room world provides ArcadeRoom
+PASS  room world provides tourStop
+PASS  room world provides display
+PASS  room world provides bounds
+PASS  room world provides const w = 30
+PASS  room world provides const h = 18
+PASS  engine wires startArcadeTour
+PASS  engine wires updateArcadeTour
+PASS  engine wires skipArcadeTour
+PASS  engine wires finishArcadeTour
+PASS  engine wires tourSign
+PASS  engine wires arcadeTourComplete
+PASS  engine wires tourActive
+PASS  engine wires enterArcadeRoom
+PASS  engine wires exitArcadeRoom
+PASS  engine wires paintArcadeRoom
+PASS  engine wires arcadeRoom
+PASS  engine wires arcadeZoomProgress
+PASS  engine wires arcadeZoomTarget
+PASS  engine wires arcadeIntroTimer
+PASS  engine wires roomDisplay
+PASS  engine wires roomExit
+PASS  engine wires initialHour
+PASS  experience wires ARCADE_TOUR_KEY
+PASS  experience wires onTour
+PASS  experience wires onTourComplete
+PASS  experience wires onRoom
+PASS  experience wires RoomInfo
+PASS  experience wires arcadeRoom
+PASS  experience wires tourHud
+PASS  experience wires tourSkip
+PASS  experience wires indexTour
+PASS  experience wires Skip the tour
+PASS  experience wires buildings
+PASS  tour styling: .tourHud
+PASS  tour styling: .tourGame
+PASS  tour styling: .tourTrack
+PASS  tour styling: .tourSkip
+PASS  tour styling: .indexTour
 
 INSCRIPTIONS
 GTA: San Andreas (2004) — Carl Johnson — “Ah shit, here we go again.”

@@ -1010,7 +1010,7 @@ function paintArcadeFrontage(ctx: Ctx, x: number, y: number) {
   ctx.stroke();
 }
 
-function drawJoystickMonument(ctx: Ctx, x: number, y: number) {
+export function drawJoystickMonument(ctx: Ctx, x: number, y: number) {
   ellipse(ctx, x + 2, y + 10, 40, 14, "rgba(0,0,0,0.4)");
   ellipse(ctx, x, y, 36, 13, "#4a443b");
   ellipse(ctx, x, y - 2, 31, 10.6, "#6e665a");
@@ -1165,7 +1165,7 @@ function paintArcadeFloor(ctx: Ctx, arcade: ArcadeWorld) {
   ctx.stroke();
 }
 
-function paintArcadeExit(ctx: Ctx, x: number, y: number) {
+export function paintArcadeExit(ctx: Ctx, x: number, y: number) {
   ellipse(ctx, x + 2, y + 26, 40, 10, "rgba(0,0,0,0.4)");
   rect(ctx, x - 34, y + 15, 68, 10, "#403a32");
   rect(ctx, x - 34, y + 15, 68, 2, "#665c4c");

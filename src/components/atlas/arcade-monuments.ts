@@ -1352,6 +1352,30 @@ function drawScene(ctx: Ctx, spot: ArcadeStatueSpot, b: number) {
   }
 }
 
+export function drawArcadeScene(
+  ctx: Ctx,
+  statue: ArcadeStatueSpot["statue"],
+  x: number,
+  baseY: number,
+  scale = 1,
+) {
+  ctx.save();
+  ctx.translate(x, baseY);
+  ctx.scale(scale, scale);
+  drawScene(
+    ctx,
+    {
+      statue,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      zoneIndex: 0,
+    },
+    0,
+  );
+  ctx.restore();
+}
+
 export function drawArcadeMonument(ctx: Ctx, spot: ArcadeStatueSpot) {
   const { x, y } = spot;
   const accent = spot.statue.paint;

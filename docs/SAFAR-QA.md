@@ -77,33 +77,98 @@ Screenshots in order:
    marquee, not a stone portal.
 7. [`06b-arcade-door.jpg`](./qa/safar/06b-arcade-door.jpg) — the prompt **The Arcade / Step
    inside** at the door.
-8. [`07-arcade-hall.jpg`](./qa/safar/07-arcade-hall.jpg) — E enters the arcade; the welcome line
-   starts at the green lowrider / 2011.
+8. [`19-buildings-close.jpg`](./qa/safar/19-buildings-close.jpg) — the close play camera on the
+   promenade: Grove Street, Luigi's Club and the Malibu Club, with the player at the door.
+9. [`18-interior-gta-iii.jpg`](./qa/safar/18-interior-gta-iii.jpg) — inside Luigi's Club; the
+   skyline/taxi diorama, the bar, the shelf and the wall inscription.
+10. [`20-mobile-building.jpg`](./qa/safar/20-mobile-building.jpg) — 390×844: the Minecraft village
+    building, its door prompt and the close camera.
+11. [`21-mobile-interior-minecraft.jpg`](./qa/safar/21-mobile-interior-minecraft.jpg) — 390×844:
+    the Minecraft interior, creeper diorama and End Poem inscription.
 
-The live sequence observed in this pass: `follow → memory` (2011 line) `→ portal`; at the door the
-prompt was **The Arcade / STEP INSIDE**; after E the location became **THE ARCADE** and the
-speaker line was _"Welcome to the arcade. The green lowrider is where 2011 begins."_ The earlier
-pass also verified the return street door and persisted story completion. The guide is visible in
-the world nameplate and inside the arcade.
+The live sequence: `follow → memory` (2011 line) `→ portal → arcade`. At the door the prompt is
+**The Arcade / Step inside**; after E the location becomes **The Arcade**, the guide says
+_"Welcome to the arcade. Seventeen worlds, in the order they found you."_ and then the 17-stop
+memory tour begins. The return street door and persisted story completion are unchanged.
 
-## The arcade and all seventeen monuments
+## The arcade: seventeen game buildings, seventeen interiors
 
-- [`07-arcade-hall.jpg`](./qa/safar/07-arcade-hall.jpg) — the live hall.
-- [`monuments.jpg`](./qa/safar/monuments.jpg) — a labelled contact sheet of all 17 production
-  monument scenes.
-- [`monuments/`](./qa/safar/monuments/) — each capture individually.
+The arcade is a **96 × 64 floating game district**, not a hall of niches. The U-shaped memory
+promenade now holds **17 game-specific buildings**, and every building is enterable into its own
+painted interior:
 
-The set: GTA: San Andreas (lowrider), GTA III (taxi/skyline), GTA: Vice City (wedge car/neon
-palms), GTA IV (bowling pin), GTA V (helicopter/V), Assassin's Creed (hood/crest), Watch Dogs
-(hooded phone/camera), Minecraft (creeper face/grass block), Among Us (crewmate/vent), Mortal
-Kombat (dragon medallion), Call of Duty (NVG soldier), Project I.G.I. (scope/sniper), Tekken
-(iron fist/lightning), FIFA (goal/football), Cricket 07 (stumps/bat), WWE 2K15 (ropes/belt), Far
-Cry 3 (island/skull/flare).
+| Zone             | Building           | Interior             |
+| ---------------- | ------------------ | -------------------- |
+| GTA: San Andreas | Grove Street House | Johnson Living Room  |
+| GTA III          | Luigi's Club       | Luigi's Back Room    |
+| GTA: Vice City   | The Malibu Club    | The Malibu Floor     |
+| GTA IV           | Roman's Cab Depot  | The Cab Office       |
+| GTA V            | Michael's Mansion  | De Santa Living Room |
+| Assassin's Creed | Villa Auditore     | The Auditore Study   |
+| Watch Dogs       | Blume Data Center  | The ctOS Server Hall |
+| Minecraft        | Village House      | The Block House      |
+| Among Us         | The Skeld          | The Skeld Cafeteria  |
+| Mortal Kombat    | Wu Shi Academy     | The Dragon Temple    |
+| Call of Duty     | Pripyat Apartment  | The Ruined Apartment |
+| Project I.G.I.   | Radar Bunker       | The Command Bunker   |
+| Tekken           | Mishima Dojo       | Hon-Maru Dojo        |
+| FIFA             | The Stadium        | The Locker Room      |
+| Cricket 07       | The Pavilion       | The Long Room        |
+| WWE 2K15         | The Arena          | The Champions' Room  |
+| Far Cry 3        | Vaas's Camp        | The Pirate Hut       |
 
-Each monument has a lit stone niche, a carved title plate, a hanging lamp, baked shadows and
-accent light. The close-ups use a temporary QA camera (manual zoom/framing) so the sculptures are
-legible; the monuments themselves are production art. The verifier asserts all 17 motifs in
-`arcade-monuments.ts`.
+Each exterior is a bespoke facade with the game's architectural identity and sign — Grove Street's
+porch, garage and lowrider; Luigi's neon and awning; the Malibu's deco pink; Roman's roll-up cab
+depot; the De Santa glass villa; the Auditore tower; Blume's server glass; the village's block
+house; the Skeld hull; the Wu Shi pagoda; the broken Pripyat block; the radar bunker; the Mishima
+dojo; the stadium; the white cricket pavilion; the arena marquee; Vaas's tiki camp. Approaching a
+door prompts **Enter · [building]**, and E opens that building's interior as a close-camera scene.
+
+The 17 interiors are 30 × 18 rooms with custom floors, walls, lighting, furniture and props, plus
+the game's existing diorama and an in-theme wall plaque carrying the direct quote, source, year
+and setting. Examples: the lowrider in the Johnson living room; the skyline/taxi, bar and booths
+of Luigi's; the Malibu dance floor and bar; the cab-office map and bowling pins; the modern De
+Santa room; the Auditore shelves and banners; the ctOS racks, monitors and camera; the crafting
+table, furnace, chest and creeper; the Skeld cafeteria, vents and star window; the Wu Shi gong,
+throne and dragon; the Pripyat broken window, sandbags and gas mask; the bunker map table and
+screens; the dojo mats, lanterns and gong; the FIFA lockers, jerseys and tactics board; the
+pavilion scoreboard, bats and stumps; the WWE lockers, title case and steel chair; the pirate
+hut's skulls, bar, radio and torch. The display inside also opens the existing quote card.
+
+Evidence:
+
+- [`19-buildings-close.jpg`](./qa/safar/19-buildings-close.jpg) — live 1920×1080 close play view.
+- [`18-interior-gta-iii.jpg`](./qa/safar/18-interior-gta-iii.jpg) — live Luigi's interior.
+- [`20-mobile-building.jpg`](./qa/safar/20-mobile-building.jpg) and
+  [`21-mobile-interior-minecraft.jpg`](./qa/safar/21-mobile-interior-minecraft.jpg) — mobile.
+- [`monuments.jpg`](./qa/safar/monuments.jpg) — the dioramas now installed inside the buildings.
+
+All 17 buildings and interiors were rendered at runtime in a smoke pass (`enterArcadeRoom` for
+every id, paint + render, no errors), and the real door loop (prompt → E → interior → display card
+→ promenade door) was exercised in the production build.
+
+### Camera: establish wide, play close
+
+The camera keeps the old 1.55× desktop / 1.25× mobile establishing view for the first 2.4 s of
+entry, then eases to a **2.0× desktop / 1.62× mobile** play view (the tour start also targets the
+close view). This makes the player and guide roughly 30% larger while keeping the district
+readable. Interiors automatically use a close room camera (the 480×288 room fills the screen).
+The room camera, location label, display card and promenade exit were all exercised in production.
+
+### The guide-led memory tour
+
+The 17-stop story survives the rebuild. The guide stops **on the promenade beside each building**
+(not through a facade), speaks the game-specific line, and waits 2.2 s for the player to walk the
+short distance to the door and step inside. The HUD shows `Memory Tour · n/17 · game`, the
+off-screen chevron points back to the guide, and `Skip tour` remains available. Completion is
+stored under `safar:arcade-tour:v1`; the ticket booth and Journal replay it. A full runtime pass
+through all 17 stops was run on the production build: every line/HUD count matched, the outro
+fired, the tour saved `done`, and the HUD cleared.
+
+The 17 stops in order: San Andreas, III, Vice City, IV, V, Assassin's Creed, Watch Dogs,
+Minecraft, Among Us, Mortal Kombat, Call of Duty, I.G.I., Tekken, FIFA, Cricket 07, WWE 2K15,
+Far Cry 3. The tour content, building/room pairs, facade signs and room art are asserted by
+`npm run verify:safar`.
 
 ## Plaques and direct in-game quotes
 
@@ -161,16 +226,18 @@ The quotes are in-game lines/famous game references, not descriptions:
 
 See [`performance-report.md`](./qa/safar/performance-report.md).
 
-Final production build, one headless session, 1920×1080, DPR 1, music active, no console errors:
+Production build, single headless session, devicePixelRatio 1, no console errors:
 
-- **Arcade: 60 / 59 / 60 fps** (host load 5.19)
-- **Meadow: 60 / 60 fps** (host load 3.90)
-- corroborating 1280×633 arcade: **60 / 60 / 60 fps**
+- **Interior, 1920×1080:** **60.2 fps** (181 frames / 3.005 s).
+- **Interior, 390×844 mobile:** **60.3 fps** (151 / 2.502 s).
+- **Close district, 1920×1080, 2.0× play camera:** **55.7 fps** (197 / 3.538 s) at host load
+  4.44. The initial 1.55× establishing view is the previous 60 fps path; the closer play camera
+  increases the static fill, and the headless host load was high during this sample. This is
+  recorded rather than hidden.
 
-The earlier 23–33 fps / arcade 52 samples were taken while two extra headless sessions and
-external processes held the host above load 10; when those were closed the same production code
-returned the figures above. All fixed lighting is precomputed; runtime glows are cached sprites;
-the CSS grade avoids full-screen canvas fills; DPR is capped at 1.5; hidden tabs pause the loop.
+The rebuilt district keeps all scenery in one cached canvas; the 17 interiors are 480×288
+canvases painted lazily per entered room. There is no per-frame lighting, shadow, reflection or
+light-shaft work. The camera zoom/stage, room scene, door/card loop and tour are verified.
 
 ## The interim mission inscription
 

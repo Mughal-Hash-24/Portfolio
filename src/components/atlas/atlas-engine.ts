@@ -7,6 +7,7 @@ import {
   type AtlasRelic,
 } from "@/content/atlas";
 import {
+  arcadeTour,
   guideName,
   guideTitle,
   storyLines,
@@ -25,21 +26,25 @@ import {
   drawTrail,
   drawWaterGlints,
   hourMood,
-  paintArcade,
   paintInterior,
   paintLectern,
   paintTerrain,
 } from "./atlas-art";
 import type { SfxEvent, StepSurface } from "./atlas-sfx";
+import { paintArcadeDimension } from "./arcade-dimension-art";
+import { paintArcadeRoom } from "./arcade-rooms-art";
 import {
   TILE,
   Tile,
   WORLD_H,
   WORLD_W,
   buildArcadeDimension,
+  buildArcadeRoom,
   buildLibraryInterior,
   buildWorld,
   isSolidTile,
+  type ArcadeBuildingSpot,
+  type ArcadeRoom,
   type ArcadeWorld,
   type Collider,
   type Interior,
@@ -58,7 +63,17 @@ export type Nearby =
   | { kind: "memoryStone"; label: string; hint: string }
   | { kind: "portal"; label: string; hint: string }
   | { kind: "arcadeExit"; label: string; hint: string }
+  | { kind: "tourSign"; label: string; hint: string }
+  | { kind: "arcadeBuilding"; label: string; hint: string; buildingId: string }
+  | { kind: "roomDisplay"; label: string; hint: string; statueId: string }
+  | { kind: "roomExit"; label: string; hint: string }
   | { kind: "statue"; label: string; hint: string; statueId: string };
+
+export type RoomInfo = {
+  buildingName: string;
+  roomName: string;
+  game: string;
+};
 
 export type AtlasCallbacks = {
   onNearby: (nearby: Nearby | null) => void;
@@ -76,6 +91,9 @@ export type AtlasCallbacks = {
   onScene: (scene: Scene) => void;
   onStep: (surface: StepSurface) => void;
   onSfx: (event: SfxEvent) => void;
+  onTour: (tour: { active: boolean; index: number; total: number; game: string } | null) => void;
+  onTourComplete: () => void;
+  onRoom: (room: RoomInfo | null) => void;
 };
 
 type EngineOptions = {
@@ -83,6 +101,7 @@ type EngineOptions = {
   found: Set<string>;
   initialHour?: number;
   storyComplete?: boolean;
+  arcadeTourComplete?: boolean;
 };
 
 type Particle = {
@@ -97,7 +116,7 @@ type Particle = {
   phase: number;
 };
 
-type Scene = "world" | "library" | "arcade";
+type Scene = "world" | "library" | "arcade" | "arcadeRoom";
 
 const MAX_DPR = 1.5;
 const PLAYER_SPEED = 104;
@@ -115,6 +134,13 @@ export class AtlasEngine {
   private interiorCanvas: HTMLCanvasElement | null = null;
   private arcade: ArcadeWorld;
   private arcadeCanvas: HTMLCanvasElement | null = null;
+  private room: ArcadeRoom | null = null;
+  private roomBuilding: ArcadeBuildingSpot | null = null;
+  private roomCanvas: HTMLCanvasElement | null = null;
+  private roomCanvasId: string | null = null;
+  private arcadeZoomProgress = 0;
+  private arcadeZoomTarget = 0;
+  private arcadeIntroTimer: number | null = null;
   private terrain: HTMLCanvasElement;
   private glints: ReturnType<typeof createWaterGlints>;
   private scene: Scene = "world";
@@ -134,6 +160,11 @@ export class AtlasEngine {
   private doorGlowSprites: Partial<Record<"arcade" | "exit", HTMLCanvasElement>> = {};
   private glowSprites = new Map<string, HTMLCanvasElement>();
   private arcadeIdle: number | null = null;
+  private tourActive = false;
+  private tourIndex = 0;
+  private tourState: "intro" | "walking" | "talking" | "waiting" = "intro";
+  private tourWait = 0;
+  private arcadeTourComplete = false;
   private player = { x: 0, y: 0, dir: 0, walk: 0, moving: false };
   private camera = { x: 0, y: 0 };
   private guideState = { x: 0, y: 0, targetX: 0, targetY: 0, walk: 0, moving: false };
@@ -193,6 +224,9 @@ export class AtlasEngine {
     };
     this.guideHome = { x: this.world.guide.x, y: this.world.guide.y };
     this.storyComplete = options.storyComplete ?? false;
+    this.arcadeTourComplete = options.arcadeTourComplete ?? false;
+    this.arcadeZoomProgress = 0;
+    this.arcadeZoomTarget = 0;
     this.storyStage = this.storyComplete ? "done" : "pond";
     this.portalActive = this.storyComplete;
     this.camera = { x: this.player.x, y: this.player.y };
@@ -227,7 +261,7 @@ export class AtlasEngine {
   private prepareArcade() {
     if (this.destroyed || this.arcadeCanvas) return;
 
-    this.arcadeCanvas = paintArcade(this.arcade);
+    this.arcadeCanvas = paintArcadeDimension(this.arcade);
   }
 
   private get zoom() {
@@ -482,6 +516,22 @@ export class AtlasEngine {
   enterArcade() {
     this.scene = "arcade";
     this.callbacks.onScene("arcade");
+    this.room = null;
+    this.roomBuilding = null;
+    this.callbacks.onRoom(null);
+    this.arcadeZoomProgress = 0;
+    this.arcadeZoomTarget = 0;
+
+    if (this.arcadeIntroTimer !== null) {
+      window.clearTimeout(this.arcadeIntroTimer);
+    }
+
+    this.arcadeIntroTimer = window.setTimeout(() => {
+      this.arcadeIntroTimer = null;
+
+      if (this.scene === "arcade") this.arcadeZoomTarget = 1;
+    }, 2400);
+
     this.player.x = this.arcade.spawn.x;
     this.player.y = this.arcade.spawn.y;
     this.player.dir = 3;
@@ -494,11 +544,203 @@ export class AtlasEngine {
     this.guideState.targetY = this.guideHome.y;
     this.callbacks.onSfx("gate");
     this.setStoryStage("arcade");
-    this.queueStoryLines(storyLines.arcade);
+    this.tourActive = false;
+
+    if (this.arcadeTourComplete) {
+      this.queueStoryLines(storyLines.arcadeAgain, () => {
+        this.arcadeZoomTarget = 1;
+      });
+    } else {
+      this.queueStoryLines(storyLines.arcade, () => this.startArcadeTour(false));
+    }
+
     this.updateNearby();
   }
 
+  startArcadeTour(withIntro = true) {
+    if (this.scene !== "arcade" || this.room) {
+      this.scene = "arcade";
+      this.callbacks.onScene("arcade");
+      this.room = null;
+      this.roomBuilding = null;
+      this.callbacks.onRoom(null);
+    }
+
+    this.arcadeZoomTarget = 1;
+    if (this.arcadeIntroTimer !== null) {
+      window.clearTimeout(this.arcadeIntroTimer);
+      this.arcadeIntroTimer = null;
+    }
+    if (this.options.reducedMotion) this.arcadeZoomProgress = 1;
+    this.player.x = this.arcade.spawn.x;
+    this.player.y = this.arcade.spawn.y;
+    this.player.dir = 3;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.guideState.x = this.arcade.guide.x;
+    this.guideState.y = this.arcade.guide.y;
+    this.guideState.targetX = this.arcade.guide.x;
+    this.guideState.targetY = this.arcade.guide.y;
+    this.guideHome = { ...this.arcade.guide };
+    this.clearStoryTimer();
+    this.storyQueue = [];
+    this.storyOnDone = null;
+    this.callbacks.onGuide(null);
+    this.tourActive = true;
+    this.tourIndex = 0;
+    this.tourWait = 0;
+    this.tourState = withIntro ? "intro" : "walking";
+    const first = this.arcade.tourStops[0];
+
+    if (first) {
+      this.callbacks.onTour({
+        active: true,
+        index: 0,
+        total: this.arcade.tourStops.length,
+        game: first.game,
+      });
+    }
+
+    if (withIntro) {
+      this.queueStoryLines([arcadeTour.intro], () => {
+        if (this.tourActive) this.tourState = "walking";
+      });
+    }
+
+    this.updateNearby();
+  }
+
+  skipArcadeTour() {
+    if (!this.tourActive) return;
+
+    this.clearStoryTimer();
+    this.storyQueue = [];
+    this.storyOnDone = null;
+    this.tourActive = false;
+    this.tourState = "intro";
+    this.callbacks.onGuide(null);
+    this.callbacks.onTour(null);
+
+    if (!this.arcadeTourComplete) {
+      this.arcadeTourComplete = true;
+      this.callbacks.onTourComplete();
+    }
+  }
+
+  private finishArcadeTour() {
+    this.tourActive = false;
+    this.tourState = "intro";
+    this.callbacks.onTour(null);
+
+    if (!this.arcadeTourComplete) {
+      this.arcadeTourComplete = true;
+      this.callbacks.onTourComplete();
+    }
+
+    this.queueStoryLines([arcadeTour.outro]);
+  }
+
+  private updateArcadeTour(dt: number) {
+    const guide = this.guideState;
+    const stop = this.arcade.tourStops[this.tourIndex];
+
+    if (!stop) {
+      this.finishArcadeTour();
+      return;
+    }
+
+    const playerDistance = Math.hypot(this.player.x - guide.x, this.player.y - guide.y);
+
+    if (this.tourState === "walking") {
+      const playerToStop = Math.hypot(this.player.x - stop.x, this.player.y - stop.y);
+
+      if (playerDistance > 230 && playerToStop > 120) {
+        guide.moving = false;
+        return;
+      }
+
+      const dx = stop.x - guide.x;
+      const dy = stop.y - guide.y;
+      const distance = Math.hypot(dx, dy);
+
+      guide.moving = distance > 2;
+
+      if (guide.moving) {
+        const step = Math.min(distance, 56 * dt);
+        guide.x += (dx / distance) * step;
+        guide.y += (dy / distance) * step;
+        guide.walk = (guide.walk + dt * 1.6) % 1;
+      }
+
+      if (distance < 7) {
+        this.tourState = "talking";
+        guide.moving = false;
+        this.callbacks.onTour({
+          active: true,
+          index: this.tourIndex,
+          total: this.arcade.tourStops.length,
+          game: stop.game,
+        });
+        const line =
+          arcadeTour.stops[stop.statueId] ??
+          "This is one of the worlds that made me. Read its inscription.";
+        this.queueStoryLines([line], () => {
+          this.tourState = "waiting";
+          this.tourWait = 0;
+        });
+      }
+
+      return;
+    }
+
+    if (this.tourState === "talking" || this.tourState === "intro") return;
+
+    if (this.tourState === "waiting") {
+      this.tourWait += dt;
+
+      if (playerDistance > 150 || this.tourWait < 2.2) return;
+
+      this.tourIndex += 1;
+
+      if (this.tourIndex >= this.arcade.tourStops.length) {
+        this.finishArcadeTour();
+        return;
+      }
+
+      this.tourState = "walking";
+      const next = this.arcade.tourStops[this.tourIndex];
+
+      if (next) {
+        this.callbacks.onTour({
+          active: true,
+          index: this.tourIndex,
+          total: this.arcade.tourStops.length,
+          game: next.game,
+        });
+      }
+    }
+  }
+
   exitArcade() {
+    this.room = null;
+    this.roomBuilding = null;
+    this.callbacks.onRoom(null);
+    this.arcadeZoomProgress = 0;
+    this.arcadeZoomTarget = 0;
+
+    if (this.arcadeIntroTimer !== null) {
+      window.clearTimeout(this.arcadeIntroTimer);
+      this.arcadeIntroTimer = null;
+    }
+
+    if (this.tourActive) {
+      this.tourActive = false;
+      this.callbacks.onTour(null);
+      this.clearStoryTimer();
+      this.storyQueue = [];
+      this.callbacks.onGuide(null);
+    }
+
     this.scene = "world";
     this.callbacks.onScene("world");
     const portal = this.world.story.portal;
@@ -525,17 +767,86 @@ export class AtlasEngine {
   }
 
   focusStatue(statueId: string) {
-    const spot = this.arcade.statues.find((candidate) => candidate.statue.id === statueId);
+    const building = this.arcade.buildings.find((candidate) => candidate.statue.id === statueId);
 
-    if (!spot) return;
+    if (!building) return;
+    const enteringArcade = this.scene !== "arcade";
     this.scene = "arcade";
     this.callbacks.onScene("arcade");
-    const free = this.freeSpotNear(spot.x, spot.y + 30, this.arcade.colliders);
-    this.player.x = free.x;
-    this.player.y = free.y;
+    this.room = null;
+    this.roomBuilding = null;
+    this.callbacks.onRoom(null);
+    this.arcadeZoomProgress = 1;
+    this.arcadeZoomTarget = 1;
+
+    if (this.tourActive) {
+      this.tourActive = false;
+      this.callbacks.onTour(null);
+      this.clearStoryTimer();
+      this.storyQueue = [];
+      this.callbacks.onGuide(null);
+    }
+
+    if (enteringArcade) {
+      this.guideState.x = this.arcade.guide.x;
+      this.guideState.y = this.arcade.guide.y;
+      this.guideState.targetX = this.arcade.guide.x;
+      this.guideState.targetY = this.arcade.guide.y;
+      this.guideHome = { ...this.arcade.guide };
+    }
+
+    this.player.x = building.front.x + 20;
+    this.player.y = building.front.y + 8;
     this.player.dir = 3;
     this.camera.x = this.player.x;
     this.camera.y = this.player.y;
+    this.updateNearby();
+  }
+
+  private enterArcadeRoom(statueId: string) {
+    const building = this.arcade.buildings.find((candidate) => candidate.statue.id === statueId);
+
+    if (!building) return;
+    const room = buildArcadeRoom(building);
+    this.room = room;
+    this.roomBuilding = building;
+    this.scene = "arcadeRoom";
+    this.callbacks.onScene("arcadeRoom");
+    this.callbacks.onRoom({
+      buildingName: room.building.buildingName,
+      roomName: room.name,
+      game: room.statue.game,
+    });
+    this.player.x = room.spawn.x;
+    this.player.y = room.spawn.y;
+    this.player.dir = 3;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.nearby = null;
+    this.nearbyKey = "";
+    this.callbacks.onNearby(null);
+    this.callbacks.onSfx("door");
+    this.updateNearby();
+  }
+
+  private exitArcadeRoom() {
+    const building = this.roomBuilding;
+
+    if (!building) return;
+    this.room = null;
+    this.roomBuilding = null;
+    this.scene = "arcade";
+    this.callbacks.onScene("arcade");
+    this.callbacks.onRoom(null);
+    this.player.x = building.front.x + 20;
+    this.player.y = building.front.y + 8;
+    this.player.dir = 0;
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+    this.nearby = null;
+    this.nearbyKey = "";
+    this.callbacks.onNearby(null);
+    this.callbacks.onSfx("door");
     this.updateNearby();
   }
 
@@ -607,6 +918,24 @@ export class AtlasEngine {
       case "arcadeExit":
         this.exitArcade();
         break;
+      case "tourSign":
+        this.startArcadeTour();
+        break;
+      case "arcadeBuilding":
+        this.enterArcadeRoom(nearby.buildingId);
+        break;
+      case "roomExit":
+        this.exitArcadeRoom();
+        break;
+      case "roomDisplay": {
+        const room = this.room;
+
+        if (!room) return;
+        this.markFound("statue", room.statue.id);
+        this.callbacks.onSfx("inscription");
+        this.callbacks.onOpenStatue(room.statue);
+        break;
+      }
       case "statue": {
         const spot = this.arcade.statues.find(
           (candidate) => candidate.statue.id === nearby.statueId,
@@ -857,18 +1186,32 @@ export class AtlasEngine {
     let best: Nearby | null = null;
     let bestDistance = 46;
 
-    for (const spot of this.arcade.statues) {
-      const distance = Math.hypot(this.player.x - spot.x, this.player.y - spot.y);
+    for (const building of this.arcade.buildings) {
+      const distance = Math.hypot(this.player.x - building.door.x, this.player.y - building.door.y);
 
       if (distance < bestDistance) {
+        const game = building.statue.game;
         best = {
-          kind: "statue",
-          statueId: spot.statue.id,
-          label: spot.statue.game,
-          hint: "Read the plaque",
+          kind: "arcadeBuilding",
+          buildingId: building.building.id,
+          label: `Enter · ${building.building.buildingName}`,
+          hint: `${game} · step inside`,
         };
         bestDistance = distance;
       }
+    }
+
+    const tourDistance = Math.hypot(
+      this.player.x - (this.arcade.portal.x - 92),
+      this.player.y - (this.arcade.portal.y - 58),
+    );
+
+    if (tourDistance < 36) {
+      return {
+        kind: "tourSign",
+        label: "Memory Tour",
+        hint: "Walk the arcade with Pir-e-Iqbal",
+      };
     }
 
     const exitDistance = Math.hypot(
@@ -883,15 +1226,45 @@ export class AtlasEngine {
     return best;
   }
 
+  private nearbyForRoom(): Nearby | null {
+    const room = this.room;
+
+    if (!room) return null;
+
+    const displayDistance = Math.hypot(
+      this.player.x - room.display.x,
+      this.player.y - (room.display.y + 18),
+    );
+
+    if (displayDistance < 46) {
+      return {
+        kind: "roomDisplay",
+        statueId: room.statue.id,
+        label: `${room.statue.game} display`,
+        hint: "Read the inscription",
+      };
+    }
+
+    const exitDistance = Math.hypot(this.player.x - room.exit.x, this.player.y - room.exit.y);
+
+    if (exitDistance < 42) {
+      return { kind: "roomExit", label: "The promenade", hint: "Step outside" };
+    }
+
+    return null;
+  }
+
   private updateNearby() {
     const nearby =
       this.scene === "world"
         ? this.nearbyForWorld()
         : this.scene === "library"
           ? this.nearbyForLibrary()
-          : this.nearbyForArcade();
+          : this.scene === "arcadeRoom"
+            ? this.nearbyForRoom()
+            : this.nearbyForArcade();
     const key = nearby
-      ? `${nearby.kind}:${"entryId" in nearby ? nearby.entryId : ""}${"relicId" in nearby ? nearby.relicId : ""}${"statueId" in nearby ? nearby.statueId : ""}`
+      ? `${nearby.kind}:${"entryId" in nearby ? nearby.entryId : ""}${"relicId" in nearby ? nearby.relicId : ""}${"statueId" in nearby ? nearby.statueId : ""}${"buildingId" in nearby ? nearby.buildingId : ""}`
       : "";
 
     if (key !== this.nearbyKey) {
@@ -934,7 +1307,9 @@ export class AtlasEngine {
         ? this.world.colliders
         : this.scene === "library"
           ? this.interior.colliders
-          : this.arcade.colliders;
+          : this.scene === "arcadeRoom"
+            ? (this.room?.colliders ?? [])
+            : this.arcade.colliders;
     const startX = this.player.x;
     const startY = this.player.y;
     const nextX = this.player.x + dx * step;
@@ -962,6 +1337,32 @@ export class AtlasEngine {
   private collides(x: number, y: number, colliders: Collider[]) {
     const radius = PLAYER_RADIUS;
     const tiles = this.scene === "world" ? this.world.tiles : null;
+
+    if (this.scene === "arcade") {
+      const bounds = this.arcade.bounds;
+
+      if (
+        x < bounds.left + radius ||
+        x > bounds.right - radius ||
+        y < bounds.top + radius ||
+        y > bounds.bottom - radius
+      ) {
+        return true;
+      }
+    }
+
+    if (this.scene === "arcadeRoom" && this.room) {
+      const bounds = this.room.bounds;
+
+      if (
+        x < bounds.left + radius ||
+        x > bounds.right - radius ||
+        y < bounds.top + radius ||
+        y > bounds.bottom - radius
+      ) {
+        return true;
+      }
+    }
 
     if (tiles) {
       for (const [ox, oy] of [
@@ -995,7 +1396,7 @@ export class AtlasEngine {
 
   private currentStepSurface(): StepSurface {
     if (this.scene === "arcade") return "arcade";
-    if (this.scene === "library") return "wood";
+    if (this.scene === "library" || this.scene === "arcadeRoom") return "wood";
 
     const pond = this.world.story.pond;
     const dockX = pond.x + 2;
@@ -1029,6 +1430,11 @@ export class AtlasEngine {
   private updateGuide(dt: number) {
     const guide = this.guideState;
     const playerDistance = Math.hypot(this.player.x - guide.x, this.player.y - guide.y);
+
+    if (this.scene === "arcade" && this.tourActive) {
+      this.updateArcadeTour(dt);
+      return;
+    }
 
     if (this.scene === "world" && this.storyStage === "introduce" && !this.introSpoken) {
       const targetX = this.player.x - 30;
@@ -1246,7 +1652,7 @@ export class AtlasEngine {
 
     if (this.inputEnabled) {
       this.movePlayer(dt);
-      if (this.scene !== "library") this.updateGuide(dt);
+      if (this.scene !== "library" && this.scene !== "arcadeRoom") this.updateGuide(dt);
     }
 
     if (!this.options.reducedMotion) {
@@ -1284,6 +1690,15 @@ export class AtlasEngine {
     const targetX = this.player.x;
     const targetY = this.player.y - (this.scene === "arcade" ? 40 : 0);
 
+    if (this.scene === "arcade") {
+      if (this.options.reducedMotion) {
+        this.arcadeZoomProgress = this.arcadeZoomTarget;
+      } else {
+        const ease = 1 - Math.exp(-3.4 * dt);
+        this.arcadeZoomProgress += (this.arcadeZoomTarget - this.arcadeZoomProgress) * ease;
+      }
+    }
+
     if (this.options.reducedMotion) {
       this.camera.x = targetX;
       this.camera.y = targetY;
@@ -1315,8 +1730,13 @@ export class AtlasEngine {
       return;
     }
 
+    if (this.scene === "arcadeRoom" && this.room) {
+      this.renderArcadeRoom(width, height, this.coverZoom(this.room.w, this.room.h, width, height));
+      return;
+    }
+
     if (this.scene === "arcade") {
-      this.renderArcade(width, height, this.coverZoom(this.arcade.w, this.arcade.h, width, height));
+      this.renderArcade(width, height, this.arcadeZoom(width));
       return;
     }
 
@@ -1530,6 +1950,13 @@ export class AtlasEngine {
     }
   }
 
+  private arcadeZoom(width: number) {
+    const wide = width < 720 ? 1.25 : 1.55;
+    const close = width < 720 ? 1.62 : 2;
+
+    return wide + (close - wide) * this.arcadeZoomProgress;
+  }
+
   private coverZoom(w: number, h: number, width: number, height: number) {
     const roomW = w * TILE;
     const roomH = h * TILE;
@@ -1597,6 +2024,36 @@ export class AtlasEngine {
       this.drawTag(ctx, gx, gy - 22, guideName, guideTitle, "#d8e8a8");
     }
 
+    if (
+      this.scene === "arcade" &&
+      this.tourActive &&
+      (gx < -30 || gx > width + 30 || gy < -30 || gy > height + 30)
+    ) {
+      const angle = Math.atan2(gy - height / 2, gx - width / 2);
+      const margin = 34;
+      const edge = Math.min(
+        (width / 2 - margin) / Math.max(0.001, Math.abs(Math.cos(angle))),
+        (height / 2 - margin) / Math.max(0.001, Math.abs(Math.sin(angle))),
+      );
+      const ex = width / 2 + Math.cos(angle) * edge;
+      const ey = height / 2 + Math.sin(angle) * edge;
+
+      ctx.save();
+      ctx.translate(ex, ey);
+      ctx.rotate(angle);
+      ctx.fillStyle = "rgba(255, 232, 168, 0.92)";
+      ctx.beginPath();
+      ctx.moveTo(11, 0);
+      ctx.lineTo(-5, -6);
+      ctx.lineTo(-5, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(15, 14, 20, 0.75)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     if (this.scene !== "arcade") return;
 
     let nearest: { x: number; y: number; game: string; year: number; paint: string } | null = null;
@@ -1627,7 +2084,7 @@ export class AtlasEngine {
           sx,
           sy - 60,
           nearest.game,
-          `${nearest.year} · stone inscription`,
+          `${nearest.year} · game building`,
           nearest.paint,
         );
       }
@@ -1699,6 +2156,50 @@ export class AtlasEngine {
     ctx.restore();
 
     this.drawSceneTags(width, height, zoom, camX, camY);
+  }
+
+  private renderArcadeRoom(width: number, height: number, zoom: number) {
+    const { ctx } = this;
+    const room = this.room;
+
+    if (!room) return;
+
+    if (!this.roomCanvas || this.roomCanvasId !== room.statue.id) {
+      this.roomCanvas = paintArcadeRoom(room);
+      this.roomCanvasId = room.statue.id;
+    }
+
+    const worldWidth = room.w * TILE;
+    const worldHeight = room.h * TILE;
+    const viewWidth = width / zoom;
+    const viewHeight = height / zoom;
+    const camX = Math.max(0, Math.min(worldWidth - viewWidth, this.camera.x - viewWidth / 2));
+    const camY = Math.max(0, Math.min(worldHeight - viewHeight, this.camera.y - viewHeight / 2));
+
+    ctx.fillStyle = "#0b0910";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.scale(zoom, zoom);
+    ctx.translate(-camX, -camY);
+    ctx.drawImage(this.roomCanvas, 0, 0);
+    this.drawActorShadow(ctx, this.player.x, this.player.y);
+    drawPlayer(ctx, this.player.x, this.player.y, this.player.dir, this.player.walk, "#b85c43");
+    ctx.restore();
+
+    const displayX = (room.display.x - camX) * zoom;
+    const displayY = (room.display.y - camY) * zoom;
+
+    if (displayX > -180 && displayX < width + 180 && displayY > -100 && displayY < height + 140) {
+      this.drawTag(
+        ctx,
+        displayX,
+        displayY - 92 * zoom,
+        room.building.buildingName,
+        `${room.name} · ${room.statue.year}`,
+        room.statue.paint,
+      );
+    }
   }
 
   private renderLibrary(width: number, height: number, zoom: number) {
@@ -1791,6 +2292,12 @@ export class AtlasEngine {
 
   destroy() {
     this.destroyed = true;
+
+    if (this.arcadeIntroTimer !== null) {
+      window.clearTimeout(this.arcadeIntroTimer);
+      this.arcadeIntroTimer = null;
+    }
+
     this.clearStoryTimer();
     this.stop();
 

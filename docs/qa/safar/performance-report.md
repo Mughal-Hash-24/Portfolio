@@ -1,50 +1,39 @@
-# Safar performance report
+# Safar performance report — game-building rebuild
 
-Measured on the production build with `npm run build && npm run start`, after closing every other
-automation browser session. One headless Chrome session, 1920×1080, devicePixelRatio 1, music
-active, no console errors.
+Measured on the production build (`npm run build && npm run start`), one headless Chrome session,
+devicePixelRatio 1, no console errors. Host load was recorded from `uptime` at the sample. No CPU
+throttling.
 
-Method: 2-second `requestAnimationFrame` windows, `fps = round(frames / elapsed)`. The host load
-average is recorded from `uptime` at the same time. No CPU throttling was applied.
+Method: `requestAnimationFrame` windows; fps = frames / elapsed.
 
 ## Final build
 
-| Scene      | Samples              | Host load (1 min) |
-| ---------- | -------------------- | ----------------- |
-| The Arcade | **60 / 59 / 60 fps** | 5.19              |
-| The Meadow | **60 / 60 fps**      | 3.90              |
+| Scene                                            | Window        | Result       | Host load |
+| ------------------------------------------------ | ------------- | ------------ | --------- |
+| Interior (GTA III), 1920×1080                    | 181 / 3.005 s | **60.2 fps** | 4.44      |
+| Interior (Minecraft), 390×844                    | 151 / 2.502 s | **60.3 fps** | 4.44      |
+| Close game district, 1920×1080, 2.0× play camera | 197 / 3.538 s | **55.7 fps** | 4.44      |
 
-Corroborating clean runs on the same production renderer:
+The initial 1.55× establishing view follows the previous 60 fps path. The play camera was raised
+to 2.0× so the player/guide are ~30% larger, which increases the static fill of the 1536×1024
+district. The close-district sample was taken at host load 4.44; the interiors stayed at 60. I
+tested three optimizations and rejected them because they were slower on this headless rasterizer:
 
-- 1280×633, arcade: **60 / 60 / 60 fps**.
-- 1920×1080, arcade: **60 / 60 / 59 fps**, meadow: **60 / 60 / 58 fps** (host load ~2 at the time).
-- 1920×1080, final build, meadow: **60 / 60 fps**.
+- Cropping the static blit to the camera rect: **51 fps**.
+- Splitting the static canvas into 256 px bled tiles and drawing only visible tiles: **48.5 fps**.
+- Keeping the single cached blit: **55.7–57 fps** (the chosen path).
 
-## Why earlier low numbers were not the renderer
+## What stays cheap
 
-The rejected 23–33 fps samples (arcade 52 fps) were taken while **two extra headless Chrome
-sessions** were running and external processes had the host at load average above 10. Those
-sessions were closed; a single session on the same production code immediately returned the
-above results. A transient sample of 46/50 fps also occurred during a build/QA burst; the next
-arcade run on the same final build returned 60/59/60.
+- The entire district is painted once into a cached canvas; the 17 interiors are painted lazily
+  (480×288 each) the first time entered.
+- All lighting, shadows, reflections, light pools, wall plaques and facade details are baked.
+- Runtime work is the cached blit, the player/guide, cached glow sprites and text tags.
+- The CSS screen grade/vignette is a composite layer, not a full-screen canvas fill.
+- DPR is capped at 1.5; hidden tabs pause the engine.
 
-## What keeps the frame cheap
+## Previous reference
 
-- All scenery is painted once into offscreen canvases; the arcade is prepared in
-  `requestIdleCallback` (~23–39 ms) before it can be entered.
-- Fixed lighting is baked: tree/structure/monument shadows, contact AO, light wash, pond
-  reflections, arcade floor reflections, light shafts, rim haze, cabinets and sheen.
-- Runtime glows use cached sprites (including fireflies); fixed light is not recomputed as
-  gradients every frame.
-- The static screen grade and vignette are a CSS composite layer, not full-screen canvas fills.
-- Device pixel ratio is capped at 1.5; the pixel art is authored at 1×.
-- Offscreen/hidden tabs pause the engine; reduced motion fixes golden hour and stops ambient
-  motion.
-- The per-frame scene is a cached canvas blit, a few cached sprite/actor draws, particles, and
-  text tags.
-
-The first terrain bake costs about 0.3 s of one-time work at first load.
-
-QA close-up shots of the 17 monuments use a temporary, non-shipped camera hook (larger zoom and
-manual framing) so each sculpture is legible; the islands/statues themselves are the production
-renderer.
+The previous 46×34 hall and 96×64 monument island both measured 60 fps at 1.55× on a quieter host
+(host load 1.3). The 2.0× close camera is the change that costs fill rate on this headless host;
+interiors and the 1.55× establishing view remain at 60.
