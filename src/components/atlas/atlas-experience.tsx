@@ -24,11 +24,12 @@ import { useAudio } from "@/components/audio/audio-provider";
 import { SafarSfx } from "./atlas-sfx";
 import { SafarAudioDock } from "./safar-audio-dock";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
-import { AtlasEngine, type Nearby } from "./atlas-engine";
+import { AtlasEngine, type Nearby, type RoomInfo } from "./atlas-engine";
 import styles from "./atlas.module.css";
 
 const FOUND_KEY = "atlas:found:v1";
 const STORY_KEY = "atlas:story:v1";
+const ARCADE_TOUR_KEY = "safar:arcade-tour:v1";
 const SFX_KEY = "safar:sfx:v1";
 const RELIC_TOTAL = atlasRelics.length + 1;
 const TOTAL_FINDS = atlasEntries.length + RELIC_TOTAL + arcadeStatues.length;
@@ -77,6 +78,16 @@ function loadStoryComplete() {
   }
 }
 
+function loadArcadeTourComplete() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    return window.localStorage.getItem(ARCADE_TOUR_KEY) === "done";
+  } catch {
+    return false;
+  }
+}
+
 function saveFound(found: Set<string>) {
   try {
     window.localStorage.setItem(FOUND_KEY, JSON.stringify([...found]));
@@ -88,6 +99,14 @@ function saveFound(found: Set<string>) {
 function saveStoryComplete() {
   try {
     window.localStorage.setItem(STORY_KEY, "done");
+  } catch {
+    // Ignore.
+  }
+}
+
+function saveArcadeTourComplete() {
+  try {
+    window.localStorage.setItem(ARCADE_TOUR_KEY, "done");
   } catch {
     // Ignore.
   }
@@ -136,13 +155,14 @@ export function AtlasExperience() {
     reducedMotion: false,
     found: new Set<string>(),
     storyComplete: false,
+    arcadeTourComplete: false,
   });
   const joystickRef = useRef<HTMLDivElement>(null);
   const joystickPointer = useRef<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const missionButtonRef = useRef<HTMLButtonElement>(null);
   const sfxRef = useRef<SafarSfx | null>(null);
-  const sceneRef = useRef<"world" | "library" | "arcade">("world");
+  const sceneRef = useRef<"world" | "library" | "arcade" | "arcadeRoom">("world");
   const hourRef = useRef(12);
 
   const [deepEntry] = useState(hashEntry);
@@ -159,8 +179,16 @@ export function AtlasExperience() {
   const [guideLine, setGuideLine] = useState<string | null>(null);
   const [storyStage, setStoryStage] = useState<StoryStage>("pond");
   const [storyComplete, setStoryComplete] = useState(false);
+  const [arcadeTourComplete, setArcadeTourComplete] = useState(false);
+  const [tour, setTour] = useState<{
+    active: boolean;
+    index: number;
+    total: number;
+    game: string;
+  } | null>(null);
   const [storyReady, setStoryReady] = useState(false);
-  const [scene, setScene] = useState<"world" | "library" | "arcade">("world");
+  const [scene, setScene] = useState<"world" | "library" | "arcade" | "arcadeRoom">("world");
+  const [room, setRoom] = useState<RoomInfo | null>(null);
   const [sfxEnabled, setSfxEnabled] = useState(loadSfxEnabled);
   const [found, setFound] = useState<Set<string>>(new Set());
   const [knob, setKnob] = useState({ x: 0, y: 0 });
@@ -172,7 +200,13 @@ export function AtlasExperience() {
   const storyActive = storyStage !== "done";
 
   const location =
-    scene === "arcade" ? "The Arcade" : scene === "library" ? "The Long Library" : "The Meadow";
+    scene === "arcadeRoom"
+      ? (room?.buildingName ?? "The Arcade")
+      : scene === "arcade"
+        ? "The Arcade"
+        : scene === "library"
+          ? "The Long Library"
+          : "The Meadow";
 
   useEffect(() => {
     optionsRef.current.reducedMotion = reducedMotion;
@@ -221,7 +255,7 @@ export function AtlasExperience() {
     const first = window.setTimeout(() => {
       const sfx = sfxRef.current;
       if (!sfx || document.hidden) return;
-      if (sceneRef.current === "arcade") sfx.arcadeBuzz();
+      if (sceneRef.current === "arcade" || sceneRef.current === "arcadeRoom") sfx.arcadeBuzz();
       else if (hourRef.current >= 19.5 || hourRef.current < 5.5) sfx.crickets();
       else sfx.birds();
     }, 3500);
@@ -234,7 +268,7 @@ export function AtlasExperience() {
           const sfx = sfxRef.current;
 
           if (sfx && !document.hidden && sfxEnabled) {
-            if (sceneRef.current === "arcade") {
+            if (sceneRef.current === "arcade" || sceneRef.current === "arcadeRoom") {
               if (Math.random() < 0.55) sfx.arcadeBuzz();
               else sfx.coin();
             } else if (hourRef.current >= 19.5 || hourRef.current < 5.5) {
@@ -272,6 +306,9 @@ export function AtlasExperience() {
     const storyDone = loadStoryComplete();
     optionsRef.current.storyComplete = storyDone;
     setStoryComplete(storyDone);
+    const tourDone = loadArcadeTourComplete();
+    optionsRef.current.arcadeTourComplete = tourDone;
+    setArcadeTourComplete(tourDone);
 
     const engine = new AtlasEngine(
       canvas,
@@ -320,8 +357,14 @@ export function AtlasExperience() {
           setStoryComplete(true);
         },
         onScene: setScene,
+        onRoom: setRoom,
         onStep: (surface) => sfxRef.current?.step(surface),
         onSfx: (event) => sfxRef.current?.play(event),
+        onTour: setTour,
+        onTourComplete: () => {
+          saveArcadeTourComplete();
+          setArcadeTourComplete(true);
+        },
       },
       optionsRef.current,
     );
@@ -560,6 +603,30 @@ export function AtlasExperience() {
           <div className={styles.brand}>
             <p className={styles.wordmark}>Safar</p>
             <p className={styles.location}>{location}</p>
+            {tour?.active ? (
+              <div className={styles.tourHud}>
+                <div className={styles.tourMeta}>
+                  <span>Memory tour</span>
+                  <span>
+                    {tour.index + 1} / {tour.total}
+                  </span>
+                </div>
+                <p className={styles.tourGame}>{tour.game}</p>
+                <span className={styles.tourTrack} aria-hidden="true">
+                  <span style={{ width: `${((tour.index + 1) / tour.total) * 100}%` }} />
+                </span>
+                <button
+                  type="button"
+                  className={styles.tourSkip}
+                  onClick={() => {
+                    audio.playClick();
+                    engineRef.current?.skipArcadeTour();
+                  }}
+                >
+                  Skip tour
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div className={styles.hudActions}>
@@ -612,11 +679,24 @@ export function AtlasExperience() {
             >
               Continue{mobile ? "" : " · Space"}
             </button>
-            {storyActive || scene === "arcade" ? (
+            {tour?.active ? (
               <button
                 type="button"
                 className={styles.dialogueSkip}
                 onClick={() => {
+                  audio.playClick();
+                  engineRef.current?.skipArcadeTour();
+                  setIndexOpen(false);
+                }}
+              >
+                Skip the tour
+              </button>
+            ) : storyActive ? (
+              <button
+                type="button"
+                className={styles.dialogueSkip}
+                onClick={() => {
+                  audio.playClick();
                   engineRef.current?.skipStory();
                   setIndexOpen(false);
                 }}
@@ -829,8 +909,23 @@ export function AtlasExperience() {
                   <span className={styles.indexDot} aria-hidden="true" />
                   The Arcade
                 </span>
-                <span>{arcadeStatues.length} statues</span>
+                <span>{arcadeStatues.length} buildings</span>
               </div>
+              <button
+                type="button"
+                className={styles.indexTour}
+                onClick={() => {
+                  audio.playClick();
+                  engineRef.current?.startArcadeTour();
+                  setIndexOpen(false);
+                  setEntry(null);
+                  setRelic(null);
+                  setStatue(null);
+                  setHash(null);
+                }}
+              >
+                {arcadeTourComplete ? "Replay the memory tour" : "Walk the memory tour"}
+              </button>
               <ul className={styles.indexEntries}>
                 {arcadeStatues.map((arcadeStatue) => (
                   <li key={arcadeStatue.id}>

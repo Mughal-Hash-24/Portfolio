@@ -9,11 +9,14 @@ import {
   type AtlasRelic,
 } from "@/content/atlas";
 import {
+  arcadeBuildings,
   arcadeDimension,
-  arcadeProps,
   arcadeStatues,
+  arcadeZones,
   storyWorld,
+  type ArcadeBuilding,
   type ArcadeStatue,
+  type ArcadeZone,
 } from "@/content/atlas-story";
 
 export const TILE = worldConfig.tileSize;
@@ -107,19 +110,72 @@ export type ArcadeStatueSpot = {
   statue: ArcadeStatue;
   x: number;
   y: number;
+  rotation: number;
+  zoneIndex: number;
+};
+
+export type ArcadeZoneSpot = {
+  zone: ArcadeZone;
+  statue: ArcadeStatue;
+  building: ArcadeBuilding;
+  center: { x: number; y: number };
+  x: number;
+  y: number;
+  door: { x: number; y: number };
+  rotation: number;
+  front: { x: number; y: number };
+  tourStop: { x: number; y: number };
+};
+
+export type ArcadeBuildingSpot = {
+  statue: ArcadeStatue;
+  building: ArcadeBuilding;
+  zone: ArcadeZoneSpot;
+  center: { x: number; y: number };
+  door: { x: number; y: number };
+  front: { x: number; y: number };
+  tourStop: { x: number; y: number };
+};
+
+export type ArcadeRoom = {
+  building: ArcadeBuilding;
+  statue: ArcadeStatue;
+  name: string;
+  w: number;
+  h: number;
+  spawn: { x: number; y: number };
+  exit: { x: number; y: number };
+  display: { x: number; y: number };
+  bounds: { left: number; top: number; right: number; bottom: number };
+  colliders: Collider[];
+};
+
+export type ArcadeTourStop = {
+  game: string;
+  statueId: string;
+  x: number;
+  y: number;
+  doorX: number;
+  doorY: number;
 };
 
 export type ArcadeWorld = {
   w: number;
   h: number;
+  island: { x: number; y: number; w: number; h: number };
   floor: { x: number; y: number; rx: number; ry: number };
+  center: { x: number; y: number };
+  zones: ArcadeZoneSpot[];
+  buildings: ArcadeBuildingSpot[];
   statues: ArcadeStatueSpot[];
   monument: { x: number; y: number };
   portal: { x: number; y: number };
   spawn: { x: number; y: number };
   exit: { x: number; y: number };
   guide: { x: number; y: number };
+  bounds: { left: number; top: number; right: number; bottom: number };
   colliders: Collider[];
+  tourStops: ArcadeTourStop[];
 };
 
 export type World = {
@@ -738,55 +794,136 @@ export function buildWorld(): World {
 
 export function buildArcadeDimension(): ArcadeWorld {
   const config = arcadeDimension;
-  const center = { x: config.center.x * TILE, y: config.center.y * TILE };
-  const statues: ArcadeStatueSpot[] = arcadeStatues.map((statue, index) => {
-    const angle = ((120 + (index / (arcadeStatues.length - 1)) * 300) * Math.PI) / 180;
+  const center = tileCenter(config.center.x, config.center.y);
+  const statueById = new Map(arcadeStatues.map((statue) => [statue.id, statue]));
+  const buildingById = new Map(arcadeBuildings.map((building) => [building.id, building]));
+  const zones: ArcadeZoneSpot[] = arcadeZones.map((zone) => {
+    const statue = statueById.get(zone.id);
+    const building = buildingById.get(zone.id);
+
+    if (!statue || !building) throw new Error(`Missing arcade building for zone ${zone.id}`);
+
+    const center = tileCenter(zone.x, zone.y);
+    const front = tileCenter(zone.x, zone.y + 4.35);
+    const door = tileCenter(zone.x, zone.y + 3.2);
+    const tourStop =
+      zone.side === "left"
+        ? tileCenter(21, zone.y)
+        : zone.side === "right"
+          ? tileCenter(79, zone.y)
+          : tileCenter(zone.x, 13.5);
 
     return {
+      zone,
       statue,
-      x: center.x + Math.cos(angle) * config.ringX * TILE,
-      y: center.y + Math.sin(angle) * config.ringY * TILE,
+      building,
+      center,
+      x: center.x,
+      y: center.y,
+      door,
+      rotation: 0,
+      front,
+      tourStop,
     };
   });
 
-  const colliders: Collider[] = statues.map((spot) => ({
-    x: spot.x,
-    y: spot.y,
-    r: 15,
+  const buildings: ArcadeBuildingSpot[] = zones.map((zone) => ({
+    statue: zone.statue,
+    building: zone.building,
+    zone,
+    center: zone.center,
+    door: zone.door,
+    front: zone.front,
+    tourStop: zone.tourStop,
   }));
 
-  colliders.push({ x: center.x, y: center.y, r: 2.5 * TILE });
+  const statues: ArcadeStatueSpot[] = zones.map((zone, index) => ({
+    statue: zone.statue,
+    x: zone.center.x,
+    y: zone.center.y,
+    rotation: 0,
+    zoneIndex: index,
+  }));
 
-  for (const prop of arcadeProps) {
-    if (!["blocks", "bowling", "crate", "palm"].includes(prop.kind)) continue;
+  const colliders: Collider[] = buildings.map((building) => ({
+    x: building.center.x,
+    y: building.center.y - 0.2 * TILE,
+    r: 2.7 * TILE,
+  }));
+  colliders.push({ ...center, r: 2.6 * TILE });
 
-    colliders.push({
-      x: prop.x * TILE,
-      y: prop.y * TILE,
-      r: prop.kind === "bowling" ? 7 : 10,
-    });
-  }
+  const entrance = tileCenter(config.entrance.x, config.entrance.y);
+  colliders.push({ x: entrance.x - 24, y: entrance.y, r: 7 });
+  colliders.push({ x: entrance.x + 24, y: entrance.y, r: 7 });
 
-  const portal = { x: config.exit.x * TILE, y: config.exit.y * TILE };
-  colliders.push({ x: portal.x - 24, y: portal.y, r: 7 });
-  colliders.push({ x: portal.x + 24, y: portal.y, r: 7 });
+  const spawn = tileCenter(config.spawn.x, config.spawn.y);
+  const guide = tileCenter(config.guide.x, config.guide.y);
 
   return {
     w: config.w,
     h: config.h,
-    floor: {
-      x: center.x,
-      y: center.y,
-      rx: config.radiusX * TILE,
-      ry: config.radiusY * TILE,
+    island: {
+      x: config.island.x * TILE,
+      y: config.island.y * TILE,
+      w: config.island.w * TILE,
+      h: config.island.h * TILE,
     },
+    floor: { ...center, rx: 12.5 * TILE, ry: 9 * TILE },
+    center,
+    zones,
+    buildings,
     statues,
     monument: center,
-    portal,
-    spawn: { x: config.spawn.x * TILE, y: config.spawn.y * TILE },
-    exit: portal,
-    guide: { x: config.guide.x * TILE, y: config.guide.y * TILE },
+    portal: entrance,
+    spawn,
+    exit: entrance,
+    guide,
+    bounds: {
+      left: config.bounds.x * TILE,
+      top: config.bounds.y * TILE,
+      right: (config.bounds.x + config.bounds.w) * TILE,
+      bottom: (config.bounds.y + config.bounds.h) * TILE,
+    },
     colliders,
+    tourStops: buildings.map((building) => ({
+      game: building.statue.game,
+      statueId: building.statue.id,
+      x: building.tourStop.x,
+      y: building.tourStop.y,
+      doorX: building.door.x,
+      doorY: building.door.y,
+    })),
+  };
+}
+
+export function buildArcadeRoom(building: ArcadeBuildingSpot): ArcadeRoom {
+  const w = 30;
+  const h = 18;
+  const spawn = { x: (w / 2) * TILE, y: (h - 2.2) * TILE };
+  const exit = { x: (w / 2) * TILE, y: (h - 1.15) * TILE };
+  const display = { x: (w / 2) * TILE, y: 10.5 * TILE };
+  const bounds = {
+    left: 2 * TILE,
+    top: 3 * TILE,
+    right: (w - 2) * TILE,
+    bottom: (h - 1.4) * TILE,
+  };
+
+  return {
+    building: building.building,
+    statue: building.statue,
+    name: building.building.roomName,
+    w,
+    h,
+    spawn,
+    exit,
+    display,
+    bounds,
+    colliders: [
+      { x: display.x, y: display.y + 0.7 * TILE, r: 0.9 * TILE },
+      { x: (w / 2 - 3.1) * TILE, y: 11.6 * TILE, r: 0.55 * TILE },
+      { x: (w / 2 + 3.1) * TILE, y: 11.6 * TILE, r: 0.55 * TILE },
+    ],
   };
 }
 

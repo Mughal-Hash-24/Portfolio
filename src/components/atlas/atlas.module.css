@@ -1367,6 +1367,15 @@
     max-width: 100%;
   }
 
+  .tourHud {
+    position: absolute;
+    top: 46px;
+    left: 0;
+    z-index: 2;
+    width: min(210px, 60vw);
+    margin-top: 0;
+  }
+
   .title {
     font-size: clamp(26px, 8vw, 34px);
   }
@@ -1448,5 +1457,110 @@
   .introButton,
   .trailChip {
     transition: none;
+  }
+}
+
+.tourHud {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  z-index: 2;
+  width: min(236px, 54vw);
+  margin-top: 0;
+  padding: 8px 10px 8px 12px;
+  border-left: 2px solid rgb(216 232 168 / 0.65);
+  background: rgb(7 10 8 / 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.tourMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(216 232 168 / 0.58);
+}
+
+.tourGame {
+  overflow: hidden;
+  margin: 4px 0 7px;
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tourTrack {
+  display: block;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.tourTrack > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 260ms ease;
+}
+
+.indexTour {
+  width: 100%;
+  margin: 8px 0 2px;
+  padding: 8px 10px;
+  border: 1px solid rgb(216 232 168 / 0.22);
+  border-radius: 3px;
+  background: rgb(216 232 168 / 0.06);
+  color: rgb(242 236 221 / 0.78);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.indexTour:hover {
+  border-color: rgb(216 232 168 / 0.55);
+  background: rgb(216 232 168 / 0.12);
+  color: var(--paper);
+}
+
+.tourSkip {
+  margin-top: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(242 236 221 / 0.45);
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tourSkip:hover {
+  color: var(--paper);
+}
+
+@media (max-width: 760px) {
+  .tourHud {
+    position: absolute;
+    top: 46px;
+    left: 0;
+    z-index: 2;
+    width: min(210px, 60vw);
+    margin-top: 0;
   }
 }
