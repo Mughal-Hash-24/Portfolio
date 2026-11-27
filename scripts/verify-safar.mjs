@@ -126,18 +126,122 @@ check(
   ),
 );
 check(
-  "arcade welcome starts at 2011 with San Andreas and the following games",
-  story.storyLines.arcade[0].includes("2011") &&
-    /lowrider|San Andreas/i.test(story.storyLines.arcade[0]) &&
-    story.storyLines.arcade[1].includes("III") &&
-    story.storyLines.arcade[1].includes("Vice City") &&
-    story.storyLines.arcade[1].includes("IV"),
+  "arcade welcome announces the seventeen-world memory tour",
+  story.storyLines.arcade.join(" ").includes("Seventeen worlds") &&
+    story.storyLines.arcade.join(" ").includes("2011") &&
+    /lowrider/i.test(story.storyLines.arcade.join(" ")),
 );
 check("story contains a follow stage and a gate stage", story.storyWorld.gatePath.length === 4);
 
 check("seventeen monuments", story.arcadeStatues.length === 17, String(story.arcadeStatues.length));
-check("arcade props", story.arcadeProps.length === 8, String(story.arcadeProps.length));
-check("custom arcade dimension", story.arcadeDimension.w === 46 && story.arcadeDimension.h === 34);
+check("arcade hub props", story.arcadeProps.length === 8, String(story.arcadeProps.length));
+check(
+  "the arcade is a 96 x 64 island",
+  story.arcadeDimension.w === 96 && story.arcadeDimension.h === 64,
+  `${story.arcadeDimension.w} x ${story.arcadeDimension.h}`,
+);
+check(
+  "the island has a 17-zone memory promenade",
+  story.arcadeZones.length === 17,
+  String(story.arcadeZones.length),
+);
+check(
+  "the promenade orders all six left, five top and six right zones",
+  story.arcadeZones.filter((zone) => zone.side === "left").length === 6 &&
+    story.arcadeZones.filter((zone) => zone.side === "top").length === 5 &&
+    story.arcadeZones.filter((zone) => zone.side === "right").length === 6,
+);
+
+const zoneOrder = story.arcadeZones.map((zone) => zone.id);
+check(
+  "zone order matches the collection",
+  zoneOrder.join("|") === expected.map(([id]) => id).join("|"),
+  zoneOrder.join(" → "),
+);
+check(
+  "the tour visits the seventeen zones in order",
+  zoneOrder.every((id) => typeof story.arcadeTour.stops[id] === "string") &&
+    Object.keys(story.arcadeTour.stops).length === 17,
+);
+check(
+  "the tour opens with 2011, San Andreas and the middle mouse button",
+  /2011/.test(story.arcadeTour.stops["gta-san-andreas"]) &&
+    /San Andreas/.test(story.arcadeTour.stops["gta-san-andreas"]) &&
+    /middle mouse/i.test(story.arcadeTour.stops["gta-san-andreas"]),
+);
+
+const buildings = story.arcadeBuildings;
+const buildingExpected = [
+  ["gta-san-andreas", "Grove Street House", "Johnson Living Room", "GROVE ST."],
+  ["gta-iii", "Luigi's Club", "Luigi's Back Room", "LUIGI'S"],
+  ["gta-vice-city", "The Malibu Club", "The Malibu Floor", "MALIBU"],
+  ["gta-iv", "Roman's Cab Depot", "The Cab Office", "ROMAN'S CAB"],
+  ["gta-v", "Michael's Mansion", "De Santa Living Room", "DE SANTA"],
+  ["assassins-creed", "Villa Auditore", "The Auditore Study", "VILLA AUDITORE"],
+  ["watch-dogs", "Blume Data Center", "The ctOS Server Hall", "BLUME"],
+  ["minecraft", "Village House", "The Block House", "VILLAGE"],
+  ["among-us", "The Skeld", "The Skeld Cafeteria", "THE SKELD"],
+  ["mortal-kombat", "Wu Shi Academy", "The Dragon Temple", "WU SHI"],
+  ["call-of-duty", "Pripyat Apartment", "The Ruined Apartment", "PRIPYAT"],
+  ["igi", "Radar Bunker", "The Command Bunker", "RADAR"],
+  ["tekken", "Mishima Dojo", "Hon-Maru Dojo", "MISHIMA"],
+  ["fifa", "The Stadium", "The Locker Room", "FIFA"],
+  ["cricket-07", "The Pavilion", "The Long Room", "PAVILION"],
+  ["wwe-2k15", "The Arena", "The Champions' Room", "WWE"],
+  ["far-cry-3", "Vaas's Camp", "The Pirate Hut", "VAAS"],
+];
+
+check("seventeen buildings", buildings.length === 17, String(buildings.length));
+check(
+  "every zone has a building and room",
+  story.arcadeZones.every((zone) => buildings.some((building) => building.id === zone.id)),
+);
+check(
+  "buildings follow the collection order",
+  buildings.map((building) => building.id).join("|") ===
+    buildingExpected.map(([id]) => id).join("|"),
+);
+
+for (const [id, buildingName, roomName] of buildingExpected) {
+  const building = buildings.find((entry) => entry.id === id);
+  check(`building exists: ${buildingName}`, Boolean(building));
+
+  if (!building) continue;
+
+  check(
+    `building name: ${buildingName}`,
+    building.buildingName === buildingName,
+    building.buildingName,
+  );
+  check(`room name: ${roomName}`, building.roomName === roomName, building.roomName);
+  check(`building facade sign: ${buildingName}`, Boolean(building.facadeSign), building.facadeSign);
+}
+
+check(
+  "the welcome tells the player every building is open",
+  story.storyLines.arcade.some((line) => /Every building is open/i.test(line)),
+);
+check(
+  "the tour intro speaks of seventeen buildings",
+  story.arcadeTour.intro.includes("Seventeen buildings"),
+  story.arcadeTour.intro,
+);
+check(
+  "the tour outro keeps the doors open",
+  /every door is still open/i.test(story.arcadeTour.outro),
+  story.arcadeTour.outro,
+);
+check(
+  "the tour has an intro and an outro",
+  story.arcadeTour.intro.includes("Seventeen buildings") &&
+    story.arcadeTour.outro.includes("street door"),
+);
+check(
+  "arcade island has blocks, a promenade, cliffs and a hub",
+  story.arcadeDimension.island.w === 88 &&
+    story.arcadeDimension.center.x === 48 &&
+    story.arcadeDimension.center.y === 32,
+);
 
 const rows = [];
 
@@ -221,6 +325,142 @@ for (const token of [
   "paintArcadeShafts",
 ]) {
   check(`precomputed art provides ${token}`, art.includes(token));
+}
+
+const arcadeArt = read("src/components/atlas/arcade-dimension-art.ts");
+for (const token of [
+  "export function paintArcadeDimension",
+  "paintVoid",
+  "paintIsland",
+  "paintPromenade",
+  "paintGarden",
+  "paintHub",
+  "paintZone",
+  "paintZoneSign",
+  "paintZoneLights",
+  "paintAtmosphere",
+  "paintGameBuilding",
+]) {
+  check(`precomputed island art provides ${token}`, arcadeArt.includes(token));
+}
+
+const buildingArt = read("src/components/atlas/arcade-buildings-art.ts");
+for (const token of [
+  "export function paintGameBuilding",
+  "paintFacade",
+  "paintNeon",
+  "paintPalm",
+  "paintStadium",
+  "paintPavilion",
+  "paintMishima",
+  "paintWweArena",
+  "paintVaasCamp",
+  "paintPripyat",
+  "paintRadarBunker",
+  "paintSkeld",
+  'case "gta-san-andreas"',
+  'case "gta-iii"',
+  'case "gta-vice-city"',
+  'case "gta-iv"',
+  'case "gta-v"',
+  'case "assassins-creed"',
+  'case "watch-dogs"',
+  'case "minecraft"',
+  'case "among-us"',
+  'case "mortal-kombat"',
+  'case "call-of-duty"',
+  'case "igi"',
+  'case "tekken"',
+  'case "fifa"',
+  'case "cricket-07"',
+  'case "wwe-2k15"',
+  'case "far-cry-3"',
+]) {
+  check(`building art provides ${token}`, buildingArt.includes(token));
+}
+
+const roomArt = read("src/components/atlas/arcade-rooms-art.ts");
+for (const token of [
+  "export function paintArcadeRoom",
+  "paintQuoteWall",
+  "paintDiorama",
+  "paintDoor",
+  "drawArcadeScene",
+  "wrapQuote",
+  'case "gta-san-andreas"',
+  'case "gta-iii"',
+  'case "gta-vice-city"',
+  'case "gta-iv"',
+  'case "gta-v"',
+  'case "assassins-creed"',
+  'case "watch-dogs"',
+  'case "minecraft"',
+  'case "among-us"',
+  'case "mortal-kombat"',
+  'case "call-of-duty"',
+  'case "igi"',
+  'case "tekken"',
+  'case "fifa"',
+  'case "cricket-07"',
+  'case "wwe-2k15"',
+  'case "far-cry-3"',
+]) {
+  check(`interior art provides ${token}`, roomArt.includes(token));
+}
+
+const worldSource = read("src/components/atlas/atlas-world.ts");
+for (const token of [
+  "buildArcadeRoom",
+  "ArcadeRoom",
+  "tourStop",
+  "display",
+  "bounds",
+  "const w = 30",
+  "const h = 18",
+]) {
+  check(`room world provides ${token}`, worldSource.includes(token));
+}
+
+for (const token of [
+  "startArcadeTour",
+  "updateArcadeTour",
+  "skipArcadeTour",
+  "finishArcadeTour",
+  "tourSign",
+  "arcadeTourComplete",
+  "tourActive",
+  "enterArcadeRoom",
+  "exitArcadeRoom",
+  "paintArcadeRoom",
+  "arcadeRoom",
+  "arcadeZoomProgress",
+  "arcadeZoomTarget",
+  "arcadeIntroTimer",
+  "roomDisplay",
+  "roomExit",
+  "initialHour",
+]) {
+  check(`engine wires ${token}`, engine.includes(token));
+}
+
+for (const token of [
+  "ARCADE_TOUR_KEY",
+  "onTour",
+  "onTourComplete",
+  "onRoom",
+  "RoomInfo",
+  "arcadeRoom",
+  "tourHud",
+  "tourSkip",
+  "indexTour",
+  "Skip the tour",
+  "buildings",
+]) {
+  check(`experience wires ${token}`, experience.includes(token));
+}
+
+for (const token of [".tourHud", ".tourGame", ".tourTrack", ".tourSkip", ".indexTour"]) {
+  check(`tour styling: ${token}`, css.includes(token));
 }
 
 console.log("\nINSCRIPTIONS");

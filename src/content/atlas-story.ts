@@ -62,10 +62,11 @@ export const storyLines = {
   ],
   portal: ["Here it is. The arcade.", "I will be inside. After you."],
   arcade: [
-    "Welcome to the arcade. The green lowrider is where 2011 begins.",
-    "Then came III, Vice City, IV and V — and every world after them.",
-    "Read the inscriptions. The street door will take you back when you are ready.",
+    "Welcome to the arcade. Seventeen worlds, in the order they found you.",
+    "Stay close. The green lowrider is where 2011 begins.",
+    "Every building is open. Step inside whenever you want to look closer.",
   ],
+  arcadeAgain: ["The arcade is yours to wander. The street door will take you home."],
   returnWorld: ["Back on the road. The rest of it is yours to wander."],
   freeRoam: [
     "The road is yours to wander. The arcade stays open.",
@@ -248,6 +249,136 @@ export const arcadeStatues: ArcadeStatue[] = [
   },
 ];
 
+export type ArcadeBuilding = {
+  id: string;
+  buildingName: string;
+  roomName: string;
+  facadeSign: string;
+  setting: string;
+};
+
+export const arcadeBuildings: ArcadeBuilding[] = [
+  {
+    id: "gta-san-andreas",
+    buildingName: "Grove Street House",
+    roomName: "Johnson Living Room",
+    facadeSign: "GROVE ST.",
+    setting: "Grove Street, Los Santos",
+  },
+  {
+    id: "gta-iii",
+    buildingName: "Luigi's Club",
+    roomName: "Luigi's Back Room",
+    facadeSign: "LUIGI'S",
+    setting: "Red Light District, Liberty City",
+  },
+  {
+    id: "gta-vice-city",
+    buildingName: "The Malibu Club",
+    roomName: "The Malibu Floor",
+    facadeSign: "MALIBU",
+    setting: "Vice Beach",
+  },
+  {
+    id: "gta-iv",
+    buildingName: "Roman's Cab Depot",
+    roomName: "The Cab Office",
+    facadeSign: "ROMAN'S CAB",
+    setting: "Broker, Liberty City",
+  },
+  {
+    id: "gta-v",
+    buildingName: "Michael's Mansion",
+    roomName: "De Santa Living Room",
+    facadeSign: "DE SANTA",
+    setting: "Rockford Hills, Los Santos",
+  },
+  {
+    id: "assassins-creed",
+    buildingName: "Villa Auditore",
+    roomName: "The Auditore Study",
+    facadeSign: "VILLA AUDITORE",
+    setting: "Monteriggioni",
+  },
+  {
+    id: "watch-dogs",
+    buildingName: "Blume Data Center",
+    roomName: "The ctOS Server Hall",
+    facadeSign: "BLUME",
+    setting: "Chicago",
+  },
+  {
+    id: "minecraft",
+    buildingName: "Village House",
+    roomName: "The Block House",
+    facadeSign: "VILLAGE",
+    setting: "The Overworld",
+  },
+  {
+    id: "among-us",
+    buildingName: "The Skeld",
+    roomName: "The Skeld Cafeteria",
+    facadeSign: "THE SKELD",
+    setting: "Deep space",
+  },
+  {
+    id: "mortal-kombat",
+    buildingName: "Wu Shi Academy",
+    roomName: "The Dragon Temple",
+    facadeSign: "WU SHI",
+    setting: "Earthrealm",
+  },
+  {
+    id: "call-of-duty",
+    buildingName: "Pripyat Apartment",
+    roomName: "The Ruined Apartment",
+    facadeSign: "PRIPYAT",
+    setting: "Pripyat, Ukraine",
+  },
+  {
+    id: "igi",
+    buildingName: "Radar Bunker",
+    roomName: "The Command Bunker",
+    facadeSign: "RADAR",
+    setting: "The I.G.I. compound",
+  },
+  {
+    id: "tekken",
+    buildingName: "Mishima Dojo",
+    roomName: "Hon-Maru Dojo",
+    facadeSign: "MISHIMA",
+    setting: "Japan",
+  },
+  {
+    id: "fifa",
+    buildingName: "The Stadium",
+    roomName: "The Locker Room",
+    facadeSign: "FIFA",
+    setting: "Matchday",
+  },
+  {
+    id: "cricket-07",
+    buildingName: "The Pavilion",
+    roomName: "The Long Room",
+    facadeSign: "PAVILION",
+    setting: "The Ground",
+  },
+  {
+    id: "wwe-2k15",
+    buildingName: "The Arena",
+    roomName: "The Champions' Room",
+    facadeSign: "WWE",
+    setting: "The Arena",
+  },
+  {
+    id: "far-cry-3",
+    buildingName: "Vaas's Camp",
+    roomName: "The Pirate Hut",
+    facadeSign: "VAAS",
+    setting: "Rook Islands",
+  },
+];
+
 // Overworld anchors for the journey (tile coordinates).
 export const storyWorld = {
   spawn: { x: 71.2, y: 56.6 },
@@ -284,18 +415,99 @@ export const storyWorld = {
   ],
 } as const;
 
+export type ArcadeZoneSide = "left" | "top" | "right";
+
+export type ArcadeZoneTheme =
+  | "road"
+  | "liberty"
+  | "neon"
+  | "brick"
+  | "sunset"
+  | "creed"
+  | "ctos"
+  | "blocks"
+  | "ship"
+  | "temple"
+  | "war"
+  | "snow"
+  | "dojo"
+  | "pitch"
+  | "crease"
+  | "ring"
+  | "jungle";
+
+export type ArcadeZone = {
+  id: string;
+  x: number;
+  y: number;
+  side: ArcadeZoneSide;
+  rotation: number;
+  theme: ArcadeZoneTheme;
+};
+
 export const arcadeDimension = {
-  w: 46,
-  h: 34,
-  center: { x: 23, y: 16.5 },
-  radiusX: 16,
-  radiusY: 12,
-  ringX: 13.6,
-  ringY: 10.4,
-  spawn: { x: 23, y: 24.9 },
-  exit: { x: 23, y: 27.8 },
-  guide: { x: 20.2, y: 24.6 },
+  w: 96,
+  h: 64,
+  center: { x: 48, y: 32 },
+  island: { x: 4, y: 4, w: 88, h: 56 },
+  entrance: { x: 48, y: 58.4 },
+  spawn: { x: 45.4, y: 55.2 },
+  guide: { x: 43.8, y: 54.6 },
+  bounds: { x: 6, y: 6, w: 84, h: 51 },
 } as const;
+
+const LEFT_ZONES = [
+  ["gta-san-andreas", "road"],
+  ["gta-iii", "liberty"],
+  ["gta-vice-city", "neon"],
+  ["gta-iv", "brick"],
+  ["gta-v", "sunset"],
+  ["assassins-creed", "creed"],
+] as const;
+
+const TOP_ZONES = [
+  ["watch-dogs", "ctos"],
+  ["minecraft", "blocks"],
+  ["among-us", "ship"],
+  ["mortal-kombat", "temple"],
+  ["call-of-duty", "war"],
+] as const;
+
+const RIGHT_ZONES = [
+  ["igi", "snow"],
+  ["tekken", "dojo"],
+  ["fifa", "pitch"],
+  ["cricket-07", "crease"],
+  ["wwe-2k15", "ring"],
+  ["far-cry-3", "jungle"],
+] as const;
+
+export const arcadeZones: ArcadeZone[] = [
+  ...LEFT_ZONES.map(([id, theme], index) => ({
+    id,
+    x: 16,
+    y: 50 - index * 8,
+    side: "left" as const,
+    rotation: -Math.PI / 2,
+    theme,
+  })),
+  ...TOP_ZONES.map(([id, theme], index) => ({
+    id,
+    x: 28 + index * 12,
+    y: 9,
+    side: "top" as const,
+    rotation: 0,
+    theme,
+  })),
+  ...RIGHT_ZONES.map(([id, theme], index) => ({
+    id,
+    x: 84,
+    y: 10 + index * 8,
+    side: "right" as const,
+    rotation: Math.PI / 2,
+    theme,
+  })),
+];
 
 export type ArcadePropKind =
   "blocks" | "bowling" | "crate" | "football" | "cricket" | "palm" | "dragon" | "tokens";
@@ -307,12 +519,47 @@ export type ArcadeProp = {
 };
 
 export const arcadeProps: ArcadeProp[] = [
-  { kind: "blocks", x: 19.6, y: 19.4 },
-  { kind: "bowling", x: 27.2, y: 20.6 },
-  { kind: "crate", x: 23.2, y: 12.2 },
-  { kind: "football", x: 30.2, y: 14.6 },
-  { kind: "cricket", x: 18.2, y: 12.4 },
-  { kind: "palm", x: 17.4, y: 20.9 },
-  { kind: "dragon", x: 28.6, y: 12.2 },
-  { kind: "tokens", x: 23.4, y: 22.2 },
+  { kind: "tokens", x: 48, y: 43 },
+  { kind: "crate", x: 33.5, y: 32 },
+  { kind: "bowling", x: 62.5, y: 32 },
+  { kind: "palm", x: 38, y: 39.5 },
+  { kind: "football", x: 58, y: 39.5 },
+  { kind: "blocks", x: 40, y: 24.5 },
+  { kind: "cricket", x: 56, y: 24.5 },
+  { kind: "dragon", x: 48, y: 21 },
 ];
+
+export const arcadeTour = {
+  intro: "Stay close. Seventeen buildings, in the order they found you. We begin at the lowrider.",
+  outro:
+    "That was the avenue. Every one of these worlds left something behind, and every door is still open. The street door will take you back.",
+  stops: {
+    "gta-san-andreas":
+      "2011. San Andreas gave you a whole state and a green lowrider. Then a middle mouse button refused to work. This is where the road starts.",
+    "gta-iii":
+      "Liberty City, 2001. Three islands, one yellow taxi, and a city that felt like it might keep going forever.",
+    "gta-vice-city":
+      "Vice City, 1986. Neon, palms, and a stolen empire. The first time a place had a colour of its own.",
+    "gta-iv":
+      "Liberty again, older and colder. Cousin, let's go bowling; the city was never just the mission.",
+    "gta-v": "Los Santos, 2013. Three lives, one city, and a sky you could steal.",
+    "assassins-creed":
+      "The Creed: nothing is true; everything is permitted. The first game that asked you to climb toward a question.",
+    "watch-dogs":
+      "A city wired to itself. Everything is connected — even the things you would rather forget.",
+    minecraft:
+      "A world made of blocks. You could dig, build, and leave a mark; even this island is made of that idea.",
+    "among-us": "A small ship and a liar among the crew. You learned to watch your friends.",
+    "mortal-kombat": "Finish him! The first time a game shouted back.",
+    "call-of-duty":
+      "Fifty thousand people used to live here. War had a history, and the history had a voice.",
+    igi: "I'm going in. The first mission you took alone.",
+    tekken:
+      "Get ready for the next battle. Fists, family, and a tournament that never really ended.",
+    fifa: "This is the beautiful game.",
+    "cricket-07":
+      "Terrible running by the batsmen. A summer game with a commentary voice you can still hear.",
+    "wwe-2k15": "The champ is here. The spectacle, the entrance, the roar.",
+    "far-cry-3": "Did I ever tell you the definition of insanity? The last door on this road.",
+  } as Record<string, string>,
+} as const;
